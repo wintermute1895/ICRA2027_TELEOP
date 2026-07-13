@@ -1,0 +1,16 @@
+{
+  "timestamp": 1716301234.567,  // 时间戳 (秒)
+  "body": {
+    "shoulder": [x, y, z],      // 数组 [米, 米, 米] 或 null
+    "elbow": [x, y, z]
+  },
+  "hand": {
+    "wrist_pos": [x, y, z],
+    "wrist_ori": [              // 3x3 旋转矩阵
+      [r11, r12, r13],
+      [r21, r22, r23],
+      [r31, r32, r33]
+    ],
+    "index_vec": [x, y, z]      // 指向向量
+  }
+}

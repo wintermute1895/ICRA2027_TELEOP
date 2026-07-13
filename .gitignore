@@ -1,0 +1,8 @@
+SemanticTeleop_MPC/
+cyberdog_sim_project/
+sim-web-visualizer-main/
+
+# VS Code browsing database (large binary files)
+.vscode/browse.vc.db
+.vscode/browse.vc.db-shm
+.vscode/browse.vc.db-wal
