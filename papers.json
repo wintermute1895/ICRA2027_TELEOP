@@ -1,0 +1,119 @@
+[
+  {
+    "title": "Enhancing Shared Autonomy in Teleoperation under Network Delay: Transparency- and Confidence-Aware Arbitration",
+    "authors": [
+      ["Basak", "Gulecyuz"],
+      ["Ribin", "Balachandran"],
+      ["Michael", "Panzirsch"],
+      ["Harsimran", "Singh"],
+      ["Thomas", "Hulin"],
+      ["Xiao", "Xu"],
+      ["Eckehard", "Steinbach"]
+    ],
+    "year": 2025,
+    "venue": "IEEE Robotics and Automation Letters",
+    "venue_short": "RA-L",
+    "volume": "10",
+    "number": "10",
+    "pages": "9654–9661",
+    "doi": "10.1109/LRA.2025.3596436",
+    "url": "https://ieeexplore.ieee.org/abstract/document/11115037",
+    "abstract": "Shared autonomy framework where arbitration coefficient α is dynamically computed from dual confidence: autonomy confidence from TP-HSMM state covariances, and human confidence from teleoperation transparency under network delay. Integrates variable impedance control with three-port passivity guarantees.",
+    "keywords": ["shared autonomy", "teleoperation", "arbitration", "TP-HSMM", "confidence-aware", "variable impedance"],
+    "relevance_to_vist": "DIRECT COMPETITOR. Same continuous α arbitration idea, but principled (uncertainty-driven) vs VIST's heuristic. Uses haptic device transparency for human confidence — VIST uses exoskeleton without force feedback. Opportunity: visual confidence signal instead of haptic transparency."
+  },
+  {
+    "title": "SUBTA: A Framework for Supported User-Guided Bimanual Teleoperation in Structured Assembly",
+    "authors": [
+      ["Xiao", "Liu"],
+      ["Prakash", "Baskaran"],
+      ["Songpo", "Li"],
+      ["Simon", "Manschitz"],
+      ["Wei", "Ma"],
+      ["Dirk", "Ruiken"],
+      ["Soshi", "Iba"]
+    ],
+    "year": 2026,
+    "venue": "IEEE International Conference on Robotics and Automation (ICRA)",
+    "venue_short": "ICRA",
+    "arxiv": "2603.10459",
+    "url": "https://arxiv.org/abs/2603.10459",
+    "abstract": "GNN + dynamic self-attention predicts task label and bimanual actions from hand pose sequences. Scene graph with graph edit distance plans next target pose. 9 gated motion behaviors for execution. 12-person user study: position accuracy p<0.001, mental load p=0.002. Honda Research Institute.",
+    "keywords": ["bimanual teleoperation", "intention estimation", "scene graph", "shared autonomy", "assembly"],
+    "relevance_to_vist": "Addresses Reviewer 3's criticism: intent inference from observation (not known goal). Scene-graph-based target pose planning shows how to remove the 'known target pose' assumption."
+  },
+  {
+    "title": "A Model Predictive Control Approach to Blending in Shared Control",
+    "authors": [
+      ["Elio", "Jabbour"],
+      ["Margot", "Vulliez"],
+      ["Celestin", "Preault"],
+      ["Vincent", "Padois"]
+    ],
+    "year": 2024,
+    "venue": "HAL preprint",
+    "venue_short": "HAL",
+    "hal_id": "hal-04753213",
+    "url": "https://hal.science/hal-04753213",
+    "abstract": "Reformulates shared-control blending as constrained optimal control with MPC. Guarantees feasibility, enforces safety constraints, anticipates limits over receding horizon. Related to Jabbour PhD thesis on dual-component adaptive assistance (AKF + MPC). INRIA Aucius team.",
+    "keywords": ["shared control", "MPC", "blending", "teleoperation", "optimal control"],
+    "relevance_to_vist": "Same technical lineage (AKF+MPC for shared control). Need to verify which parts are already published vs. still in thesis — unpublished parts = opportunity space."
+  },
+  {
+    "title": "Adaptor: Advancing Assistive Teleoperation with Few-Shot Learning and Cross-Operator Generalization",
+    "authors": [
+      ["Yu", "Liu"],
+      ["Yihang", "Yin"],
+      ["Tianlv", "Huang"],
+      ["Fei", "Yan"],
+      ["Yuan", "Xu"],
+      ["Weinan", "Hong"],
+      ["Wei", "Han"],
+      ["Yue", "Cao"],
+      ["Xiangyu", "Chen"],
+      ["Zipei", "Fan"],
+      ["Xuan", "Song"]
+    ],
+    "year": 2026,
+    "venue": "IEEE International Conference on Robotics and Automation (ICRA)",
+    "venue_short": "ICRA",
+    "arxiv": "2604.09462",
+    "url": "https://arxiv.org/abs/2604.09462",
+    "abstract": "Two-stage few-shot intent learning: preprocessing models intent uncertainty via noise injection + geometry-aware keyframe extraction; policy stage fuses Intention Expert with VLM context via Conditional Flow Matching. +41.9% success rate, 83.2% novice success rate.",
+    "keywords": ["shared control", "few-shot learning", "intent recognition", "teleoperation", "cross-operator"],
+    "relevance_to_vist": "Noise injection for intent uncertainty modeling is directly applicable to VIST L1 (Learning α from demonstration). Shows how to make learned α handle uncertainty."
+  },
+  {
+    "title": "RINSE: Learning from the Best: Smoothness-Driven Metrics for Data Quality in Imitation Learning",
+    "authors": [
+      ["Soham", "Kulkarni"],
+      ["Raayan", "Dhar"],
+      ["Yuchen", "Cui"]
+    ],
+    "year": 2026,
+    "venue": "arXiv preprint",
+    "venue_short": "arXiv",
+    "arxiv": "2604.23000",
+    "url": "https://arxiv.org/abs/2604.23000",
+    "abstract": "Lightweight policy-agnostic framework scoring demonstrations via SAL (Spectral Arc Length, frequency-domain) and TED (Trajectory-Envelope Distance, spatial). SAL filtering: 16% higher success using 1/6 data on RoboMimic. UCLA.",
+    "keywords": ["imitation learning", "data quality", "trajectory smoothness", "behavioral cloning"],
+    "relevance_to_vist": "If VIST still claims 'physically-regularized demonstration data', must compare against RINSE's smoothness-driven filtering. Shows a principled data-quality baseline."
+  },
+  {
+    "title": "SAPS: Shared Autonomy for Policy Steering by Blending Teleoperation with a Pretrained VLA",
+    "authors": [
+      ["Crystal", "Zhou"],
+      ["Jehan", "Yang"],
+      ["Douglas J.", "Weber"],
+      ["Zackory", "Erickson"]
+    ],
+    "year": 2026,
+    "venue": "arXiv preprint",
+    "venue_short": "arXiv",
+    "arxiv": "2606.15568",
+    "url": "https://arxiv.org/abs/2606.15568",
+    "abstract": "Lightweight model-agnostic framework blending real-time human teleoperation with pretrained VLA actions. Three arbitration strategies including dynamic cosine-similarity blending. Boosts π0.5 from 15% to 92.6% success on LIBERO-PRO with 10.8-30% human intervention rate. CMU.",
+    "keywords": ["shared autonomy", "VLA", "policy steering", "teleoperation", "blending"],
+    "relevance_to_vist": "Cosine similarity as arbitration signal — alternative to confidence-based approach. Shows VLA-based shared control landscape, which VIST should be aware of for positioning."
+  }
+]
