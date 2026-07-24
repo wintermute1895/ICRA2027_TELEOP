@@ -1,0 +1,119 @@
+{
+  "options": {
+    "depersonalize": true
+  },
+  "papers": [
+    {
+      "title": "Güleçyüz - Confidence-Aware Arbitration (RA-L 2025)",
+      "path": "P2KVWQB7",
+      "annotations": [
+        {
+          "phrase": "propose a novel shared autonomy approach",
+          "comment": "⭐ VIST 最直接竞争者：也使用连续 α 做共享控制仲裁，但 α 来自 principled 双置信度而非启发式。面向网络延迟场景，差异在 human confidence 的来源。"
+        },
+        {
+          "phrase": "dynamically blends human and autonomy commands based on two confidence estimates:",
+          "comment": "核心创新：双置信度仲裁——VIST 最关键差距。c_A=TP-HSMM uncertainty, c_H=teleoperation transparency。VIST的 α 融合的是几何量(α_geo,α_dir,α_vel)，没有置信度概念。"
+        },
+        {
+          "phrase": "three-port extension of the Time-Domain Passivity Approach with Energy Reflection (TDPA-ER)",
+          "comment": "核心创新：无源性稳定性保证。VIST 完全缺失稳定性分析。可用 LQG/MPC 替代 passivity（更适合控制背景）。"
+        },
+        {
+          "phrase": "agent starts without prior task knowledge",
+          "comment": "从2个初始demo训练TP-HSMM → SA收集更多demo → 逐步更新。渐进式LfD。VIST也是采集+训练流程但缺少在线更新机制。"
+        },
+        {
+          "phrase": "cA is determined from the trace of the state covariance matrix",
+          "comment": "c_A = normalized(-trace(Σ_t))。来自TP-HSMM状态协方差——aleatoric uncertainty（demo噪声）。L1: learn α时uncertainty来源是什么？外骨骼抖动？视觉歧义？需要定义清楚。"
+        },
+        {
+          "phrase": "cH = 1 − RATE",
+          "comment": "c_H = 1 - RATE。RATE = passivity controller dissipated/output energy ratio。依赖力传感器和精确能量计算。外骨骼没有这些——但可用视觉trajectory smoothness/jerk做proxy。这是创新空间。"
+        },
+        {
+          "phrase": "C3 consistently outperformed C1 and C2",
+          "comment": "结果：C3(双置信度)>C2(仅c_A)>C1(纯遥操作)。困难任务优势更明显。注意C2仅靠c_A引入更大方差→仅自主不确定性不够，需要人类端置信度。"
+        },
+        {
+          "phrase": "At 100 ms, the lower delay keeps cH high (above 0.8)",
+          "comment": "🔥 100ms: c_H>0.8, α<c_A→人类主导(采集高质量demo)。400ms: c_H<0.2, α>c_A→自主主导(补偿人类不可靠)。平滑自适应 vs VIST的固定阈值切换。"
+        },
+        {
+          "phrase": "potential position drift due to admittance causality",
+          "comment": "局限：三端口TDPA-ER导纳因果性引入位置漂移。机会：不走passivity路线，用optimal control做稳定性保证。"
+        }
+      ]
+    },
+    {
+      "title": "SUBTA (ICRA 2026)",
+      "path": "5IJRK09B",
+      "annotations": [
+        {
+          "phrase": "learned intention estimation",
+          "comment": "🔥 VIST相关：不是假设已知T_target，而是从人手姿态序列+self-attention+scene graph推断task意图。直接回应Reviewer 3批评。可借鉴GNN做L1。"
+        },
+        {
+          "phrase": "scene graph",
+          "comment": "Scene graph + graph edit distance 规划目标位姿。比人工标定T_target灵活。但scene graph仍需预定义对象关系——L2可以更进一步：直接从视觉学习任务流形。"
+        },
+        {
+          "phrase": "gated motion behaviors",
+          "comment": "9种gated motion behaviors辅助执行——本质是硬切换的FSM。VIST的α是软过渡，在这一点上更优雅。但他们的FSM有明确的task semantics（push/align/insert等），VIST的α缺乏这种语义粒度。"
+        },
+        {
+          "phrase": "12 participants",
+          "comment": "Honda Research Institute级完成度：12人用户研究，位置精度p<0.001，心理负荷p=0.002。ICRA 2027实验设计需要这个级别的用户研究。"
+        }
+      ]
+    },
+    {
+      "title": "Adaptor (ICRA 2026)",
+      "path": "3EZTO9VA",
+      "annotations": [
+        {
+          "phrase": "noise injection",
+          "comment": "意图不确定性建模：通过噪声注入模拟不同操作员的variability。L1做cross-operator generalization可借鉴——在外骨骼数据上注入生理震颤噪声，让α预测器对不同操作员鲁棒。"
+        }
+      ]
+    },
+    {
+      "title": "RINSE (arXiv 2026)",
+      "path": "X6PTED09",
+      "annotations": [
+        {
+          "phrase": "Spectral Arc Length",
+          "comment": "SAL: 频域平滑度指标，检测轨迹中的高频能量（震颤/noise）。VIST如果还要claim'数据正则化'需和SAL做定量对比。或argue：SAL是post-hoc filter，VIST是在线AKF实时去噪——根本区别。"
+        },
+        {
+          "phrase": "Trajectory-Envelope Distance",
+          "comment": "TED: 空间域指标，用Bézier平滑为参考度量几何偏差。假设真实轨迹本身平滑——精密装配中不一定成立。VIST在contact-rich场景下的数据质量和RINSE的smoothness定义可能冲突。"
+        },
+        {
+          "phrase": "16% higher success using one-sixth of the data",
+          "comment": "用1/6数据+16%成功率。如果VIST能用同样或更少数据达到接近成功率(via online filtering)，比RINSE更强——RINSE是offline，VIST是online+shared control。"
+        }
+      ]
+    },
+    {
+      "title": "Jabbour MPC Blending (HAL 2024)",
+      "path": "MZPIJ12K",
+      "annotations": [
+        {
+          "phrase": "constrained optimal control",
+          "comment": "和L3一样：用MPC做shared control blending。是在blending level用MPC（优化α序列），不是execution level（优化轨迹）。L3可考虑两级MPC：上层优化α，下层执行MPC跟踪。"
+        }
+      ]
+    },
+    {
+      "title": "SAPS (arXiv 2026, CMU)",
+      "path": "ICFLDR5D",
+      "annotations": [
+        {
+          "phrase": "cosine similarity",
+          "comment": "用余弦相似度做动态仲裁：sim(human_action, policy_action)。本质和VIST的α_dir类似（方向对齐度），但他们是VLA policy。L1用learning-based policy后，相似度仲裁可直接用。"
+        }
+      ]
+    }
+  ]
+}
