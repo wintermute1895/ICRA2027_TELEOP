@@ -1,10 +1,9 @@
 .git
 .gitignore
 evidence/
-arm_teleop/build/
-arm_teleop/install/
-arm_teleop/log/
-IROS_teleop/**/__pycache__/
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
 **/__pycache__/
 **/*.pyc
 .vscode/

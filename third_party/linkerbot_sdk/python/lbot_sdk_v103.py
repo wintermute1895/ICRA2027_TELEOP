@@ -70,7 +70,7 @@ ERROR_CALLBACK = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_char_p)
 def default_library(repo_root: Path) -> Path:
     machine = platform.machine().lower()
     arch = "linux_arm64" if machine in ("aarch64", "arm64") else "linux_x64"
-    return repo_root / "ros2_ws" / "src" / "lbot_driver" / "lib" / arch / "liblbot_api.so"
+    return repo_root / "third_party" / "linkerbot_sdk" / "lib" / arch / "liblbot_api.so"
 
 
 @dataclass(frozen=True)

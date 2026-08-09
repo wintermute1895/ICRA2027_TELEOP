@@ -18,8 +18,8 @@ DexCatch 是独立的离线质量评估项目。它可以读取本项目导出�
 
 - `ros2_ws/`：ROS2 Humble 驱动、接口、LinkerTA 节点和遥操桥接；
 - `assets/robots/linker_platform/combined_robot/`：双臂和手部 URDF/mesh 资产；
-- `tools/vendor_sdk/lbot_sdk_v103.py`：仅供方向检查工具使用的官方 SDK 1.0.3 handle ABI wrapper；
-- `ros2_ws/src/lbot_driver/lib/`：ROS2 驱动使用的官方 SDK 动态库；
+- `third_party/linkerbot_sdk/python/lbot_sdk_v103.py`：仅供方向检查工具使用的官方 SDK 1.0.3 handle ABI wrapper；
+- `third_party/linkerbot_sdk/lib/`：官方 SDK 动态库；ROS2 驱动只通过 CMake 适配它；
 - `scripts/`：构建、启动、进程检查和 RunEvidence 采集入口；
 - `tools/`：方向检查、时间同步诊断和 episode 导出工具。
 

@@ -35,6 +35,7 @@ RUN source /opt/ros/humble/setup.bash && \
       --install-base ros2_ws/install
 
 COPY assets/robots/linker_platform assets/robots/linker_platform
+COPY third_party/linkerbot_sdk third_party/linkerbot_sdk
 COPY scripts scripts
 COPY tools tools
 COPY docs docs

@@ -23,8 +23,17 @@ include_directories(
   ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
 )
 
-# library directory
-link_directories(${PROJECT_SOURCE_DIR}/lib)
+# Vendor SDK is a third-party dependency, not part of the ROS2 package source.
+set(LINKERBOT_SDK_ROOT "${PROJECT_SOURCE_DIR}/../../../third_party/linkerbot_sdk")
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+  set(LINKERBOT_SDK_LIB_DIR "${LINKERBOT_SDK_ROOT}/lib/linux_arm64")
+else()
+  set(LINKERBOT_SDK_LIB_DIR "${LINKERBOT_SDK_ROOT}/lib/linux_x64")
+endif()
+if(NOT EXISTS "${LINKERBOT_SDK_LIB_DIR}/liblbot_api.so")
+  message(FATAL_ERROR "LinkerBot SDK not found at ${LINKERBOT_SDK_LIB_DIR}")
+endif()
+link_directories("${LINKERBOT_SDK_LIB_DIR}")
 
 # executable
 add_executable(lbot_driver src/lbot_driver.cpp)
@@ -57,8 +66,8 @@ install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
 )
 
-# install .so libraries
-install(DIRECTORY lib/
+# install the selected vendor SDK libraries into the package runtime lib path
+install(DIRECTORY "${LINKERBOT_SDK_LIB_DIR}/"
   DESTINATION lib
 )
 

@@ -45,7 +45,7 @@ def check(mode: str) -> dict:
     interface_source = ROOT / "ros2_ws/src/lbot_arm_interfaces/package.xml"
     add("source:lbot_arm_interfaces", interface_source.is_file(), str(interface_source))
 
-    sdk_candidates = list((ROOT / "ros2_ws/src/lbot_driver/lib").glob("**/liblbot_api.so*"))
+    sdk_candidates = list((ROOT / "third_party/linkerbot_sdk/lib").glob("**/liblbot_api.so*"))
     add("sdk:liblbot_api", bool(sdk_candidates), ", ".join(map(str, sdk_candidates[:3])) or "not found")
     ok, detail = command(["ip", "link", "show", "can0"]) if shutil.which("ip") else (False, "ip command not found")
     add("network:can0", ok, detail.splitlines()[0] if detail else "not present", required=False)

@@ -13,7 +13,7 @@ ros2_ws/                      ROS2 workspace、设备 adapter 和控制包
 assets/robots/linker_platform/ URDF、mesh 和关节命名资产
 config/experiments/           A/B 条件和控制 profile
 scripts/                      构建、启动、数采和预检入口
-tools/vendor_sdk/             仅供方向检查使用的官方 SDK ABI wrapper
+third_party/linkerbot_sdk/    官方 SDK 动态库和 Python ABI wrapper
 docs/                         架构、数据契约、实验和安全说明
 ```
 

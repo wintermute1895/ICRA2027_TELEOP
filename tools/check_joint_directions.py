@@ -18,7 +18,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 ROBOT_ASSETS = ROOT / "assets/robots/linker_platform"
-sys.path.insert(0, str(ROOT / "tools/vendor_sdk"))
+sys.path.insert(0, str(ROOT / "third_party/linkerbot_sdk/python"))
 from lbot_sdk_v103 import LbotSdk103, default_library
 
 DEFAULT_URDF = ROBOT_ASSETS / "combined_robot/robot.urdf"
