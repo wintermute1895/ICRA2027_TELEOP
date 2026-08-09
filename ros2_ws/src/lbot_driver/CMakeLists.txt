@@ -17,12 +17,6 @@ find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(lbot_arm_interfaces REQUIRED)
 
-# include directories
-include_directories(
-  ${PROJECT_SOURCE_DIR}/include
-  ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
-)
-
 # Vendor SDK is a third-party dependency, not part of the ROS2 package source.
 set(LINKERBOT_SDK_ROOT "${PROJECT_SOURCE_DIR}/../../../third_party/linkerbot_sdk")
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
@@ -34,6 +28,13 @@ if(NOT EXISTS "${LINKERBOT_SDK_LIB_DIR}/liblbot_api.so")
   message(FATAL_ERROR "LinkerBot SDK not found at ${LINKERBOT_SDK_LIB_DIR}")
 endif()
 link_directories("${LINKERBOT_SDK_LIB_DIR}")
+
+# ROS2 driver headers plus official SDK headers.
+include_directories(
+  ${PROJECT_SOURCE_DIR}/include
+  ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}
+  "${LINKERBOT_SDK_ROOT}/include"
+)
 
 # executable
 add_executable(lbot_driver src/lbot_driver.cpp)
