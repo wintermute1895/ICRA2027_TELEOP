@@ -6,6 +6,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=humble
 ENV WORKSPACE=/opt/icra2027_teleop
 
+ARG BUILD_HTTP_PROXY
+ARG BUILD_HTTPS_PROXY
+ARG BUILD_ALL_PROXY
+ARG BUILD_NO_PROXY
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
@@ -35,7 +40,12 @@ COPY tools tools
 COPY docs docs
 COPY requirements-runevidence.txt requirements-runevidence.txt
 
-RUN --network=host python3 -m pip install --no-cache-dir \
+RUN --network=host \
+    HTTP_PROXY="${BUILD_HTTP_PROXY}" \
+    HTTPS_PROXY="${BUILD_HTTPS_PROXY}" \
+    ALL_PROXY="${BUILD_ALL_PROXY}" \
+    NO_PROXY="${BUILD_NO_PROXY}" \
+    python3 -m pip install --no-cache-dir \
     -r requirements-runevidence.txt
 
 COPY docker/entrypoint.sh /usr/local/bin/icra2027-entrypoint
