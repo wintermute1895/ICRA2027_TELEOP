@@ -6,6 +6,7 @@ from sensor_msgs.msg import JointState
 import math
 import sys
 import os
+import argparse
 
 try:
     from lbot.lbot_robot import LbotRobot, LbotArm
@@ -87,7 +88,16 @@ class TeleopNode(Node):
         super().destroy_node()
 
 def main(args=None):
-    rclpy.init(args=args)
+    parser = argparse.ArgumentParser(description="Legacy direct-to-SDK teleoperation bridge")
+    parser.add_argument("--real", action="store_true")
+    parser.add_argument("--confirm", default="")
+    safety_args, ros_args = parser.parse_known_args(args)
+    if not safety_args.real or safety_args.confirm != "I_UNDERSTAND_REAL_ROBOT":
+        raise SystemExit(
+            "Refusing to connect or enable the robot. Use the maintained ROS2 entrypoint, "
+            "or explicitly pass --real --confirm=I_UNDERSTAND_REAL_ROBOT."
+        )
+    rclpy.init(args=ros_args)
     node = TeleopNode()
     try:
         rclpy.spin(node)

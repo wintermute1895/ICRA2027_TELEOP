@@ -28,6 +28,14 @@ teleop_bridge_node:
     # 跟随模式
     follow_mode: true
 
+    # One-Euro filter is applied in radians after joint-index mapping and
+    # before the verified left/right direction signs. These values match the
+    # MuJoCo validation path.
+    enable_one_euro_filter: true
+    one_euro_min_cutoff_hz: 1.5
+    one_euro_beta: 0.08
+    one_euro_derivative_cutoff_hz: 1.0
+
     # 机器人类型: LS 或 RS
     robot_type: "RS"
 
@@ -50,6 +58,12 @@ teleop_bridge_node:
     # 默认: [0,1,2,3,4,5,6] 表示一一对应
     left_joint_mapping: [0, 1, 2, 3, 4, 5, 6]
     right_joint_mapping: [0, 1, 2, 3, 4, 5, 6]
+
+    # 主臂正方向 -> 从臂控制器正方向
+    # 顺序为 J1..J7；这是中间桥接层映射，不修改底层 SDK/控制器数值定义。
+    # 以原 RS 全反映射为基线，根据真机方向测试结果对反向关节再次取反。
+    left_negation: [1, 1, 1, -1, 1, -1, 1]
+    right_negation: [1, 1, 1, 1, 1, -1, 1]
 
     #========================================
     # 安全限位使能

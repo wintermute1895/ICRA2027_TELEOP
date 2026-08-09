@@ -19,6 +19,54 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <vector>
+
+class OneEuroFilter
+{
+public:
+    void configure(double min_cutoff_hz, double beta, double derivative_cutoff_hz)
+    {
+        min_cutoff_hz_ = min_cutoff_hz;
+        beta_ = beta;
+        derivative_cutoff_hz_ = derivative_cutoff_hz;
+        reset();
+    }
+
+    void reset() { initialized_ = false; x_hat_ = 0.0; dx_hat_ = 0.0; }
+
+    double update(double value, double dt_s)
+    {
+        if (!std::isfinite(value)) return value;
+        dt_s = std::clamp(dt_s, 1e-4, 0.2);
+        if (!initialized_) {
+            initialized_ = true;
+            x_hat_ = value;
+            dx_hat_ = 0.0;
+            return value;
+        }
+        const double raw_derivative = (value - x_hat_) / dt_s;
+        const double derivative_alpha = alpha(derivative_cutoff_hz_, dt_s);
+        dx_hat_ = derivative_alpha * raw_derivative + (1.0 - derivative_alpha) * dx_hat_;
+        const double cutoff = min_cutoff_hz_ + beta_ * std::abs(dx_hat_);
+        const double value_alpha = alpha(cutoff, dt_s);
+        x_hat_ = value_alpha * value + (1.0 - value_alpha) * x_hat_;
+        return x_hat_;
+    }
+
+private:
+    static double alpha(double cutoff_hz, double dt_s)
+    {
+        const double tau = 1.0 / (2.0 * M_PI * std::max(cutoff_hz, 1e-6));
+        return 1.0 / (1.0 + tau / dt_s);
+    }
+
+    double min_cutoff_hz_{1.5};
+    double beta_{0.08};
+    double derivative_cutoff_hz_{1.0};
+    bool initialized_{false};
+    double x_hat_{0.0};
+    double dx_hat_{0.0};
+};
 
 class TeleopBridgeNode : public rclcpp::Node
 {
@@ -62,6 +110,13 @@ public:
             master_right_topic_, 10,
             std::bind(&TeleopBridgeNode::right_joint_callback, this, std::placeholders::_1));
 
+        left_raw_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/left/master_joint_raw", 10);
+        left_filtered_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/left/master_joint_filtered", 10);
+        left_mapped_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/left/mapped_joint_command", 10);
+        right_raw_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/right/master_joint_raw", 10);
+        right_filtered_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/right/master_joint_filtered", 10);
+        right_mapped_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/right/mapped_joint_command", 10);
+
         print_config();
         
         RCLCPP_INFO(this->get_logger(), "Teleop Bridge Node initialized successfully");
@@ -84,6 +139,10 @@ private:
         this->declare_parameter<std::string>("robot_type", "LS");
         this->declare_parameter<std::vector<int64_t>>(
             "negation", {1, 1, 1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, -1});
+        // Explicit per-arm master-to-slave direction map. Empty means use the
+        // legacy 14-element negation parameter or the robot-type fallback.
+        this->declare_parameter<std::vector<int64_t>>("left_negation", std::vector<int64_t>{});
+        this->declare_parameter<std::vector<int64_t>>("right_negation", std::vector<int64_t>{});
         
         // 首次移动配置
         this->declare_parameter<double>("first_move_speed", 0.5);
@@ -110,6 +169,14 @@ private:
             {3.14, 2.0, 3.14, 2.0, 3.14, 2.0, 3.14});
         
         this->declare_parameter<bool>("enable_joint_limits", false);
+        // Connection and motion permission are separate. The launch file keeps
+        // this false unless the operator explicitly arms a real-robot run.
+        this->declare_parameter<bool>("armed", false);
+
+        this->declare_parameter<bool>("enable_one_euro_filter", true);
+        this->declare_parameter<double>("one_euro_min_cutoff_hz", 1.5);
+        this->declare_parameter<double>("one_euro_beta", 0.08);
+        this->declare_parameter<double>("one_euro_derivative_cutoff_hz", 1.0);
     }
 
     void load_parameters()
@@ -154,6 +221,20 @@ private:
         right_joint_mapping_.assign(right_mapping.begin(), right_mapping.end());
         
         enable_joint_limits_ = this->get_parameter("enable_joint_limits").as_bool();
+        armed_ = this->get_parameter("armed").as_bool();
+        enable_one_euro_filter_ = this->get_parameter("enable_one_euro_filter").as_bool();
+        one_euro_min_cutoff_hz_ = this->get_parameter("one_euro_min_cutoff_hz").as_double();
+        one_euro_beta_ = this->get_parameter("one_euro_beta").as_double();
+        one_euro_derivative_cutoff_hz_ = this->get_parameter("one_euro_derivative_cutoff_hz").as_double();
+        if (one_euro_min_cutoff_hz_ <= 0.0 || one_euro_beta_ < 0.0 || one_euro_derivative_cutoff_hz_ <= 0.0) {
+            throw std::runtime_error("invalid One Euro parameters");
+        }
+        for (auto& filter : left_filters_) {
+            filter.configure(one_euro_min_cutoff_hz_, one_euro_beta_, one_euro_derivative_cutoff_hz_);
+        }
+        for (auto& filter : right_filters_) {
+            filter.configure(one_euro_min_cutoff_hz_, one_euro_beta_, one_euro_derivative_cutoff_hz_);
+        }
 
         // 先根据 robot_type 设置默认值
         if (robot_type_ == "LS") {
@@ -172,6 +253,22 @@ private:
             right_negation_ = {-1, -1, -1, -1, -1, -1, -1};
         } else {
             RCLCPP_WARN(this->get_logger(), "Unknown robot_type '%s', using configured limits/negation", robot_type_.c_str());
+        }
+
+        // Explicit per-arm parameters are the final authority. This prevents
+        // robot_type defaults from silently overriding experimentally verified
+        // master-to-slave directions.
+        const auto configured_left_negation = this->get_parameter("left_negation").as_integer_array();
+        const auto configured_right_negation = this->get_parameter("right_negation").as_integer_array();
+        if (configured_left_negation.size() == 7) {
+            left_negation_.assign(configured_left_negation.begin(), configured_left_negation.end());
+        } else if (!configured_left_negation.empty()) {
+            RCLCPP_ERROR(this->get_logger(), "left_negation must contain exactly 7 entries; keeping fallback");
+        }
+        if (configured_right_negation.size() == 7) {
+            right_negation_.assign(configured_right_negation.begin(), configured_right_negation.end());
+        } else if (!configured_right_negation.empty()) {
+            RCLCPP_ERROR(this->get_logger(), "right_negation must contain exactly 7 entries; keeping fallback");
         }
 
         // 再用配置文件中的值覆盖（如果用户在配置文件中显式设置了这些参数）
@@ -206,53 +303,101 @@ private:
         RCLCPP_INFO(this->get_logger(), "Left arm enabled:   %s", enable_left_arm_ ? "true" : "false");
         RCLCPP_INFO(this->get_logger(), "Right arm enabled:  %s", enable_right_arm_ ? "true" : "false");
         RCLCPP_INFO(this->get_logger(), "Joint limits:       %s", enable_joint_limits_ ? "enabled" : "disabled");
+        RCLCPP_INFO(this->get_logger(), "Motion armed:       %s", armed_ ? "YES" : "NO");
+        RCLCPP_INFO(this->get_logger(), "One Euro filter:    %s (min=%.3fHz beta=%.3f d=%.3fHz)",
+                    enable_one_euro_filter_ ? "enabled" : "disabled",
+                    one_euro_min_cutoff_hz_, one_euro_beta_, one_euro_derivative_cutoff_hz_);
         RCLCPP_INFO(this->get_logger(), "First move speed:   %.2f", first_move_speed_);
         RCLCPP_INFO(this->get_logger(), "First move acce:    %.2f", first_move_acce_);
         RCLCPP_INFO(this->get_logger(), "=================================================");
     }
 
     // 处理关节数据：映射、转换、限位
-    std::vector<float> process_joints(
+    bool process_joints(
+        const sensor_msgs::msg::JointState& msg,
         const std::vector<double>& input_joints,
         const std::vector<int>& mapping,
         const std::vector<int>& negation,
         const std::vector<double>& limits_min,
-        const std::vector<double>& limits_max)
+        const std::vector<double>& limits_max,
+        std::vector<OneEuroFilter>& filters,
+        rclcpp::Time& previous_stamp,
+        std::vector<double>& raw_rad,
+        std::vector<double>& filtered_rad,
+        std::vector<float>& output_joints)
     {
-        std::vector<float> output_joints;
+        raw_rad.clear();
+        filtered_rad.clear();
+        output_joints.clear();
         output_joints.reserve(mapping.size());
+        raw_rad.reserve(mapping.size());
+        filtered_rad.reserve(mapping.size());
+        bool safe = true;
+        rclcpp::Time stamp(msg.header.stamp);
+        if (stamp.nanoseconds() <= 0) stamp = this->get_clock()->now();
+        double dt_s = previous_stamp.nanoseconds() > 0
+            ? (stamp - previous_stamp).seconds() : 1.0 / 60.0;
+        if (dt_s <= 0.0 || dt_s > 0.2) {
+            for (auto& filter : filters) filter.reset();
+            dt_s = 1.0 / 60.0;
+        }
+        previous_stamp = stamp;
 
         for (size_t i = 0; i < mapping.size(); ++i) {
             int src_idx = mapping[i];
             
             // 检查源索引有效性
             if (src_idx < 0 || src_idx >= static_cast<int>(input_joints.size())) {
-                output_joints.push_back(0.0f);
-                continue;
+                RCLCPP_ERROR(this->get_logger(), "Invalid joint mapping index %d", src_idx);
+                return false;
             }
 
             double value = input_joints[src_idx];
-
-            // 方向修正
-            if (i < negation.size()) {
-                value *= static_cast<double>(negation[i]);
+            if (!std::isfinite(value)) {
+                RCLCPP_ERROR(this->get_logger(), "Non-finite master joint value at index %d", src_idx);
+                return false;
             }
 
-            // 角度转弧度 (主臂发送角度，从臂接收弧度)
-            value *= DEG_TO_RAD;
+            // LinkerTA publishes degrees. Filter the canonical source value in
+            // radians before applying the experimentally verified direction map.
+            const double source_rad = value * DEG_TO_RAD;
+            const double filtered = enable_one_euro_filter_ ? filters[i].update(source_rad, dt_s) : source_rad;
+            raw_rad.push_back(source_rad);
+            filtered_rad.push_back(filtered);
+
+            value = filtered;
+            if (i < negation.size()) value *= static_cast<double>(negation[i]);
 
             // 缩放
             value *= scale_factor_;
 
             // 安全限位
             if (enable_joint_limits_ && i < limits_min.size() && i < limits_max.size()) {
-                value = std::clamp(value, limits_min[i], limits_max[i]);
+                if (value < limits_min[i] || value > limits_max[i]) {
+                    RCLCPP_ERROR_THROTTLE(
+                        this->get_logger(), *this->get_clock(), 1000,
+                        "Joint %zu command %.4f outside [%.4f, %.4f]; rejecting frame",
+                        i, value, limits_min[i], limits_max[i]);
+                    safe = false;
+                }
             }
 
             output_joints.push_back(static_cast<float>(value));
         }
 
-        return output_joints;
+        return safe && output_joints.size() == 7;
+    }
+
+    sensor_msgs::msg::JointState observation(const sensor_msgs::msg::JointState& source,
+                                             const std::vector<double>& values,
+                                             const std::string& arm) const
+    {
+        sensor_msgs::msg::JointState output;
+        output.header = source.header;
+        output.name.resize(values.size());
+        for (size_t i = 0; i < values.size(); ++i) output.name[i] = arm + "_joint_" + std::to_string(i + 1);
+        output.position = values;
+        return output;
     }
 
     // 调用 MoveJ 服务进行首次平滑移动（异步）
@@ -296,8 +441,15 @@ private:
     {
         if (!enable_left_arm_ || msg->position.empty()) return;
 
-        auto joints = process_joints(msg->position, left_joint_mapping_, left_negation_,
-                                     left_joint_limits_min_, left_joint_limits_max_);
+        std::vector<double> raw_rad, filtered_rad;
+        std::vector<float> joints;
+        const bool safe = process_joints(*msg, msg->position, left_joint_mapping_, left_negation_,
+                                         left_joint_limits_min_, left_joint_limits_max_, left_filters_,
+                                         left_previous_stamp_, raw_rad, filtered_rad, joints);
+        left_raw_pub_->publish(observation(*msg, raw_rad, "left"));
+        left_filtered_pub_->publish(observation(*msg, filtered_rad, "left"));
+        left_mapped_pub_->publish(observation(*msg, std::vector<double>(joints.begin(), joints.end()), "left"));
+        if (!safe || !armed_) return;
 
         // 向所有从臂发送
         for (const auto& ns : slave_namespaces_) {
@@ -328,8 +480,15 @@ private:
     {
         if (!enable_right_arm_ || msg->position.empty()) return;
 
-        auto joints = process_joints(msg->position, right_joint_mapping_, right_negation_,
-                                     right_joint_limits_min_, right_joint_limits_max_);
+        std::vector<double> raw_rad, filtered_rad;
+        std::vector<float> joints;
+        const bool safe = process_joints(*msg, msg->position, right_joint_mapping_, right_negation_,
+                                         right_joint_limits_min_, right_joint_limits_max_, right_filters_,
+                                         right_previous_stamp_, raw_rad, filtered_rad, joints);
+        right_raw_pub_->publish(observation(*msg, raw_rad, "right"));
+        right_filtered_pub_->publish(observation(*msg, filtered_rad, "right"));
+        right_mapped_pub_->publish(observation(*msg, std::vector<double>(joints.begin(), joints.end()), "right"));
+        if (!safe || !armed_) return;
 
         // 向所有从臂发送
         for (const auto& ns : slave_namespaces_) {
@@ -388,10 +547,25 @@ private:
     std::vector<double> right_joint_limits_min_;
     std::vector<double> right_joint_limits_max_;
     bool enable_joint_limits_;
+    bool armed_;
+    bool enable_one_euro_filter_;
+    double one_euro_min_cutoff_hz_;
+    double one_euro_beta_;
+    double one_euro_derivative_cutoff_hz_;
+    std::vector<OneEuroFilter> left_filters_{7};
+    std::vector<OneEuroFilter> right_filters_{7};
+    rclcpp::Time left_previous_stamp_{0, 0, RCL_ROS_TIME};
+    rclcpp::Time right_previous_stamp_{0, 0, RCL_ROS_TIME};
 
     // 发布器 (每个从臂一个)
     std::map<std::string, rclcpp::Publisher<lbot_arm_interfaces::msg::FollowJoint>::SharedPtr> left_follow_pubs_;
     std::map<std::string, rclcpp::Publisher<lbot_arm_interfaces::msg::FollowJoint>::SharedPtr> right_follow_pubs_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr left_raw_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr left_filtered_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr left_mapped_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr right_raw_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr right_filtered_pub_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr right_mapped_pub_;
 
     // MoveJ 服务客户端 (每个从臂一个)
     std::map<std::string, rclcpp::Client<lbot_arm_interfaces::srv::MoveJ>::SharedPtr> left_movej_clients_;

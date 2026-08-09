@@ -106,6 +106,11 @@ public:
     // 线程安全的状态缓存
     std::mutex state_mutex_, conn_mutex_;
     lbot_full_state_t current_lbot_state_;
+    int64_t current_lbot_state_receipt_ns_{0};
+    bool left_controller_clock_initialized_{false};
+    bool right_controller_clock_initialized_{false};
+    int64_t left_controller_to_ros_offset_ns_{0};
+    int64_t right_controller_to_ros_offset_ns_{0};
     // 节点关闭状态变量
     std::atomic<bool> shutting_down_{false};
     // 单例类指针

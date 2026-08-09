@@ -2,13 +2,12 @@ import socket
 import json
 import time
 import math
+import argparse
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
-# === 配置 ===
-UDP_IP = "127.0.0.1"
-UDP_PORT = 5005
-FPS = 30
+# The receiver consumes MediaPipe's 21 points. Keep this schema identical to
+# vision_pose.py so mock and camera input are interchangeable.
 
 def get_rotation_matrix(t):
     # 模拟手腕旋转 (画圈圈)
@@ -54,10 +53,41 @@ def get_finger_trajectory(t):
         
     return fingers_rel
 
+def make_hand_keypoints(t):
+    """Return a plausible MediaPipe-style 21x3 hand in metres."""
+    wrist = np.array([0.0, 0.0, 0.0])
+    palm = np.array([
+        wrist,
+        [0.018, -0.020, 0.0], [0.040, -0.024, 0.0], [0.060, -0.018, 0.0],
+        [0.078, -0.005, 0.0],
+        [0.020, 0.018, 0.0], [0.045, 0.018, 0.0], [0.070, 0.018, 0.0],
+        [0.092, 0.018, 0.0],
+        [0.020, 0.050, 0.0], [0.047, 0.050, 0.0], [0.075, 0.050, 0.0],
+        [0.102, 0.050, 0.0],
+        [0.018, 0.078, 0.0], [0.043, 0.080, 0.0], [0.067, 0.078, 0.0],
+        [0.090, 0.075, 0.0],
+        [0.010, 0.103, 0.0], [0.032, 0.108, 0.0], [0.055, 0.105, 0.0],
+        [0.078, 0.100, 0.0],
+    ], dtype=float)
+    grip = (math.sin(t * 3.0) + 1.0) / 2.0
+    # Curl the finger joints toward the palm while preserving the 21-point
+    # indexing expected by the retargeter.
+    for tip_start in (8, 12, 16, 20):
+        palm[tip_start - 2:tip_start + 1, 0] -= 0.035 * grip
+        palm[tip_start - 2:tip_start + 1, 2] -= 0.050 * grip
+    palm[1:5, 0] -= 0.020 * grip
+    palm[1:5, 2] -= 0.035 * grip
+    rot = R.from_euler('xyz', [0.2 * math.cos(t), 0.6 * math.sin(t), 0.15 * math.sin(t * 0.7)]).as_matrix()
+    return (palm @ rot.T).tolist()
+
 def main():
+    parser = argparse.ArgumentParser(description="Send deterministic mock hand keypoints")
+    parser.add_argument("--host", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=5005)
+    parser.add_argument("--fps", type=float, default=30.0)
+    args = parser.parse_args()
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    print(f"📡 [Mock Client - Better Hand] 启动 -> {UDP_IP}:{UDP_PORT}")
-    print("   - 优化了手指轨迹：扇形张开 -> 掌心聚拢")
+    print(f"[Mock] sending 21-point hand -> {args.host}:{args.port} at {args.fps:g} Hz")
     
     start_time = time.time()
     shoulder_pos = [0.0, 0.0, 0.0]
@@ -75,21 +105,19 @@ def main():
             # 2. 手腕姿态
             rot_mat = get_rotation_matrix(t)
 
-            # 3. 手指数据 (新的函数)
-            fingers_data = get_finger_trajectory(t)
-
             packet = {
                 "valid": True,
                 "timestamp": time.time(),
                 "shoulder": shoulder_pos,
                 "wrist": wrist_pos,
                 "rotation": rot_mat,
-                "fingers_rel": fingers_data
+                "fingers_rel": get_finger_trajectory(t),
+                "hand_keypoints_21": make_hand_keypoints(t),
             }
             
-            sock.sendto(json.dumps(packet).encode(), (UDP_IP, UDP_PORT))
-            print(f"\rTime: {t:.1f}s | Grip: {'✊' if (math.sin(t*3)+1)/2 > 0.5 else '🖐️'}", end="")
-            time.sleep(1/FPS)
+            sock.sendto(json.dumps(packet).encode(), (args.host, args.port))
+            print(f"\rTime: {t:.1f}s | packets: {int(t * args.fps)}", end="", flush=True)
+            time.sleep(1 / max(args.fps, 1.0))
 
     except KeyboardInterrupt:
         print("\n停止发送。")

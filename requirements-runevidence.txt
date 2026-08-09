@@ -1,0 +1,3 @@
+# Shared experiment-evidence CLI for teleoperation and planning.
+# Install into the Python environment used by the recorder and offline planner.
+git+https://github.com/wintermute1895/RunEvidence.git@70825d120e3f0d7e362f3be26cba97ceb698d37a

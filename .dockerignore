@@ -1,0 +1,15 @@
+.git
+.gitignore
+evidence/
+arm_teleop/build/
+arm_teleop/install/
+arm_teleop/log/
+IROS_teleop/**/__pycache__/
+**/__pycache__/
+**/*.pyc
+.vscode/
+.docker-build/
+*.db3
+*.db3.zstd
+*.mp4
+*.bag

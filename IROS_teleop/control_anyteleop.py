@@ -6,6 +6,8 @@ import socket
 import json
 import time
 import os
+import argparse
+import logging
 from scipy.spatial.transform import Rotation as R
 
 try:
@@ -37,8 +39,9 @@ RETARGETING_CONFIG_PARAMS = {
 }
 
 # 4. 路径与关节定义
-HAND_URDF = "/home/ilex/Dev/IROS_teleop/config/l10/right/linkerhand_l10_right.urdf"
-HAND_PKG_DIR = "/home/ilex/Dev/IROS_teleop/config/l10/right"
+HERE = os.path.dirname(os.path.abspath(__file__))
+HAND_URDF = os.path.join(HERE, "config", "l10", "right", "linkerhand_l10_right.urdf")
+HAND_PKG_DIR = os.path.dirname(HAND_URDF)
 
 ROBOT_TIP_LINKS = ["thumb_distal", "index_distal", "middle_distal", "ring_distal", "pinky_distal"]
 # 对应 MediaPipe 的关键点索引: 拇指(4), 食指(8), 中指(12), 无名指(16), 小指(20)
@@ -54,18 +57,18 @@ ROBOT_PALM_LENGTH = 0.09
 OPERATOR2MANO_RIGHT = np.array([[0, 0, -1], [-1, 0, 0], [0, 1, 0]])
 
 class ThumbFixController:
-    def __init__(self):
+    def __init__(self, hand_urdf=HAND_URDF, udp_host="127.0.0.1", udp_port=5005, no_viewer=False):
         print(f"🚀 启动大拇指特调控制器...")
         print(f"🔧 大拇指修正旋转: {THUMB_ROTATION_EULER}")
         
         # 1. 加载模型
-        self.robot = pin.RobotWrapper.BuildFromURDF(HAND_URDF, package_dirs=[HAND_PKG_DIR])
+        self.robot = pin.RobotWrapper.BuildFromURDF(hand_urdf, package_dirs=[os.path.dirname(hand_urdf)])
         self.model, self.data = self.robot.model, self.robot.data
         
         # 2. 配置优化器
         config_dict = {
             "type": "position",
-            "urdf_path": HAND_URDF,
+            "urdf_path": hand_urdf,
             "target_joint_names": TARGET_JOINT_NAMES,
             "target_link_names": ROBOT_TIP_LINKS,
             "target_link_human_indices": np.arange(5),
@@ -81,17 +84,20 @@ class ThumbFixController:
         self.thumb_rot_mat = R.from_euler('xyz', THUMB_ROTATION_EULER, degrees=True).as_matrix()
 
         # 4. 可视化
-        self.viz = MeshcatVisualizer(self.model, self.robot.collision_model, self.robot.visual_model)
-        self.viz.initViewer(open=True)
-        self.viz.loadViewerModel()
+        self.viz = None
+        if not no_viewer:
+            self.viz = MeshcatVisualizer(self.model, self.robot.collision_model, self.robot.visual_model)
+            self.viz.initViewer(open=True)
+            self.viz.loadViewerModel()
         
         # 调试球体
         colors = [0xff0000, 0x00ff00, 0x00ff00, 0x00ff00, 0x00ff00] # 拇指红球，其他绿球
-        for i in range(5):
-            self.viz.viewer[f"target_{i}"].set_object(g.Sphere(0.01), g.MeshLambertMaterial(color=colors[i]))
+        if self.viz:
+            for i in range(5):
+                self.viz.viewer[f"target_{i}"].set_object(g.Sphere(0.01), g.MeshLambertMaterial(color=colors[i]))
         
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.bind(("127.0.0.1", 5005))
+        self.sock.bind((udp_host, udp_port))
         self.sock.setblocking(False)
 
     def _inject_mimic_adaptor(self):
@@ -124,8 +130,15 @@ class ThumbFixController:
         while True:
             try:
                 data, _ = self.sock.recvfrom(65535)
-                kp = np.array(json.loads(data.decode())["hand_keypoints_21"])
-            except: time.sleep(0.001); continue
+                packet = json.loads(data.decode())
+                kp = np.asarray(packet["hand_keypoints_21"], dtype=float)
+                if kp.shape != (21, 3) or not np.isfinite(kp).all():
+                    raise ValueError(f"hand_keypoints_21 must be finite shape (21, 3), got {kp.shape}")
+            except BlockingIOError:
+                time.sleep(0.001); continue
+            except (json.JSONDecodeError, KeyError, ValueError) as exc:
+                logging.warning("invalid vision packet: %s", exc)
+                continue
 
             # 1. 镜像处理
             if MIRROR_LEFT_TO_RIGHT:
@@ -161,13 +174,23 @@ class ThumbFixController:
             # 5. 重定向解算
             try:
                 retarget_qpos = self.retargeting.retarget(target)
-                self.viz.display(retarget_qpos)
+                if self.viz:
+                    self.viz.display(retarget_qpos)
                 
                 # 可视化目标点
-                for i in range(5):
-                    self.viz.viewer[f"target_{i}"].set_transform(pin.SE3(np.eye(3), target[i]).homogeneous)
+                if self.viz:
+                    for i in range(5):
+                        self.viz.viewer[f"target_{i}"].set_transform(pin.SE3(np.eye(3), target[i]).homogeneous)
             except Exception as e:
-                pass
+                logging.exception("retargeting failed: %s", e)
 
 if __name__ == "__main__":
-    ThumbFixController().run()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--hand-urdf", default=HAND_URDF)
+    parser.add_argument("--udp-host", default="127.0.0.1")
+    parser.add_argument("--udp-port", type=int, default=5005)
+    parser.add_argument("--no-viewer", action="store_true")
+    args = parser.parse_args()
+    if not os.path.isfile(args.hand_urdf):
+        raise SystemExit(f"hand URDF not found: {args.hand_urdf}")
+    ThumbFixController(args.hand_urdf, args.udp_host, args.udp_port, args.no_viewer).run()

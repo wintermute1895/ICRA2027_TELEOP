@@ -1,5 +1,7 @@
 # LBot ROS2 机械臂控制系统
 
+> 远程部署和安全启动请先阅读仓库根目录的 `TELEOP_QUICKSTART.md` 和 `docs/HANDOFF_REMOTE_MACHINE.md`。不要把 Conda 环境写入 ROS2 C++ 构建过程，也不要直接启动真机遥操。
+
 > **版本: v1.0.0**
 
 本仓库包含 Linker 机械臂的 ROS2 控制系统，支持双臂驱动、遥操作控制和示教功能。
@@ -41,11 +43,7 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-建议将此命令添加到 `~/.bashrc`：
-
-```bash
-echo "source ~/ros2/install/setup.bash" >> ~/.bashrc
-```
+不要把工作区 source 固定写入 `~/.bashrc`；使用仓库的 `scripts/build_ros2.sh` 和 `scripts/run_ros2_teleop.sh` 管理环境，避免 ROS2 与 Conda 库冲突。
 
 ## 快速开始
 
@@ -55,8 +53,10 @@ echo "source ~/ros2/install/setup.bash" >> ~/.bashrc
 
 ```bash
 # 一键启动遥操作（驱动 + 遥操臂 + 桥接）
-ros2 launch lbot_teleop teleop.launch.py
+./scripts/run_ros2_teleop.sh
 ```
+
+上面的命令只做预检。真机运行必须使用现场安全确认参数，详见根目录 handoff。
 
 ### 仅启动机械臂驱动
 
@@ -117,5 +117,4 @@ A: 检查：
 1. CAN 设备是否正确连接
 2. 运行 `ip link show` 确认 CAN 接口存在
 3. 确保有足够权限访问 CAN 设备
-
 
