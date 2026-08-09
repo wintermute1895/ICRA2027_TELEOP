@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import importlib.util
 import json
 import platform
 import shutil
@@ -14,7 +13,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 ROS_PACKAGES = ("rclcpp", "rclpy", "launch", "launch_ros", "sensor_msgs")
-PY_MODULES = ("numpy", "scipy", "pinocchio", "pink", "meshcat", "dex_retargeting")
 
 
 def command(args: list[str]) -> tuple[bool, str]:
@@ -35,11 +33,6 @@ def check(mode: str) -> dict:
         for package in ROS_PACKAGES:
             ok, detail = command(["ros2", "pkg", "prefix", package]) if shutil.which("ros2") else (False, "ros2 not found")
             add(f"ros2:{package}", ok, detail or "available")
-    if mode in ("all", "python"):
-        for module in PY_MODULES:
-            ok = importlib.util.find_spec(module) is not None
-            add(f"python:{module}", ok, "importable" if ok else "missing")
-
     urdf = ROOT / "IROS_teleop/config/combined_robot/robot.urdf"
     add("urdf:combined_robot", urdf.is_file(), str(urdf))
     try:
@@ -67,7 +60,7 @@ def check(mode: str) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Read-only teleoperation environment preflight")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
-    parser.add_argument("--mode", choices=("all", "ros2", "python"), default="all")
+    parser.add_argument("--mode", choices=("all", "ros2"), default="all")
     args = parser.parse_args()
     result = check(args.mode)
     if args.json:

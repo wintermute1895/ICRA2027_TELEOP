@@ -94,7 +94,6 @@ payload = {
         "robot_joint_state_position": "rad (ROS2 lbot_driver state topic)",
         "robot_joint_state_velocity": "rad/s",
         "master_control_position": "source-defined; verify LinkerTA publisher",
-        "legacy_python_bridge_input": "degrees (legacy script only; not used by this recorder)",
     },
     "hardware_commands_enabled": hardware_commands_enabled,
     "motion_commands_published": hardware_commands_enabled,

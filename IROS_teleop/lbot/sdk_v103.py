@@ -1,8 +1,8 @@
 """Minimal ctypes binding for the official LBot SDK 1.0.3 handle ABI.
 
-Only the calls required by the joint-direction checker are exposed. This file
-must not be mixed with the bundled legacy 1.0.1 Python wrapper, whose functions
-do not take a handle.
+Only the calls required by the joint-direction checker are exposed. This is a
+diagnostic ABI wrapper, not a runtime teleoperation backend; runtime control
+uses the ROS2 C++ driver.
 """
 from __future__ import annotations
 

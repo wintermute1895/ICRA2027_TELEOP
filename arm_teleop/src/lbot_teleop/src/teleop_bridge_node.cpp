@@ -140,7 +140,7 @@ private:
         this->declare_parameter<std::vector<int64_t>>(
             "negation", {1, 1, 1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, -1});
         // Explicit per-arm master-to-slave direction map. Empty means use the
-        // legacy 14-element negation parameter or the robot-type fallback.
+        // compatibility 14-element negation parameter or the robot-type fallback.
         this->declare_parameter<std::vector<int64_t>>("left_negation", std::vector<int64_t>{});
         this->declare_parameter<std::vector<int64_t>>("right_negation", std::vector<int64_t>{});
         

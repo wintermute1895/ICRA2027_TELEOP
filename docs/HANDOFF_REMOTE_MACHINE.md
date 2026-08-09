@@ -1,66 +1,57 @@
 # ICRA2027_TELEOP 远程电脑交接文档
 
-更新时间：2026-08-07
+更新时间：2026-08-09
 
 ## 项目边界
 
-这是 VIST/ICRA 2027 的 ROS2 主从遥操项目：LinkerTA 主臂发布 ROS2 `JointState`，桥接节点转换关节顺序/方向后，由 LK73 驱动调用官方 SDK 的 `joint_follow`。它不是 DexCatch 抓取项目，不负责抓取目标检测、Pink 抓取规划或 `move_joint` 计划。
+这是 VIST/ICRA 2027 面向精密装配的 ROS2 主从遥操与多模态数采项目：LinkerTA
+发布 ROS2 `JointState`，桥接节点完成关节顺序、方向、滤波和安全检查，再由 LK73
+驱动调用官方 SDK 的 `joint_follow`。
 
-```text
-仓库：https://github.com/wintermute1895/ICRA2027_TELEOP.git
-分支：ldk
-```
+DexCatch 是独立的离线质量评估项目。它可以读取本项目导出的 episode，计算 FK/IK、
+关节限位、奇异性、轨迹连续性和数据质量，但不能接入本项目实时控制，也不应成为
+真机遥操的运行时依赖。
 
-## 仓库内资产
+仓库：`https://github.com/wintermute1895/ICRA2027_TELEOP.git`
 
-- `arm_teleop/`：ROS2 Humble C++ 驱动、接口、LinkerTA 和遥操桥接；
-- `IROS_teleop/`：Python 视觉/手部重定向/Pinocchio/Pink/MeshCat 原型；
-- `arm_teleop/src/lbot_driver/lib/`：官方 SDK 1.0.3 C/C++ 动态库；
-- `IROS_teleop/lbot/libs/`：历史 1.0.1 Python ABI，仅用于旧代码，不能和 1.0.3 wrapper 混用；
-- `IROS_teleop/config/combined_robot/`：完整双臂 + 手 URDF 和 meshes；
-- `tools/check_joint_directions.py`：直接按官方 1.0.3 handle ABI 做关节方向检查。
+## 仓库资产
 
-不要从另一台机器拷贝软件、SDK、URDF 或 STL。它们已经跟踪在 Git 中。远程 AI 必须记录 `git rev-parse HEAD`、SDK 动态库路径和 URDF SHA256。
+- `arm_teleop/`：ROS2 Humble 驱动、接口、LinkerTA 节点和遥操桥接；
+- `IROS_teleop/config/combined_robot/`：双臂和手部 URDF/mesh 资产；
+- `IROS_teleop/lbot/sdk_v103.py`：仅供方向检查工具使用的官方 SDK 1.0.3 handle ABI wrapper；
+- `arm_teleop/src/lbot_driver/lib/`：ROS2 驱动使用的官方 SDK 动态库；
+- `scripts/`：构建、启动、进程检查和 RunEvidence 采集入口；
+- `tools/`：方向检查、时间同步诊断和 episode 导出工具。
 
-## ROS2/Conda 隔离
+历史 Python 手势遥操、旧版 1.0.1 Python SDK 直连和 AnyTeleop 原型已经移除，不能
+再作为实验入口。
 
-ROS2 C++ 节点使用系统 ROS2 Humble；Python 视觉和 MeshCat 使用 Conda `mpc_env`。不要把 Conda 环境写入 ROS2 C++ 构建过程，也不要依赖 `.bashrc` 自动 source 顺序。
+## 环境隔离与构建
+
+ROS2 C++ 节点必须使用系统 ROS2 Humble，不要在 Conda 环境中构建：
 
 ```bash
-git clone --branch ldk https://github.com/wintermute1895/ICRA2027_TELEOP.git
+git clone https://github.com/wintermute1895/ICRA2027_TELEOP.git
 cd ICRA2027_TELEOP
-
-# 系统 ROS2 构建
 ./scripts/build_ros2.sh
-
-# Python 环境
-conda env create -f IROS_teleop/environment.yml
+source arm_teleop/install/setup.bash
 ```
 
-如果已有 `mpc_env`，不要覆盖它，先执行环境检查：
+执行环境预检：
 
 ```bash
 python3 scripts/check_teleop_environment.py --mode ros2
-conda run -n mpc_env python scripts/check_teleop_environment.py --mode python
 ```
 
-## 本地 mock 验证
+## 关节方向检查
+
+先离线查看 URDF 和方向标记：
 
 ```bash
-./scripts/run_mock_teleop.sh --headless
+./scripts/run_joint_direction_check.sh --headless
 ```
 
-这个闭环只使用 21 点 mock hand 数据、手部 URDF 和重定向器，不连接机器人、不启用机械臂。需要 MeshCat 时去掉 `--headless`。
-
-## 关节方向验证
-
-先离线预演 14 个关节：
-
-```bash
-./scripts/run_joint_direction_check.sh
-```
-
-真机方向测试必须在现场有物理急停安全员后执行：
+真机测试必须有现场安全员保持物理急停可达：
 
 ```bash
 ./scripts/run_joint_direction_check.sh \
@@ -68,36 +59,77 @@ conda run -n mpc_env python scripts/check_teleop_environment.py --mode python
   --confirm=MOVE_2_DEG_WITH_ESTOP_READY
 ```
 
-工具按 `L1,R1,L2,R2,...` 交替测试，默认每次正向点动 2°，速度和加速度均为 `0.05`。每次点动后回读 SDK 状态，并由现场人员判断真机和 MeshCat 是否同向。报告写入 `reports/joint_direction_report.json`，其中 `sdk_to_urdf_sign` 只表示 SDK 与 URDF 的关系，不能直接当作主从 `negation` 配置。
-
-官方 SDK 1.0.3 没有读取当前使能状态的接口，因此工具会显式发送 enable=true 并检查返回值；它不会自动解除急停，也不会在退出时自动掉使能。
+工具逐关节低速点动并回读 SDK 状态。官方 SDK 1.0.3 没有读取当前使能状态的接口，
+工具只能显式调用 enable 并检查返回值，不能把软件结果当成物理安全证明。
 
 ## ROS2 遥操启动
 
-普通命令只做预检：
+只做预检：
 
 ```bash
 ./scripts/run_ros2_teleop.sh
 ```
 
-桥接节点 `armed` 默认是 `false`，直接 launch 不会转发运动命令。只有现场确认后才能：
+桥接节点默认 `armed=false`。现场确认急停、设备周围无人、关节方向和限位后，才可：
 
 ```bash
 ./scripts/run_ros2_teleop.sh \
   --real --confirm=I_UNDERSTAND_REAL_ROBOT
 ```
 
-首次真机联调必须先关闭不需要的手臂，在低速、小范围、空载状态下逐关节确认方向，再开始连续遥操。当前 ROS2 桥接还会拒绝非 7 关节、NaN/Inf 和超出配置限位的整帧命令。
+## 精密装配数采
 
-## 当前未完成项
+默认 observation 模式不向机械臂发送遥操命令：
 
-- 主臂 LinkerTA 与 LK73 从臂的最终方向/偏置仍需现场逐关节确认；
-- `teleop_config.yaml` 的 `negation`、mapping、机型和限位必须和现场设备复核；
-- CAN 设备、LinkerTA 权限、机器人 IP 和控制器状态只能在现场确认；
-- 官方 SDK 没有 enable-state getter，不能从软件证明当前物理使能状态；
-- 网络中断、急停和控制器停止距离需要现场测试；
-- 不能把 DexCatch 的抓取规划、视觉目标和 `move_joint` 代码接入本项目。
+```bash
+bash scripts/run_full_teleop_capture_tmux.sh \
+  --episodes=1 --duration-s=30
+```
 
-## 远程 AI 完成标准
+真机遥操采集必须额外确认物理急停：
 
-在远程电脑报告“环境完成”前，必须完成：仓库分支正确、SDK/URDF 可读、ROS2 构建成功、Conda 依赖可导入、mock 闭环通过、方向工具离线 14 关节通过、默认 ROS2 启动保持 disarmed。以上阶段禁止连接或运动真机。
+```bash
+bash scripts/run_full_teleop_capture_tmux.sh \
+  --real \
+  --physical-estop-ready \
+  --confirm=I_UNDERSTAND_REAL_ROBOT \
+  --episodes=1 --duration-s=30
+```
+
+脚本会检查重复进程、ROS2 节点、相机序列号、CAN、机器人地址、磁盘空间、关节限位
+和 One-Euro 滤波配置，并在 tmux 中分别启动驱动、RealSense、桥接、预览、监控、同步
+诊断和 RunEvidence recorder。
+
+默认相机配置为 `640x480@15`，RGB/深度启用同步和深度对齐。episode 至少包含：
+
+- 主端原始/滤波/映射后关节数据；
+- 从臂关节状态；
+- RGB、对齐深度和相机内参；
+- `/tf`、`/tf_static`；
+- URDF、映射配置和时间同步报告。
+
+## DexCatch 离线评估
+
+采集结束后，单独在 DexCatch 环境中评估数据质量：
+
+```bash
+python /path/to/DexCatch/tools/evaluate_episode_quality.py \
+  --episode evidence/teleop/<episode> \
+  --output quality_report.json
+```
+
+评估报告作为 RunEvidence 的派生 artifact 保存，不得发布到实时遥操 topic，也不得
+调用 `joint_follow` 或使能真机。
+
+## 交接完成标准
+
+- ROS2 工作区构建成功；
+- 默认启动保持 disarmed；
+- 相机与关节话题能被 recorder 发现；
+- 时间戳诊断报告生成；
+- 方向检查工具可运行；
+- 精密装配 episode 能保存；
+- DexCatch 能离线读取 episode 并输出质量报告。
+
+在这些条件完成前，禁止把离线评估结果描述为真机装配成功，也禁止跳过物理急停和
+低速方向确认直接进入长时间真机采集。
