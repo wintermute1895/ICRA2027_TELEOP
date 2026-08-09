@@ -4,7 +4,7 @@ FROM ros:humble-ros-base-jammy
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ROS_DISTRO=humble
-ENV WORKSPACE=/opt/icra2027_teleop
+ENV WORKSPACE=/opt/robot_teleop_platform
 
 ARG BUILD_HTTP_PROXY
 ARG BUILD_HTTPS_PROXY
@@ -48,8 +48,8 @@ RUN --network=host \
     python3 -m pip install --no-cache-dir \
     -r requirements-runevidence.txt
 
-COPY docker/entrypoint.sh /usr/local/bin/icra2027-entrypoint
-RUN chmod +x /usr/local/bin/icra2027-entrypoint
+COPY docker/entrypoint.sh /usr/local/bin/robot-teleop-entrypoint
+RUN chmod +x /usr/local/bin/robot-teleop-entrypoint
 
-ENTRYPOINT ["/usr/local/bin/icra2027-entrypoint"]
+ENTRYPOINT ["/usr/local/bin/robot-teleop-entrypoint"]
 CMD ["bash"]
