@@ -1,6 +1,21 @@
 SemanticTeleop_MPC/
 cyberdog_sim_project/
 sim-web-visualizer-main/
+arm_teleop/build/
+arm_teleop/install/
+arm_teleop/log/
+__pycache__/
+reports/*.json
+
+# Experiment recordings and generated evidence stay outside Git.
+evidence/
+*.db3
+*.db3.zstd
+*.bag
+
+# Container and local runtime artifacts.
+.docker-build/
+.ros/
 
 # VS Code browsing database (large binary files)
 .vscode/browse.vc.db

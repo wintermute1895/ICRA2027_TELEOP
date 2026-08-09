@@ -39,6 +39,7 @@ slave_arm_ips:
 - `scale_factor` (默认: 1.0): 关节角度映射比例，1.0 代表 1:1 映射。
 - `follow_mode` (默认: true): 是否开启实时跟随。
 - `robot_type` (默认: "LS"): 机器人类型，LS是蓝思型号，RS是灵足V2
+- `left_negation` / `right_negation`: 主臂 J1..J7 到从臂 J1..J7 的方向符号。`-1` 表示取反，`1` 表示保持；显式配置优先于 `robot_type` 默认值。
 
 ### 首次同步 (First Move)
 - `first_move_speed` (默认: 0.2): 初始同步运动的关节速度 (rad/s)。
