@@ -8,7 +8,7 @@ LBot Teleoperation Launch File
 3. teleop_bridge (桥接节点)
 
 配置说明:
-- 所有从臂配置集中在 config/teleop_config.yaml 的 slave_arm_ips 中
+- 所有从臂配置集中在 config/hardware_teleop.yaml 的 slave_arm_ips 中
 - 只需修改 IP 列表即可实现一控一、一控多
 """
 
@@ -29,10 +29,10 @@ def generate_launch_description():
     # 获取包路径
     lbot_driver_dir = get_package_share_directory('lbot_driver')
     linkerta_dir = get_package_share_directory('linkerta')
-    lbot_teleop_dir = get_package_share_directory('lbot_teleop')
+    teleop_control_bridge_dir = get_package_share_directory('teleop_control_bridge')
     
     # 配置文件路径
-    teleop_config = os.path.join(lbot_teleop_dir, 'config', 'teleop_config.yaml')
+    teleop_config = os.path.join(teleop_control_bridge_dir, 'config', 'hardware_teleop.yaml')
     lbot_driver_config = os.path.join(lbot_driver_dir, 'config', 'lbot_config.yaml')
     
     # 读取配置文件获取从臂 IP 列表
@@ -40,7 +40,7 @@ def generate_launch_description():
         config = yaml.safe_load(f)
     
     slave_arm_ips = config.get('slave_arm_ips', ['192.168.10.21'])
-    teleop_bridge_params = config.get('teleop_bridge_node', {}).get('ros__parameters', {})
+    bridge_params = config.get('joint_mapping_bridge_node', {}).get('ros__parameters', {})
     
     # 自动生成命名空间列表: robot1, robot2, robot3...
     slave_namespaces = [f"robot{i+1}" for i in range(len(slave_arm_ips))]
@@ -48,7 +48,7 @@ def generate_launch_description():
     launch_linkerta = LaunchConfiguration("launch_linkerta")
     
     # 打印配置信息
-    print(f"[teleop.launch.py] 从臂配置:")
+    print(f"[hardware_teleop.launch.py] 从臂配置:")
     for i, (ns, ip) in enumerate(zip(slave_namespaces, slave_arm_ips)):
         print(f"  - {ns}: {ip}")
 
@@ -83,21 +83,21 @@ def generate_launch_description():
     )
     
     # 3. 启动 teleop_bridge (桥接节点) - 延迟2秒
-    teleop_bridge_node = Node(
-        package='lbot_teleop',
-        executable='teleop_bridge_node',
-        name='teleop_bridge_node',
+    joint_mapping_bridge_node = Node(
+        package='teleop_control_bridge',
+        executable='joint_mapping_bridge_node',
+        name='joint_mapping_bridge_node',
         output='screen',
         parameters=[
-            teleop_bridge_params,
+            bridge_params,
             {"slave_namespaces": slave_namespaces},
             {"armed": ParameterValue(LaunchConfiguration("armed"), value_type=bool)},
         ]
     )
 
-    teleop_bridge_launch = TimerAction(
+    bridge_launch = TimerAction(
         period=2.0,
-        actions=[teleop_bridge_node]
+        actions=[joint_mapping_bridge_node]
     )
     
     return LaunchDescription([
@@ -113,5 +113,5 @@ def generate_launch_description():
                               description="Explicitly allow commands to reach the robot"),
         *driver_nodes,          # 所有从臂驱动节点
         linkerta_launch,        # 主臂节点
-        teleop_bridge_launch,   # 桥接节点
+        bridge_launch,          # mapping/filter/safety bridge
     ])

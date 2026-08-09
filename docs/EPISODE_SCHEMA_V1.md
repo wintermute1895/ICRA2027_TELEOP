@@ -1,4 +1,4 @@
-# VIST episode schema v1
+# robot teleoperation episode schema v1
 
 仿真和真机都必须把一次实验表达为同一组语义字段。传输方式可以不同：真机使用
 ROS2 bag，仿真可以使用 ROS2 bag 或 JSONL；字段含义不能改变。
@@ -7,7 +7,7 @@ ROS2 bag，仿真可以使用 ROS2 bag 或 JSONL；字段含义不能改变。
 |---|---|---|---|
 | `master_joint_raw` | source-defined, 必须声明 | mock/LinkerTA 输入 | LinkerTA ROS2 `JointState` |
 | `master_joint_filtered` | rad | One Euro 中间层 | One Euro 中间层输出 |
-| `mapped_joint_command` | rad | 仿真控制输入 | lbot_teleop 映射后的命令 |
+| `mapped_joint_command` | rad | 仿真控制输入 | teleop_control_bridge 映射后的命令 |
 | `robot_joint_state` | rad | MuJoCo qpos/qvel | lbot_driver `JointState` |
 | `tcp_pose` | m/rad | MuJoCo 或 Pinocchio FK | driver pose 或同一 URDF FK |
 | `rgb` | image | MuJoCo renderer（可选） | RealSense `Image` |

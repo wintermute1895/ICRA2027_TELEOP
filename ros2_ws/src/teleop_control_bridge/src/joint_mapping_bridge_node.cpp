@@ -71,7 +71,7 @@ private:
 class TeleopBridgeNode : public rclcpp::Node
 {
 public:
-    TeleopBridgeNode() : Node("teleop_bridge_node")
+    TeleopBridgeNode() : Node("joint_mapping_bridge_node")
     {
         // 声明参数
         declare_parameters();
@@ -110,12 +110,12 @@ public:
             master_right_topic_, 10,
             std::bind(&TeleopBridgeNode::right_joint_callback, this, std::placeholders::_1));
 
-        left_raw_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/left/master_joint_raw", 10);
-        left_filtered_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/left/master_joint_filtered", 10);
-        left_mapped_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/left/mapped_joint_command", 10);
-        right_raw_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/right/master_joint_raw", 10);
-        right_filtered_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/right/master_joint_filtered", 10);
-        right_mapped_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/vist/right/mapped_joint_command", 10);
+        left_raw_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/teleop/left/master_joint_raw", 10);
+        left_filtered_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/teleop/left/master_joint_filtered", 10);
+        left_mapped_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/teleop/left/mapped_joint_command", 10);
+        right_raw_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/teleop/right/master_joint_raw", 10);
+        right_filtered_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/teleop/right/master_joint_filtered", 10);
+        right_mapped_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/teleop/right/mapped_joint_command", 10);
 
         print_config();
         

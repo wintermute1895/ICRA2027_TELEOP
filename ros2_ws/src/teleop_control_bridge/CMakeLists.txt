@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(lbot_teleop)
+project(teleop_control_bridge)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -18,8 +18,8 @@ find_package(sensor_msgs REQUIRED)
 find_package(lbot_arm_interfaces REQUIRED)
 
 # Teleop bridge node
-add_executable(teleop_bridge_node src/teleop_bridge_node.cpp)
-ament_target_dependencies(teleop_bridge_node 
+add_executable(joint_mapping_bridge_node src/joint_mapping_bridge_node.cpp)
+ament_target_dependencies(joint_mapping_bridge_node 
   rclcpp 
   std_msgs 
   sensor_msgs 
@@ -28,7 +28,7 @@ ament_target_dependencies(teleop_bridge_node
 
 # Install targets
 install(TARGETS
-  teleop_bridge_node
+  joint_mapping_bridge_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

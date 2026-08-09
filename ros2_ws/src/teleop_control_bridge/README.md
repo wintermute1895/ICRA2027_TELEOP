@@ -1,7 +1,7 @@
-# LBot Teleoperation (lbot_teleop)
+# LBot Teleoperation (teleop_control_bridge)
 
 ## 简介
-`lbot_teleop` 功能包实现了 Linker 机械臂的主从遥操作控制功能。它充当主臂 (LinkerTA 示教臂) 和 从臂 (LBot 真实机械臂) 之间的桥梁，将主臂的关节运动实时映射到从臂执行。
+`teleop_control_bridge` 功能包实现了 Linker 机械臂的主从遥操作控制功能。它充当主臂 (LinkerTA 示教臂) 和 从臂 (LBot 真实机械臂) 之间的桥梁，将主臂的关节运动实时映射到从臂执行。
 
 本系统包含以下特性：
 - **主从同步**：支持左/右双臂独立或同时遥操作。
@@ -18,7 +18,7 @@
 
 ## 配置文件
 
-主要配置文件位于 `config/teleop_config.yaml`，可根据实际需求调整：
+主要配置文件位于 `config/hardware_teleop.yaml`，可根据实际需求调整：
 
 ### 从臂配置（一控一/一控多）
 
@@ -65,14 +65,14 @@ sudo ip link set can0 up type can bitrate 1000000
 使用提供的 launch 文件一键启动所有相关节点（驱动、遥操臂节点、桥接节点）：
 
 ```bash
-ros2 launch lbot_teleop teleop.launch.py
+ros2 launch teleop_control_bridge hardware_teleop.launch.py
 ```
 
 
 
 ### 4. 操作流程
 1. **程序启动**：launch文件执行后，会依次启动 `lbot_driver` (从臂) 和 `linkerta` (主臂)。
-2. **初始化**：`teleop_bridge_node` 会订阅主臂数据并连接从臂服务。
+2. **初始化**：`joint_mapping_bridge_node` 会订阅主臂数据并连接从臂服务。
 3. **首次同步**：
    - 桥接节点检测主臂和从臂的当前的关节位置差异。
    - 驱动真实机械臂以较低的 `first_move_speed` 移动到与遥操臂一致的姿态。
@@ -97,9 +97,9 @@ ros2 launch lbot_teleop teleop.launch.py
 
 **Q: 机械臂启动后没有动作？**
 A: 
-1. 检查是否在 `teleop_config.yaml` 中启用了对应手臂 (`enable_left_arm` / `enable_right_arm`)。
+1. 检查是否在 `hardware_teleop.yaml` 中启用了对应手臂 (`enable_left_arm` / `enable_right_arm`)。
 2. 检查 CAN 总线通讯是否正常（lbot_driver 是否报错）。
 
 
 **Q: 机械臂运动方向相反？**
-A: 检查 `teleop_config.yaml` 中的关节映射或比例因子是否需要设置为负值，或者检查物理安装方向。
+A: 检查 `hardware_teleop.yaml` 中的关节映射或比例因子是否需要设置为负值，或者检查物理安装方向。

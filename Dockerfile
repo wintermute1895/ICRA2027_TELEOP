@@ -28,13 +28,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${WORKSPACE}
-COPY arm_teleop/src arm_teleop/src
+COPY ros2_ws/src ros2_ws/src
 RUN source /opt/ros/humble/setup.bash && \
-    colcon build --base-paths arm_teleop/src \
-      --build-base arm_teleop/build \
-      --install-base arm_teleop/install
+    colcon build --base-paths ros2_ws/src \
+      --build-base ros2_ws/build \
+      --install-base ros2_ws/install
 
-COPY IROS_teleop IROS_teleop
+COPY assets/robots/linker_platform assets/robots/linker_platform
 COPY scripts scripts
 COPY tools tools
 COPY docs docs

@@ -1,0 +1,30 @@
+schema: robot_teleop.experiment-profile/v1
+experiment_id: precision_assembly_ab_v1
+task_family: precision_assembly
+conditions:
+  A:
+    label: baseline
+    control_profile: config/experiments/control_baseline.yaml
+  B:
+    label: proposed
+    control_profile: config/experiments/control_proposed.yaml
+design:
+  unit: episode
+  within_subject: true
+  randomize_condition_order: true
+  practice_episodes: 1
+  pilot_valid_episodes_per_condition: 10
+recording:
+  episode_schema: robot_teleop.episode/v1
+  camera_profile: 640x480@15
+  require_rgb: true
+  require_depth: true
+evaluation:
+  external_evaluator: DexCatch/tools/evaluate_episode_quality.py
+  keep_failed_episodes: true
+  failure_action: review
+safety:
+  observation_only_default: true
+  real_robot_requires_physical_estop: true
+  allow_remote_unattended_execution: false
+

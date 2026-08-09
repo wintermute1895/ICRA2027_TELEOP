@@ -21,3 +21,7 @@ evidence/
 .vscode/browse.vc.db
 .vscode/browse.vc.db-shm
 .vscode/browse.vc.db-wal
+.legacy_build/
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/

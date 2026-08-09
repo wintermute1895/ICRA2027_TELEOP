@@ -9,7 +9,7 @@ slave_arm_ips:
   - "192.168.10.21"
   # - "192.168.10.22"  # 取消注释启用第二台从臂
 
-teleop_bridge_node:
+joint_mapping_bridge_node:
   ros__parameters:
     #========================================
     # 话题配置

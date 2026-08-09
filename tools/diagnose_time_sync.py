@@ -148,12 +148,12 @@ def main() -> int:
     topics = [
         ("/left_arm_joint_control", "joint"),
         ("/right_arm_joint_control", "joint"),
-        ("/vist/left/master_joint_raw", "joint"),
-        ("/vist/left/master_joint_filtered", "joint"),
-        ("/vist/left/mapped_joint_command", "joint"),
-        ("/vist/right/master_joint_raw", "joint"),
-        ("/vist/right/master_joint_filtered", "joint"),
-        ("/vist/right/mapped_joint_command", "joint"),
+        ("/teleop/left/master_joint_raw", "joint"),
+        ("/teleop/left/master_joint_filtered", "joint"),
+        ("/teleop/left/mapped_joint_command", "joint"),
+        ("/teleop/right/master_joint_raw", "joint"),
+        ("/teleop/right/master_joint_filtered", "joint"),
+        ("/teleop/right/mapped_joint_command", "joint"),
         ("/robot1/left_arm/joint_states", "joint"),
         ("/robot1/right_arm/joint_states", "joint"),
         (f"{camera}/color/image_raw", "image"),
@@ -172,7 +172,7 @@ def main() -> int:
         rclpy.shutdown()
 
     report = {
-        "schema": "vist.time-sync-report/v1",
+        "schema": "robot_teleop.time-sync-report/v1",
         "created_at_unix_ns": time.time_ns(),
         "duration_s": args.duration_s,
         "clock_policy": {
@@ -189,11 +189,11 @@ def main() -> int:
             ),
             "left_source_vs_filtered": nearest_skew_ms(
                 probe.samples["/left_arm_joint_control"],
-                probe.samples["/vist/left/master_joint_filtered"],
+                probe.samples["/teleop/left/master_joint_filtered"],
             ),
             "right_source_vs_filtered": nearest_skew_ms(
                 probe.samples["/right_arm_joint_control"],
-                probe.samples["/vist/right/master_joint_filtered"],
+                probe.samples["/teleop/right/master_joint_filtered"],
             ),
             "control_left_vs_robot_left": nearest_skew_ms(
                 probe.samples["/left_arm_joint_control"],

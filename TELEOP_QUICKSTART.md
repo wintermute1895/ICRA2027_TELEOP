@@ -1,7 +1,7 @@
-# 精密装配遥操与数采快速开始
+# Robot teleoperation platform quick start
 
-本仓库的唯一主线是 VIST/ICRA 2027 精密装配实验：LinkerTA 主臂通过 ROS2
-桥接驱动 LK73 从臂，同时记录关节、相机、时间戳和操作者指令。
+本仓库提供通用的双臂遥操和多模态数采链路：LinkerTA 主臂通过 ROS2 桥接驱动 LK73
+从臂，同时记录关节、相机、时间戳和操作者指令。具体任务由 experiment profile 定义。
 
 DexCatch 不属于本仓库的运行时控制链路。它只对本仓库产生的 episode 做离线
 FK/IK、限位、奇异性、轨迹连续性和数据质量评估。
@@ -9,12 +9,12 @@ FK/IK、限位、奇异性、轨迹连续性和数据质量评估。
 ## 项目结构
 
 ```text
-arm_teleop/                  ROS2 驱动、接口、LinkerTA、遥操桥接和安全逻辑
-IROS_teleop/config/          双臂 URDF、网格和关节命名资产
-IROS_teleop/lbot/sdk_v103.py 仅供关节方向检查使用的 SDK 1.0.3 ABI wrapper
-scripts/                     构建、启动、数采和预检入口
-tools/                       方向检查、时间同步诊断和证据导出工具
-docs/                        实验协议、交接和 RunEvidence 说明
+ros2_ws/                      ROS2 workspace、设备 adapter 和控制包
+assets/robots/linker_platform/ URDF、mesh 和关节命名资产
+config/experiments/           A/B 条件和控制 profile
+scripts/                      构建、启动、数采和预检入口
+tools/vendor_sdk/             仅供方向检查使用的官方 SDK ABI wrapper
+docs/                         架构、数据契约、实验和安全说明
 ```
 
 旧的 Python 手势遥操、旧版 Python SDK 直连和 AnyTeleop 原型已经从正式仓库移除，
@@ -25,8 +25,8 @@ docs/                        实验协议、交接和 RunEvidence 说明
 ROS2 C++ 工作区不要在 Conda 环境中构建：
 
 ```bash
-./scripts/build_ros2.sh
-source arm_teleop/install/setup.bash
+./scripts/build_ros2_workspace.sh
+source ros2_ws/install/setup.bash
 ```
 
 ROS2 主链路使用系统 Python；RunEvidence 和离线分析可使用项目指定的 Python 环境。
@@ -34,7 +34,7 @@ ROS2 主链路使用系统 Python；RunEvidence 和离线分析可使用项目�
 ## 只读预检
 
 ```bash
-python3 scripts/check_teleop_environment.py --mode ros2
+python3 scripts/preflight.py --mode ros2
 ```
 
 预检不会连接或使能机械臂。
@@ -44,13 +44,13 @@ python3 scripts/check_teleop_environment.py --mode ros2
 先运行预检：
 
 ```bash
-./scripts/run_ros2_teleop.sh
+./scripts/start_hardware_teleop.sh
 ```
 
 确认机械臂周围无人、急停可触达、LinkerTA 与从臂状态正确后，才允许真机：
 
 ```bash
-./scripts/run_ros2_teleop.sh \
+./scripts/start_hardware_teleop.sh \
   --real \
   --confirm=I_UNDERSTAND_REAL_ROBOT
 ```
@@ -64,7 +64,7 @@ python3 scripts/check_teleop_environment.py --mode ros2
 关节限位和滤波配置。默认是安全 observation 模式，不向机械臂发送遥操命令：
 
 ```bash
-bash scripts/run_full_teleop_capture_tmux.sh \
+bash scripts/start_capture_session.sh \
   --episodes=1 \
   --duration-s=30
 ```
@@ -72,13 +72,13 @@ bash scripts/run_full_teleop_capture_tmux.sh \
 连接 tmux：
 
 ```bash
-tmux attach -t vist_capture
+tmux attach -t teleop_capture
 ```
 
 只有经过现场安全确认，才允许发送真机遥操：
 
 ```bash
-bash scripts/run_full_teleop_capture_tmux.sh \
+bash scripts/start_capture_session.sh \
   --real \
   --physical-estop-ready \
   --confirm=I_UNDERSTAND_REAL_ROBOT \
@@ -102,7 +102,7 @@ RunEvidence 管理，至少记录：
 ```bash
 unset CONDA_PREFIX CONDA_DEFAULT_ENV PYTHONHOME PYTHONPATH
 source /opt/ros/humble/setup.bash
-python3 tools/diagnose_ros_time_sync.py \
+python3 tools/diagnose_time_sync.py \
   --duration-s 20 \
   --camera-namespace /camera/camera \
   --output evidence/teleop/time_sync_report.json
@@ -134,3 +134,6 @@ python /path/to/DexCatch/tools/evaluate_episode_quality.py \
 
 评估结果应作为同一 RunEvidence 实验的派生 artifact 保存，不得反向接入实时遥操
 控制节点。
+
+A/B 条件、质量门和统计建议见
+[docs/EXPERIMENT_AND_SCORING.md](docs/EXPERIMENT_AND_SCORING.md)。

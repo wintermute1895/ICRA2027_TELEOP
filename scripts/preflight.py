@@ -33,7 +33,7 @@ def check(mode: str) -> dict:
         for package in ROS_PACKAGES:
             ok, detail = command(["ros2", "pkg", "prefix", package]) if shutil.which("ros2") else (False, "ros2 not found")
             add(f"ros2:{package}", ok, detail or "available")
-    urdf = ROOT / "IROS_teleop/config/combined_robot/robot.urdf"
+    urdf = ROOT / "assets/robots/linker_platform/combined_robot/robot.urdf"
     add("urdf:combined_robot", urdf.is_file(), str(urdf))
     try:
         root = ET.parse(urdf).getroot()
@@ -42,10 +42,10 @@ def check(mode: str) -> dict:
     except (OSError, ET.ParseError) as exc:
         add("urdf:parse", False, str(exc))
 
-    interface_source = ROOT / "arm_teleop/src/lbot_arm_interfaces/package.xml"
+    interface_source = ROOT / "ros2_ws/src/lbot_arm_interfaces/package.xml"
     add("source:lbot_arm_interfaces", interface_source.is_file(), str(interface_source))
 
-    sdk_candidates = list((ROOT / "arm_teleop/src/lbot_driver/lib").glob("**/liblbot_api.so*"))
+    sdk_candidates = list((ROOT / "ros2_ws/src/lbot_driver/lib").glob("**/liblbot_api.so*"))
     add("sdk:liblbot_api", bool(sdk_candidates), ", ".join(map(str, sdk_candidates[:3])) or "not found")
     ok, detail = command(["ip", "link", "show", "can0"]) if shutil.which("ip") else (False, "ip command not found")
     add("network:can0", ok, detail.splitlines()[0] if detail else "not present", required=False)

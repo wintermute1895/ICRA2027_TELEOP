@@ -9,4 +9,4 @@ if [[ ! -f /opt/ros/humble/setup.bash ]]; then echo "ROS2 Humble not found" >&2;
 set +u
 source /opt/ros/humble/setup.bash
 set -u
-colcon --log-base "${ROOT_DIR}/arm_teleop/log" build --base-paths "${ROOT_DIR}/arm_teleop/src" --build-base "${ROOT_DIR}/arm_teleop/build" --install-base "${ROOT_DIR}/arm_teleop/install" --symlink-install
+colcon --log-base "${ROOT_DIR}/ros2_ws/log" build --base-paths "${ROOT_DIR}/ros2_ws/src" --build-base "${ROOT_DIR}/ros2_ws/build" --install-base "${ROOT_DIR}/ros2_ws/install" --symlink-install

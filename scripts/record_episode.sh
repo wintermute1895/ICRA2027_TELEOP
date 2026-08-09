@@ -41,12 +41,12 @@ fi
 TOPICS=(
   /left_arm_joint_control
   /right_arm_joint_control
-  /vist/left/master_joint_raw
-  /vist/left/master_joint_filtered
-  /vist/left/mapped_joint_command
-  /vist/right/master_joint_raw
-  /vist/right/master_joint_filtered
-  /vist/right/mapped_joint_command
+  /teleop/left/master_joint_raw
+  /teleop/left/master_joint_filtered
+  /teleop/left/mapped_joint_command
+  /teleop/right/master_joint_raw
+  /teleop/right/master_joint_filtered
+  /teleop/right/mapped_joint_command
   /robot1/left_arm/joint_states
   /robot1/right_arm/joint_states
   "${CAMERA_NAMESPACE}/color/image_raw"
@@ -72,9 +72,16 @@ compression_format = sys.argv[5]
 topics = sys.argv[6:]
 hardware_commands_enabled = os.environ.get("TELEOP_HARDWARE_COMMANDS_ENABLED", "false").lower() == "true"
 payload = {
-    "schema": "vist.teleop-capture/v1",
-    "episode_schema": "vist.episode/v1",
+    "schema": "robot_teleop.teleop-capture/v1",
+    "episode_schema": "robot_teleop.episode/v1",
     "created_at": datetime.now(timezone.utc).isoformat(),
+    "experiment": {
+        "experiment_id": os.environ.get("TELEOP_EXPERIMENT_ID", "unassigned"),
+        "condition_id": os.environ.get("TELEOP_CONDITION_ID", "unassigned"),
+        "operator_id": os.environ.get("TELEOP_OPERATOR_ID", "anonymous"),
+        "task_id": os.environ.get("TELEOP_TASK_ID", "unspecified"),
+        "profile": os.environ.get("TELEOP_EXPERIMENT_PROFILE"),
+    },
     "duration_s": duration,
     "camera_namespace": camera_namespace,
     "camera_profile": "640x480x15",
@@ -99,9 +106,9 @@ payload = {
     "motion_commands_published": hardware_commands_enabled,
     "canonical_fields": {
         "master_joint_source": "/left_arm_joint_control,/right_arm_joint_control",
-        "master_joint_raw": "/vist/left/master_joint_raw,/vist/right/master_joint_raw",
-        "master_joint_filtered": "/vist/left/master_joint_filtered,/vist/right/master_joint_filtered",
-        "mapped_joint_command": "/vist/left/mapped_joint_command,/vist/right/mapped_joint_command",
+        "master_joint_raw": "/teleop/left/master_joint_raw,/teleop/right/master_joint_raw",
+        "master_joint_filtered": "/teleop/left/master_joint_filtered,/teleop/right/master_joint_filtered",
+        "mapped_joint_command": "/teleop/left/mapped_joint_command,/teleop/right/mapped_joint_command",
         "robot_joint_state": "/robot1/left_arm/joint_states,/robot1/right_arm/joint_states",
         "camera_rgb": "<camera_namespace>/color/image_raw",
         "camera_depth": "<camera_namespace>/aligned_depth_to_color/image_raw",

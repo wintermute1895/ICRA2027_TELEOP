@@ -2,8 +2,8 @@
 LBot Driver Launch File
 从臂驱动启动文件
 
-可以独立使用，也可以被 teleop.launch.py 调用
-配置来源: lbot_teleop/config/teleop_config.yaml 的 slave_arm_ips
+可以独立使用，也可以被 hardware_teleop.launch.py 调用
+配置来源: teleop_control_bridge/config/hardware_teleop.yaml 的 slave_arm_ips
 """
 
 import os
@@ -20,14 +20,14 @@ def generate_launch_description():
     
     # 尝试读取统一配置文件
     try:
-        lbot_teleop_dir = get_package_share_directory('lbot_teleop')
-        teleop_config_file = os.path.join(lbot_teleop_dir, 'config', 'teleop_config.yaml')
+        teleop_control_bridge_dir = get_package_share_directory('teleop_control_bridge')
+        teleop_config_file = os.path.join(teleop_control_bridge_dir, 'config', 'hardware_teleop.yaml')
         with open(teleop_config_file, 'r') as f:
             config = yaml.safe_load(f)
         slave_arm_ips = config.get('slave_arm_ips', ['192.168.10.21'])
     except Exception as e:
         # 如果找不到 teleop 配置，使用默认值
-        print(f"[lbot_start_driver] 未找到 teleop_config.yaml，使用默认配置: {e}")
+        print(f"[lbot_start_driver] 未找到 hardware_teleop.yaml，使用默认配置: {e}")
         slave_arm_ips = ['192.168.10.21']
     
     # 自动生成命名空间: robot1, robot2, robot3...

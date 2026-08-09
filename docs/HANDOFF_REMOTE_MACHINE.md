@@ -4,7 +4,7 @@
 
 ## 项目边界
 
-这是 VIST/ICRA 2027 面向精密装配的 ROS2 主从遥操与多模态数采项目：LinkerTA
+这是 robot teleoperation/ICRA 2027 面向精密装配的 ROS2 主从遥操与多模态数采项目：LinkerTA
 发布 ROS2 `JointState`，桥接节点完成关节顺序、方向、滤波和安全检查，再由 LK73
 驱动调用官方 SDK 的 `joint_follow`。
 
@@ -16,10 +16,10 @@ DexCatch 是独立的离线质量评估项目。它可以读取本项目导出�
 
 ## 仓库资产
 
-- `arm_teleop/`：ROS2 Humble 驱动、接口、LinkerTA 节点和遥操桥接；
-- `IROS_teleop/config/combined_robot/`：双臂和手部 URDF/mesh 资产；
-- `IROS_teleop/lbot/sdk_v103.py`：仅供方向检查工具使用的官方 SDK 1.0.3 handle ABI wrapper；
-- `arm_teleop/src/lbot_driver/lib/`：ROS2 驱动使用的官方 SDK 动态库；
+- `ros2_ws/`：ROS2 Humble 驱动、接口、LinkerTA 节点和遥操桥接；
+- `assets/robots/linker_platform/combined_robot/`：双臂和手部 URDF/mesh 资产；
+- `tools/vendor_sdk/lbot_sdk_v103.py`：仅供方向检查工具使用的官方 SDK 1.0.3 handle ABI wrapper；
+- `ros2_ws/src/lbot_driver/lib/`：ROS2 驱动使用的官方 SDK 动态库；
 - `scripts/`：构建、启动、进程检查和 RunEvidence 采集入口；
 - `tools/`：方向检查、时间同步诊断和 episode 导出工具。
 
@@ -33,14 +33,14 @@ ROS2 C++ 节点必须使用系统 ROS2 Humble，不要在 Conda 环境中构建�
 ```bash
 git clone https://github.com/wintermute1895/ICRA2027_TELEOP.git
 cd ICRA2027_TELEOP
-./scripts/build_ros2.sh
-source arm_teleop/install/setup.bash
+./scripts/build_ros2_workspace.sh
+source ros2_ws/install/setup.bash
 ```
 
 执行环境预检：
 
 ```bash
-python3 scripts/check_teleop_environment.py --mode ros2
+python3 scripts/preflight.py --mode ros2
 ```
 
 ## 关节方向检查
@@ -67,13 +67,13 @@ python3 scripts/check_teleop_environment.py --mode ros2
 只做预检：
 
 ```bash
-./scripts/run_ros2_teleop.sh
+./scripts/start_hardware_teleop.sh
 ```
 
 桥接节点默认 `armed=false`。现场确认急停、设备周围无人、关节方向和限位后，才可：
 
 ```bash
-./scripts/run_ros2_teleop.sh \
+./scripts/start_hardware_teleop.sh \
   --real --confirm=I_UNDERSTAND_REAL_ROBOT
 ```
 
@@ -82,14 +82,14 @@ python3 scripts/check_teleop_environment.py --mode ros2
 默认 observation 模式不向机械臂发送遥操命令：
 
 ```bash
-bash scripts/run_full_teleop_capture_tmux.sh \
+bash scripts/start_capture_session.sh \
   --episodes=1 --duration-s=30
 ```
 
 真机遥操采集必须额外确认物理急停：
 
 ```bash
-bash scripts/run_full_teleop_capture_tmux.sh \
+bash scripts/start_capture_session.sh \
   --real \
   --physical-estop-ready \
   --confirm=I_UNDERSTAND_REAL_ROBOT \

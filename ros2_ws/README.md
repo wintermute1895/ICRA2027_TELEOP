@@ -12,7 +12,7 @@
 |--------|------|
 | `lbot_arm_interfaces` | 自定义消息和服务接口定义 |
 | `lbot_driver` | 真实机械臂驱动程序 |
-| `lbot_teleop` | 遥操作桥接（主从臂控制） |
+| `teleop_control_bridge` | 遥操作桥接（主从臂控制） |
 | `linkerta` | LinkerTA 遥操臂驱动 |
 | `lbot_demo` | 示例程序和演示 |
 
@@ -43,17 +43,17 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-不要把工作区 source 固定写入 `~/.bashrc`；使用仓库的 `scripts/build_ros2.sh` 和 `scripts/run_ros2_teleop.sh` 管理环境，避免 ROS2 与 Conda 库冲突。
+不要把工作区 source 固定写入 `~/.bashrc`；使用仓库的 `scripts/build_ros2_workspace.sh` 和 `scripts/start_hardware_teleop.sh` 管理环境，避免 ROS2 与 Conda 库冲突。
 
 ## 快速开始
 
 ### 遥操作模式
 
-详细说明请参考 [lbot_teleop/README.md](src/lbot_teleop/README.md)
+详细说明请参考 [teleop_control_bridge/README.md](src/teleop_control_bridge/README.md)
 
 ```bash
 # 一键启动遥操作（驱动 + 遥操臂 + 桥接）
-./scripts/run_ros2_teleop.sh
+./scripts/start_hardware_teleop.sh
 ```
 
 上面的命令只做预检。真机运行必须使用现场安全确认参数，详见根目录 handoff。
@@ -70,13 +70,13 @@ ros2 launch lbot_driver lbot_start_driver.launch.py
 
 | 文件路径 | 说明 |
 |----------|------|
-| `src/lbot_teleop/config/teleop_config.yaml` | **主配置文件**：从臂IP列表、机型、限位、话题等 |
+| `src/teleop_control_bridge/config/hardware_teleop.yaml` | **主配置文件**：从臂IP列表、机型、限位、话题等 |
 | `src/lbot_driver/config/lbot_config.yaml` | 机械臂驱动默认参数 |
 | `src/linkerta/config/lta.yaml` | 遥操臂配置 |
 
 ### 从臂配置示例
 
-只需在 `teleop_config.yaml` 中修改 IP 列表即可实现一控一或一控多：
+只需在 `hardware_teleop.yaml` 中修改 IP 列表即可实现一控一或一控多：
 
 ```yaml
 # 一控一
@@ -93,7 +93,7 @@ slave_arm_ips:
 
 ## 机型支持
 
-通过 `teleop_config.yaml` 中的 `robot_type` 参数选择机型：
+通过 `hardware_teleop.yaml` 中的 `robot_type` 参数选择机型：
 
 - `"LS"`: LS 系列机械臂 蓝思机械臂
 - `"RS"`: RS 系列机械臂 灵足V2
