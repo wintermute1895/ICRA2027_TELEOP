@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM ros:humble-ros-base-jammy
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -34,7 +35,7 @@ COPY tools tools
 COPY docs docs
 COPY requirements-runevidence.txt requirements-runevidence.txt
 
-RUN python3 -m pip install --no-cache-dir \
+RUN --network=host python3 -m pip install --no-cache-dir \
     -r requirements-runevidence.txt
 
 COPY docker/entrypoint.sh /usr/local/bin/icra2027-entrypoint
