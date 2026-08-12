@@ -1,0 +1,13 @@
+schema: robot_teleop.task-profile/v1
+extends: config/task_families/contact_rich_precision_assembly_v1.yaml
+task_id: connector_insertion_v1
+task_kind: abstract_connector_insertion
+task_revision: connector_insertion_v1
+task_relative_entities: [plug, receptacle, insertion_axis, entry_plane, seating_plane]
+task_measurements:
+  required: [plug_tip_insertion_depth_m, lateral_error_m, angular_error_deg, stable_contact_duration_s]
+failure_contract:
+  modes: [workspace_exit, safety_projection_reject, object_drop, sustained_collision, insertion_jam, visual_occlusion_timeout, operator_abort]
+success_contract:
+  all_of: [insertion_depth_threshold, lateral_tolerance, angular_tolerance, nonpenetrating_stable_contact]
+perturbation_dimensions: [target_pose, short_occlusion, camera_bias, contact_bias]

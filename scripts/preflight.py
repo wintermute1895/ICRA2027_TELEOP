@@ -29,18 +29,20 @@ def check(mode: str) -> dict:
     def add(name: str, ok: bool, detail: str, required: bool = True) -> None:
         result["checks"].append({"name": name, "ok": ok, "required": required, "detail": detail})
 
-    if mode in ("all", "ros2"):
+    if mode in ("all", "ros2", "hand"):
         for package in ROS_PACKAGES:
             ok, detail = command(["ros2", "pkg", "prefix", package]) if shutil.which("ros2") else (False, "ros2 not found")
             add(f"ros2:{package}", ok, detail or "available")
-    urdf = ROOT / "assets/robots/linker_platform/combined_robot/robot.urdf"
-    add("urdf:combined_robot", urdf.is_file(), str(urdf))
-    try:
-        root = ET.parse(urdf).getroot()
-        joints = [j for j in root.findall("joint") if j.get("type") != "fixed"]
-        add("urdf:parse", True, f"{len(joints)} movable joints")
-    except (OSError, ET.ParseError) as exc:
-        add("urdf:parse", False, str(exc))
+    if mode in ("all", "hand"):
+        for package in ("hand_adapter", "linker_hand_ros2_sdk"):
+            ok, detail = command(["ros2", "pkg", "prefix", package]) if shutil.which("ros2") else (False, "ros2 not found")
+            add(f"hand:{package}", ok, detail or "available")
+        for interface in ("can0", "can1"):
+            ok, detail = command(["ip", "-details", "link", "show", interface]) if shutil.which("ip") else (False, "ip command not found")
+            add(f"hand:{interface}", ok, detail.splitlines()[0] if detail else "not present", required=False)
+        for profile in (ROOT / "config/hands/l20lite.yaml", ROOT / "config/hands/o6.yaml"):
+            add(f"hand:profile:{profile.stem}", profile.is_file(), str(profile))
+    add("urdf:robot_model", False, "no default model: the obsolete O2 z=0 splice was removed; pass an explicitly validated model to simulation tools", required=False)
 
     interface_source = ROOT / "ros2_ws/src/lbot_arm_interfaces/package.xml"
     add("source:lbot_arm_interfaces", interface_source.is_file(), str(interface_source))
@@ -60,7 +62,7 @@ def check(mode: str) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Read-only teleoperation environment preflight")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
-    parser.add_argument("--mode", choices=("all", "ros2"), default="all")
+    parser.add_argument("--mode", choices=("all", "ros2", "hand"), default="all")
     args = parser.parse_args()
     result = check(args.mode)
     if args.json:

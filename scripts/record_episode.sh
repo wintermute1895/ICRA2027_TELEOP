@@ -14,6 +14,10 @@ COMPRESSION_FORMAT="${RUNEVIDENCE_BAG_COMPRESSION_FORMAT:-zstd}"
 # camera_name=camera, producing /camera/camera/<stream>. Keep it configurable
 # for custom launch files.
 CAMERA_NAMESPACE="${REALSENSE_NAMESPACE:-/camera/camera}"
+ROBOT_STATE_NAMESPACE="${ROBOT_STATE_NAMESPACE:-/robot1}"
+TELEOP_NAMESPACE="${TELEOP_NAMESPACE:-/teleop}"
+SOURCE_DOMAIN="${SOURCE_DOMAIN:-real}"
+SIM_CAMERA_NAMESPACES="${SIM_CAMERA_NAMESPACES:-}"
 
 # ROS 2 may otherwise try to write under ~/.ros/log.  That is fragile on
 # remote/managed machines and can make ros2 bag abort before recording starts.
@@ -41,18 +45,38 @@ fi
 TOPICS=(
   /left_arm_joint_control
   /right_arm_joint_control
-  /teleop/left/master_joint_raw
-  /teleop/left/master_joint_filtered
-  /teleop/left/mapped_joint_command
-  /teleop/right/master_joint_raw
-  /teleop/right/master_joint_filtered
-  /teleop/right/mapped_joint_command
-  /robot1/left_arm/joint_states
-  /robot1/right_arm/joint_states
+  "${TELEOP_NAMESPACE}/left/master_joint_raw"
+  "${TELEOP_NAMESPACE}/left/master_joint_filtered"
+  "${TELEOP_NAMESPACE}/left/mapped_joint_command"
+  "${TELEOP_NAMESPACE}/right/master_joint_raw"
+  "${TELEOP_NAMESPACE}/right/master_joint_filtered"
+  "${TELEOP_NAMESPACE}/right/mapped_joint_command"
+  "${ROBOT_STATE_NAMESPACE}/left_arm/joint_states"
+  "${ROBOT_STATE_NAMESPACE}/right_arm/joint_states"
+  "${ROBOT_STATE_NAMESPACE}/left_hand/control_cmd"
+  "${ROBOT_STATE_NAMESPACE}/right_hand/control_cmd"
+  "${ROBOT_STATE_NAMESPACE}/left_hand/joint_states"
+  "${ROBOT_STATE_NAMESPACE}/right_hand/joint_states"
   "${CAMERA_NAMESPACE}/color/image_raw"
   "${CAMERA_NAMESPACE}/color/camera_info"
   "${CAMERA_NAMESPACE}/aligned_depth_to_color/image_raw"
   "${CAMERA_NAMESPACE}/depth/camera_info"
+)
+
+if [[ -n "$SIM_CAMERA_NAMESPACES" ]]; then
+  IFS=',' read -r -a SIM_CAMERAS <<< "$SIM_CAMERA_NAMESPACES"
+  for camera in "${SIM_CAMERAS[@]}"; do
+    camera="${camera%/}"
+    TOPICS+=(
+      "${camera}/color/image_raw"
+      "${camera}/aligned_depth_to_color/image_raw"
+      "${camera}/color/camera_info"
+      "${camera}/depth/camera_info"
+    )
+  done
+fi
+
+TOPICS+=(
   /tf
   /tf_static
 )
@@ -71,20 +95,56 @@ compression_mode = sys.argv[4]
 compression_format = sys.argv[5]
 topics = sys.argv[6:]
 hardware_commands_enabled = os.environ.get("TELEOP_HARDWARE_COMMANDS_ENABLED", "false").lower() == "true"
+robot_state_namespace = os.environ.get("ROBOT_STATE_NAMESPACE", "/robot1").rstrip("/")
+teleop_namespace = os.environ.get("TELEOP_NAMESPACE", "/teleop").rstrip("/")
+source_domain = os.environ.get("SOURCE_DOMAIN", "real")
+experiment_manifest_path = os.environ.get("TELEOP_EXPERIMENT_MANIFEST", "")
+experiment_manifest = None
+experiment_manifest_sha256 = None
+if experiment_manifest_path:
+    manifest_file = pathlib.Path(experiment_manifest_path)
+    if not manifest_file.is_file():
+        raise SystemExit(f"experiment manifest not found: {manifest_file}")
+    experiment_manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
+    if experiment_manifest.get("schema") != "robot_teleop.experiment-manifest/v1":
+        raise SystemExit("experiment manifest has an unsupported schema")
+    if experiment_manifest.get("domain") != source_domain:
+        raise SystemExit(f"manifest domain {experiment_manifest.get('domain')} does not match SOURCE_DOMAIN={source_domain}")
+    experiment_manifest_sha256 = __import__("hashlib").sha256(manifest_file.read_bytes()).hexdigest()
+
+def experiment_value(name, fallback, default):
+    if experiment_manifest is None:
+        return fallback
+    manifest_value = experiment_manifest.get(name)
+    if manifest_value is None:
+        return fallback
+    if fallback != default and fallback != manifest_value:
+        raise SystemExit(f"{name} conflicts with immutable experiment manifest")
+    return manifest_value
+
+camera_namespaces = [camera_namespace]
+extra_cameras = os.environ.get("SIM_CAMERA_NAMESPACES", "")
+if extra_cameras:
+    camera_namespaces.extend(item.rstrip("/") for item in extra_cameras.split(",") if item)
 payload = {
     "schema": "robot_teleop.teleop-capture/v1",
     "episode_schema": "robot_teleop.episode/v1",
     "created_at": datetime.now(timezone.utc).isoformat(),
     "experiment": {
-        "experiment_id": os.environ.get("TELEOP_EXPERIMENT_ID", "unassigned"),
-        "condition_id": os.environ.get("TELEOP_CONDITION_ID", "unassigned"),
-        "operator_id": os.environ.get("TELEOP_OPERATOR_ID", "anonymous"),
-        "task_id": os.environ.get("TELEOP_TASK_ID", "unspecified"),
+        "experiment_id": experiment_value("experiment_id", os.environ.get("TELEOP_EXPERIMENT_ID", "unassigned"), "unassigned"),
+        "condition_id": experiment_value("condition_id", os.environ.get("TELEOP_CONDITION_ID", "unassigned"), "unassigned"),
+        "operator_id": experiment_value("operator_id", os.environ.get("TELEOP_OPERATOR_ID", "anonymous"), "anonymous"),
+        "task_id": experiment_value("task_id", os.environ.get("TELEOP_TASK_ID", "unspecified"), "unspecified"),
         "profile": os.environ.get("TELEOP_EXPERIMENT_PROFILE"),
+        "manifest_id": None if experiment_manifest is None else experiment_manifest["manifest_id"],
+        "manifest_sha256": experiment_manifest_sha256,
+        "manifest": experiment_manifest,
     },
     "duration_s": duration,
+    "source_domain": source_domain,
     "camera_namespace": camera_namespace,
-    "camera_profile": "640x480x15",
+    "camera_namespaces": camera_namespaces,
+    "camera_profile": os.environ.get("CAMERA_PROFILE", "640x480x15"),
     "bag_compression": {
         "mode": compression_mode,
         "format": compression_format
@@ -106,10 +166,12 @@ payload = {
     "motion_commands_published": hardware_commands_enabled,
     "canonical_fields": {
         "master_joint_source": "/left_arm_joint_control,/right_arm_joint_control",
-        "master_joint_raw": "/teleop/left/master_joint_raw,/teleop/right/master_joint_raw",
-        "master_joint_filtered": "/teleop/left/master_joint_filtered,/teleop/right/master_joint_filtered",
-        "mapped_joint_command": "/teleop/left/mapped_joint_command,/teleop/right/mapped_joint_command",
-        "robot_joint_state": "/robot1/left_arm/joint_states,/robot1/right_arm/joint_states",
+        "master_joint_raw": f"{teleop_namespace}/left/master_joint_raw,{teleop_namespace}/right/master_joint_raw",
+        "master_joint_filtered": f"{teleop_namespace}/left/master_joint_filtered,{teleop_namespace}/right/master_joint_filtered",
+        "mapped_joint_command": f"{teleop_namespace}/left/mapped_joint_command,{teleop_namespace}/right/mapped_joint_command",
+        "robot_joint_state": f"{robot_state_namespace}/left_arm/joint_states,{robot_state_namespace}/right_arm/joint_states",
+        "hand_command": f"{robot_state_namespace}/left_hand/control_cmd,{robot_state_namespace}/right_hand/control_cmd",
+        "hand_state": f"{robot_state_namespace}/left_hand/joint_states,{robot_state_namespace}/right_hand/joint_states",
         "camera_rgb": "<camera_namespace>/color/image_raw",
         "camera_depth": "<camera_namespace>/aligned_depth_to_color/image_raw",
         "camera_info": "<camera_namespace>/color/camera_info,<camera_namespace>/depth/camera_info",

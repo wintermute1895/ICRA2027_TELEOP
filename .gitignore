@@ -21,7 +21,14 @@ evidence/
 .vscode/browse.vc.db
 .vscode/browse.vc.db-shm
 .vscode/browse.vc.db-wal
+.vscode/*.lock
+MJDATA.TXT
+MJMODEL.TXT
+MUJOCO_LOG.TXT
+nohup.out
+screenshot.png
 .legacy_build/
+.venv/
 ros2_ws/build/
 ros2_ws/install/
 ros2_ws/log/

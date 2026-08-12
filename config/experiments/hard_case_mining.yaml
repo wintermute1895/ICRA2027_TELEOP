@@ -1,0 +1,13 @@
+schema: robot_teleop.hard-case-mining/v1
+thresholds:
+  tracking_error_rad: 0.15
+  velocity_rad_s: 1.50
+  acceleration_rad_s2: 8.0
+  jerk_rad_s3: 80.0
+  minimum_singular_value: 0.020
+  minimum_clearance_m: 0.015
+grouping:
+  maximum_clean_gap_samples: 2
+  minimum_segment_samples: 1
+notes:
+  - Hard cases are sampling priorities and review targets, not automatic safety approvals.

@@ -46,6 +46,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
     "msg/LbotPose.msg"
     "msg/LbotFrame.msg"
     "msg/FollowJoint.msg"
+    "msg/VendorArmCommand.msg"
     
     DEPENDENCIES std_msgs geometry_msgs sensor_msgs
  )

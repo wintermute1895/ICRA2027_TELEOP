@@ -1,0 +1,38 @@
+schema: robot_teleop.task-profile/v1
+extends: config/task_families/connector_insertion_v1.yaml
+task_id: usb_c_insertion_v1
+task_kind: concrete_scenario
+scene_parameters: config/sim/tasks/usb_c_laptop_insertion.json
+task_revision: usb_c_insertion_v1
+success_contract:
+  all_of:
+    - plug_tip_insertion_depth_m >= 0.006
+    - lateral_error_m <= 0.0015
+    - angular_error_deg <= 5.0
+    - stable_contact_duration_s >= 0.20
+  note: Pose-only success is prohibited; the MuJoCo task adapter must additionally report non-penetrating stable contact.
+failure_contract:
+  timeout_s: 30.0
+perturbation_profile:
+  target_pose_levels:
+    easy: {translation_m: [0.001, 0.001, 0.001], rotation_deg: [1.0, 1.0, 1.0]}
+    medium: {translation_m: [0.003, 0.003, 0.002], rotation_deg: [3.0, 3.0, 3.0]}
+    hard: {translation_m: [0.006, 0.006, 0.004], rotation_deg: [6.0, 6.0, 6.0]}
+  occlusion_levels:
+    none: {duration_s: 0.0, probability: 0.0}
+    brief: {duration_s: 0.25, probability: 0.35}
+    long: {duration_s: 0.60, probability: 0.50}
+  camera_bias_levels:
+    none: {translation_m: 0.0, rotation_deg: 0.0}
+    mild: {translation_m: 0.002, rotation_deg: 1.0}
+    strong: {translation_m: 0.005, rotation_deg: 2.5}
+  contact_bias_levels:
+    none: {lateral_m: 0.0, angular_deg: 0.0}
+    mild: {lateral_m: 0.001, angular_deg: 1.0}
+    strong: {lateral_m: 0.002, angular_deg: 2.5}
+split_contract:
+  unit: trial_seed
+  train_seeds: [1000, 1199]
+  validation_seeds: [1200, 1249]
+  held_out_seeds: [1250, 1349]
+  prohibition: Frames from one trial must never be split across train, validation, and held-out sets.

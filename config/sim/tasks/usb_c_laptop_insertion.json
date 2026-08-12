@@ -1,0 +1,21 @@
+{
+  "schema": "connector-insertion-task/v1",
+  "task": "usb_c_laptop_insertion",
+  "units": "m",
+  "description": "Standalone parameterized physics baseline for USB-C plug insertion into a laptop-side receptacle.",
+  "parameters": {
+    "table_top_z": 0.03,
+    "receptacle_entry_x": 0.0,
+    "receptacle_goal_tip_x": 0.008,
+    "plug_length_from_root_to_tip": 0.085,
+    "plug_width": 0.012,
+    "plug_height": 0.0054,
+    "channel_width": 0.015,
+    "channel_height": 0.008,
+    "channel_depth": 0.014,
+    "success_lateral_tolerance_m": 0.0015,
+    "success_angular_tolerance_deg": 5.0,
+    "success_min_insertion_depth_m": 0.006
+  },
+  "visual_enhancement": {"enabled": false, "reason": "Physics baseline deliberately has no downloaded visual mesh dependency."}
+}

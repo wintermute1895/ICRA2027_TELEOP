@@ -147,6 +147,9 @@ private:
         // 首次移动配置
         this->declare_parameter<double>("first_move_speed", 0.5);
         this->declare_parameter<double>("first_move_acce", 0.5);
+        // Hardware keeps the initial MoveJ gate by default. Simulation-only
+        // launches may disable it because no hardware service is present.
+        this->declare_parameter<bool>("require_first_move_service", true);
         
         // 使能配置
         this->declare_parameter<bool>("enable_left_arm", true);
@@ -211,6 +214,7 @@ private:
         
         first_move_speed_ = this->get_parameter("first_move_speed").as_double();
         first_move_acce_ = this->get_parameter("first_move_acce").as_double();
+        require_first_move_service_ = this->get_parameter("require_first_move_service").as_bool();
         
         enable_left_arm_ = this->get_parameter("enable_left_arm").as_bool();
         enable_right_arm_ = this->get_parameter("enable_right_arm").as_bool();
@@ -304,6 +308,7 @@ private:
         RCLCPP_INFO(this->get_logger(), "Right arm enabled:  %s", enable_right_arm_ ? "true" : "false");
         RCLCPP_INFO(this->get_logger(), "Joint limits:       %s", enable_joint_limits_ ? "enabled" : "disabled");
         RCLCPP_INFO(this->get_logger(), "Motion armed:       %s", armed_ ? "YES" : "NO");
+        RCLCPP_INFO(this->get_logger(), "Initial MoveJ gate: %s", require_first_move_service_ ? "REQUIRED" : "BYPASSED (simulation only)");
         RCLCPP_INFO(this->get_logger(), "One Euro filter:    %s (min=%.3fHz beta=%.3f d=%.3fHz)",
                     enable_one_euro_filter_ ? "enabled" : "disabled",
                     one_euro_min_cutoff_hz_, one_euro_beta_, one_euro_derivative_cutoff_hz_);
@@ -455,6 +460,11 @@ private:
         for (const auto& ns : slave_namespaces_) {
             // 首次运动：使用 MoveJ 服务平滑移动到初始位置
             if (!left_first_move_done_[ns]) {
+                if (!require_first_move_service_) {
+                    left_first_move_done_[ns] = true;
+                }
+            }
+            if (!left_first_move_done_[ns]) {
                 if (left_first_move_in_progress_[ns]) {
                     continue;
                 }
@@ -494,6 +504,11 @@ private:
         for (const auto& ns : slave_namespaces_) {
             // 首次运动：使用 MoveJ 服务平滑移动到初始位置
             if (!right_first_move_done_[ns]) {
+                if (!require_first_move_service_) {
+                    right_first_move_done_[ns] = true;
+                }
+            }
+            if (!right_first_move_done_[ns]) {
                 if (right_first_move_in_progress_[ns]) {
                     continue;
                 }
@@ -529,6 +544,7 @@ private:
     
     double first_move_speed_;
     double first_move_acce_;
+    bool require_first_move_service_;
     
     bool enable_left_arm_;
     bool enable_right_arm_;

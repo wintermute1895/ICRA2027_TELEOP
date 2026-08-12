@@ -21,7 +21,6 @@ ROBOT_ASSETS = ROOT / "assets/robots/linker_platform"
 sys.path.insert(0, str(ROOT / "third_party/linkerbot_sdk/python"))
 from lbot_sdk_v103 import LbotSdk103, default_library
 
-DEFAULT_URDF = ROBOT_ASSETS / "combined_robot/robot.urdf"
 ARM_JOINTS = {
     "left": ["Left_Shoulder_Pitch_Joint", "Left_Shoulder_Roll_Joint", "Left_Shoulder_Yaw_Joint", "Left_Elbow_Pitch_Joint", "Left_Wrist_Yaw_Joint", "Left_Wrist_Pitch_Joint", "Left_Wrist_Roll_Joint"],
     "right": ["Right_Shoulder_Pitch_Joint", "Right_Shoulder_Roll_Joint", "Right_Shoulder_Yaw_Joint", "Right_Elbow_Pitch_Joint", "Right_Wrist_Yaw_Joint", "Right_Wrist_Pitch_Joint", "Right_Wrist_Roll_Joint"],
@@ -259,7 +258,7 @@ def parse_args():
     parser.add_argument("--step-deg", type=float, default=2.0); parser.add_argument("--speed", type=float, default=0.05)
     parser.add_argument("--accel", type=float, default=0.05); parser.add_argument("--margin-deg", type=float, default=5.0)
     parser.add_argument("--connect-timeout", type=float, default=10.0); parser.add_argument("--preview-seconds", type=float, default=0.75)
-    parser.add_argument("--headless", action="store_true"); parser.add_argument("--urdf", type=Path, default=DEFAULT_URDF)
+    parser.add_argument("--headless", action="store_true"); parser.add_argument("--urdf", type=Path, required=True, help="validated robot URDF; no obsolete O2 default is provided")
     parser.add_argument("--sdk-library", type=Path, default=default_library(ROOT)); parser.add_argument("--output", type=Path, default=ROOT / "reports/joint_direction_report.json")
     args = parser.parse_args()
     if not args.urdf.is_file() or not args.sdk_library.is_file(): parser.error("URDF or SDK library not found")

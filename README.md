@@ -26,3 +26,35 @@ DexCatch 是独立的抓取/规划项目；这里只在离线阶段调用它评�
 ./scripts/start_hardware_teleop.sh
 ./scripts/start_capture_session.sh --episodes=1 --duration-s=30
 ```
+
+## Standalone USB-C insertion scene
+
+The connector-insertion asset layer is independent of ROS2, teleoperation,
+planning, DexCatch, hardware, and recording. It uses parameterized MuJoCo
+primitives as a mandatory physics baseline; optional visual meshes are
+visual-only and must carry a source/license manifest.
+
+```bash
+cd /mnt/F/ICRA2027_TELEOP
+/home/ilex/miniforge3/envs/mpc_env/bin/python -B \
+  tools/build_connector_insertion_scene.py \
+  --task usb_c_laptop_insertion \
+  --output /tmp/usb_c_laptop_insertion.mjcf.xml
+
+/home/ilex/miniforge3/envs/mpc_env/bin/python -B \
+  tools/validate_connector_insertion_scene.py \
+  --scene /tmp/usb_c_laptop_insertion.mjcf.xml --require-named-contract
+
+/home/ilex/miniforge3/envs/mpc_env/bin/python -B \
+  tools/validate_connector_insertion_scene.py \
+  --scene /tmp/usb_c_laptop_insertion.mjcf.xml --check-collisions
+
+/home/ilex/miniforge3/envs/mpc_env/bin/python -B \
+  tools/validate_connector_insertion_scene.py \
+  --scene /tmp/usb_c_laptop_insertion.mjcf.xml --check-success-geometry
+
+MUJOCO_GL=egl /home/ilex/miniforge3/envs/mpc_env/bin/python -B \
+  tools/validate_connector_insertion_scene.py \
+  --scene /tmp/usb_c_laptop_insertion.mjcf.xml \
+  --render /tmp/usb_c_contact_sheet.png
+```

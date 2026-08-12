@@ -113,6 +113,8 @@ LBot::LBot(const std::string& node_name) : rclcpp::Node(node_name) {
     right_joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("right_arm/joint_states", 10);
     left_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("left_arm/pose_states", 10);
     right_pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseStamped>("right_arm/pose_states", 10);
+    left_vendor_command_pub_ = this->create_publisher<lbot_arm_interfaces::msg::VendorArmCommand>("left_arm/vendor_command", 10);
+    right_vendor_command_pub_ = this->create_publisher<lbot_arm_interfaces::msg::VendorArmCommand>("right_arm/vendor_command", 10);
 
     // 创建关节跟随订阅器（避免阻塞服务）
     auto sub_opt = rclcpp::SubscriptionOptions();
@@ -349,6 +351,17 @@ void LBot::left_joint_follow_callback(const std::shared_ptr<lbot_arm_interfaces:
     }
 
     std::vector<double> joints(msg->joints.begin(), msg->joints.end());
+    lbot_arm_interfaces::msg::VendorArmCommand command;
+    command.header.stamp = this->get_clock()->now();
+    command.mode = lbot_arm_interfaces::msg::VendorArmCommand::MODE_FOLLOW;
+    command.arm = "left";
+    command.joints_rad.assign(joints.begin(), joints.end());
+    command.speed_rad_s = 0.0;
+    command.accel_rad_s2 = 0.0;
+    command.block = false;
+    command.follow = msg->follow;
+    command.source = "lbot_driver.accepted_for_sdk";
+    left_vendor_command_pub_->publish(command);
 
     if (!lbot_api.lbot_joint_follow(lbot_handle, LBOT_LEFT_ARM, joints, msg->follow)) {
         RCLCPP_ERROR(this->get_logger(), "Failed to execute left_joint_follow");
@@ -370,6 +383,17 @@ void LBot::right_joint_follow_callback(const std::shared_ptr<lbot_arm_interfaces
     }
 
     std::vector<double> joints(msg->joints.begin(), msg->joints.end());
+    lbot_arm_interfaces::msg::VendorArmCommand command;
+    command.header.stamp = this->get_clock()->now();
+    command.mode = lbot_arm_interfaces::msg::VendorArmCommand::MODE_FOLLOW;
+    command.arm = "right";
+    command.joints_rad.assign(joints.begin(), joints.end());
+    command.speed_rad_s = 0.0;
+    command.accel_rad_s2 = 0.0;
+    command.block = false;
+    command.follow = msg->follow;
+    command.source = "lbot_driver.accepted_for_sdk";
+    right_vendor_command_pub_->publish(command);
 
     if (!lbot_api.lbot_joint_follow(lbot_handle, LBOT_RIGHT_ARM, joints, msg->follow)) {
         RCLCPP_ERROR(this->get_logger(), "Failed to execute right_joint_follow");
@@ -457,6 +481,8 @@ LeftArmServiceNode::LeftArmServiceNode(const std::string& node_name) : rclcpp::N
     // 创建互斥回调组确保串行执行
     callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
     callback_group_subscribers_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+
+    vendor_command_pub_ = this->create_publisher<lbot_arm_interfaces::msg::VendorArmCommand>("left_arm/vendor_command", 10);
 
     create_services();
     RCLCPP_INFO(this->get_logger(), "Left arm service node initialized");
@@ -589,6 +615,17 @@ void LeftArmServiceNode::move_joint_callback(
     }
     double joints[7];
     std::copy(request->joints.begin(), request->joints.end(), joints);
+    lbot_arm_interfaces::msg::VendorArmCommand command;
+    command.header.stamp = this->get_clock()->now();
+    command.mode = lbot_arm_interfaces::msg::VendorArmCommand::MODE_MOVEJ;
+    command.arm = "left";
+    command.joints_rad.assign(request->joints.begin(), request->joints.end());
+    command.speed_rad_s = request->speed;
+    command.accel_rad_s2 = request->acce;
+    command.block = request->block;
+    command.follow = false;
+    command.source = "lbot_driver.accepted_for_sdk";
+    vendor_command_pub_->publish(command);
     response->success = lbot_api.lbot_move_joint(lbot_handle, LBOT_LEFT_ARM, joints, request->speed, request->acce, request->block);
     if (response->success) {
         RCLCPP_INFO(this->get_logger(), "Left arm move_joint executed successfully");
@@ -1086,6 +1123,8 @@ RightArmServiceNode::RightArmServiceNode(const std::string& node_name) : rclcpp:
     callback_group_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
     callback_group_subscribers_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
+    vendor_command_pub_ = this->create_publisher<lbot_arm_interfaces::msg::VendorArmCommand>("right_arm/vendor_command", 10);
+
     create_services();
     RCLCPP_INFO(this->get_logger(), "Right arm service node initialized");
 }
@@ -1214,6 +1253,17 @@ void RightArmServiceNode::move_joint_callback(
     }
     double joints[7];
     std::copy(request->joints.begin(), request->joints.end(), joints);
+    lbot_arm_interfaces::msg::VendorArmCommand command;
+    command.header.stamp = this->get_clock()->now();
+    command.mode = lbot_arm_interfaces::msg::VendorArmCommand::MODE_MOVEJ;
+    command.arm = "right";
+    command.joints_rad.assign(request->joints.begin(), request->joints.end());
+    command.speed_rad_s = request->speed;
+    command.accel_rad_s2 = request->acce;
+    command.block = request->block;
+    command.follow = false;
+    command.source = "lbot_driver.accepted_for_sdk";
+    vendor_command_pub_->publish(command);
     response->success = lbot_api.lbot_move_joint(lbot_handle, LBOT_RIGHT_ARM, joints, request->speed, request->acce, request->block);
     if (response->success) {
         RCLCPP_INFO(this->get_logger(), "Right arm move_joint executed successfully");

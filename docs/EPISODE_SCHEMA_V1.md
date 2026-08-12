@@ -14,7 +14,7 @@ ROS2 bag，仿真可以使用 ROS2 bag 或 JSONL；字段含义不能改变。
 | `depth` | uint16/depth unit | MuJoCo renderer（可选） | RealSense aligned depth |
 | `camera_info` | calibration | 仿真相机模型 | RealSense `CameraInfo` |
 | `tf` | transform | 仿真 TF | ROS2 `/tf` 和 `/tf_static` |
-| `quality_score_A` | [0,1] | 离线/在线 scorer | 离线/在线 scorer |
+| `data_quality_score` | [0,1] | 离线/在线 scorer | 离线/在线 scorer |
 | `success` | boolean/unknown | 仿真任务判定 | 人工或任务检测器标签 |
 
 每条记录至少包含：
@@ -29,13 +29,20 @@ ROS2 bag，仿真可以使用 ROS2 bag 或 JSONL；字段含义不能改变。
   "clock_source": "ros|mujoco|controller",
   "arm": "left|right|both",
   "joint_names": [],
+  "master_joint_raw": [],
+  "master_joint_filtered_rad": [],
   "robot_joint_state_rad": [],
   "mapped_joint_command_rad": [],
   "tcp_pose_base": {},
-  "quality_score_A": null,
+  "data_quality_score": null,
   "success": null
 }
 ```
+
+每个 episode 还必须在 RunEvidence capture manifest 中保存不可变的
+`experiment_manifest`：其中含 `condition_id`、`task_revision`、
+`reference_revision`、`policy_revision`、扰动 seed/split、profile SHA256。
+`unassigned` 历史数据只能用于工程诊断，不进入论文 A/B 统计。
 
 仿真必须使用 MuJoCo simulation clock；真机机器人状态优先使用 SDK 返回的
 `sec/nanosec`，相机和控制消息使用 ROS2 `header.stamp`。`receipt_stamp_ns` 只用于

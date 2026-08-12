@@ -20,6 +20,7 @@ EXPERIMENT_PROFILE="$ROOT_DIR/config/experiments/precision_assembly_ab.yaml"
 CONDITION_ID="unassigned"
 OPERATOR_ID="anonymous"
 TASK_ID="unspecified"
+EXPERIMENT_MANIFEST=""
 
 usage() {
   cat >&2 <<'EOF'
@@ -37,9 +38,10 @@ Options:
   --no-preview                   do not open rqt_image_view
   --camera-serial SERIAL         RealSense serial (default: 261722075670)
   --experiment-profile PATH      experiment profile YAML
-  --condition=A|B                recorded A/B condition (default: unassigned)
+  --condition=ID                 legacy condition metadata; formal runs use --experiment-manifest
   --operator-id=ID               de-identified operator ID
   --task-id=ID                   task/fixture identifier
+  --experiment-manifest PATH     immutable manifest from tools/resolve_experiment_manifest.py
 EOF
 }
 
@@ -60,6 +62,7 @@ for arg in "$@"; do
     --condition=*) CONDITION_ID="${arg#*=}" ;;
     --operator-id=*) OPERATOR_ID="${arg#*=}" ;;
     --task-id=*) TASK_ID="${arg#*=}" ;;
+    --experiment-manifest=*) EXPERIMENT_MANIFEST="${arg#*=}" ;;
     -h|--help) usage; exit 0 ;;
     *) usage; die "unknown option: $arg" ;;
   esac
@@ -69,9 +72,36 @@ done
 [[ "$EPISODES" =~ ^[1-9][0-9]*$ ]] || die "--episodes must be a positive integer"
 (( ${#SESSION} <= 40 )) || die "tmux session name is too long"
 [[ -f "$EXPERIMENT_PROFILE" ]] || die "experiment profile not found: $EXPERIMENT_PROFILE"
-[[ "$CONDITION_ID" =~ ^(A|B|unassigned)$ ]] || die "--condition must be A, B, or unassigned"
+[[ "$CONDITION_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--condition contains unsupported characters"
 [[ "$OPERATOR_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--operator-id contains unsupported characters"
 [[ "$TASK_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--task-id contains unsupported characters"
+[[ -z "$EXPERIMENT_MANIFEST" || -f "$EXPERIMENT_MANIFEST" ]] || die "experiment manifest not found: $EXPERIMENT_MANIFEST"
+if [[ -n "$EXPERIMENT_MANIFEST" ]]; then
+  [[ "$CONDITION_ID" == "unassigned" ]] || die "--condition cannot override an immutable experiment manifest"
+  python3 - "$EXPERIMENT_MANIFEST" <<'PY' || die "invalid experiment manifest"
+import json
+import sys
+manifest = json.load(open(sys.argv[1], encoding="utf-8"))
+if manifest.get("schema") != "robot_teleop.experiment-manifest/v1":
+    raise SystemExit("unsupported schema")
+if manifest.get("domain") != "real":
+    raise SystemExit("start_capture_session.sh requires a domain=real manifest")
+for key in ("manifest_id", "condition_id", "task_id", "reference_revision", "policy_revision"):
+    if not manifest.get(key):
+        raise SystemExit(f"missing {key}")
+PY
+  read -r MANIFEST_EXPERIMENT_ID MANIFEST_CONDITION_ID MANIFEST_TASK_ID MANIFEST_OPERATOR_ID < <(python3 - "$EXPERIMENT_MANIFEST" <<'PY'
+import json
+import sys
+manifest = json.load(open(sys.argv[1], encoding="utf-8"))
+print(manifest["experiment_id"], manifest["condition_id"], manifest["task_id"], manifest["operator_id"])
+PY
+)
+  EXPERIMENT_ID="$MANIFEST_EXPERIMENT_ID"
+  CONDITION_ID="$MANIFEST_CONDITION_ID"
+  TASK_ID="$MANIFEST_TASK_ID"
+  OPERATOR_ID="$MANIFEST_OPERATOR_ID"
+fi
 EXPERIMENT_ID="$(awk '/^experiment_id:/{print $2; exit}' "$EXPERIMENT_PROFILE")"
 [[ -n "$EXPERIMENT_ID" ]] || die "experiment_id missing from profile: $EXPERIMENT_PROFILE"
 
@@ -208,7 +238,7 @@ launch_cmd monitor "while true; do date; ros2 topic hz /robot1/left_arm/joint_st
 launch_cmd sync "python3 \"$ROOT_DIR/tools/diagnose_time_sync.py\" --duration-s 10 --camera-namespace /camera/camera --output \"$RUN_ROOT/pre_capture_time_sync.json\""
 
 RECORDER="$ROOT_DIR/scripts/record_episode.sh"
-launch_cmd recorder "for i in \$(seq 1 $EPISODES); do export TELEOP_CAPTURE_DURATION_S=$DURATION_S; export TELEOP_HARDWARE_COMMANDS_ENABLED=$([[ $REAL -eq 1 ]] && echo true || echo false); export TELEOP_EXPERIMENT_ID=$EXPERIMENT_ID; export TELEOP_CONDITION_ID=$CONDITION_ID; export TELEOP_OPERATOR_ID=$OPERATOR_ID; export TELEOP_TASK_ID=$TASK_ID; export TELEOP_EXPERIMENT_PROFILE=$EXPERIMENT_PROFILE; export RUNEVIDENCE_BAG_COMPRESSION_MODE=file; export RUNEVIDENCE_BAG_COMPRESSION_FORMAT=zstd; echo READY_EPISODE_\$i; read -r -p \"按回车开始 episode \$i（Ctrl-C 可中止）: \"; \"$RUNEVIDENCE_BIN\" run --domain robotics --runs-root \"$RUN_ROOT\" --label \"$EXPERIMENT_ID-$CONDITION_ID-episode-\$i\" --input experiment_id=\"$EXPERIMENT_ID\" --input condition_id=\"$CONDITION_ID\" --input operator_id=\"$OPERATOR_ID\" --input task_id=\"$TASK_ID\" --input experiment_profile=\"$EXPERIMENT_PROFILE\" --input camera_serial=\"$CAMERA_SERIAL\" --input camera_profile=\"${WIDTH}x${HEIGHT}x${FPS}\" --input teleop_armed=\"$ARMED_ARG\" --input teleop_config=\"$CONFIG\" -- bash \"$RECORDER\"; done; echo ALL_EPISODES_COMPLETE; exec bash"
+launch_cmd recorder "for i in \$(seq 1 $EPISODES); do export TELEOP_CAPTURE_DURATION_S=$DURATION_S; export TELEOP_HARDWARE_COMMANDS_ENABLED=$([[ $REAL -eq 1 ]] && echo true || echo false); export TELEOP_EXPERIMENT_ID=$EXPERIMENT_ID; export TELEOP_CONDITION_ID=$CONDITION_ID; export TELEOP_OPERATOR_ID=$OPERATOR_ID; export TELEOP_TASK_ID=$TASK_ID; export TELEOP_EXPERIMENT_PROFILE=$EXPERIMENT_PROFILE; export TELEOP_EXPERIMENT_MANIFEST=\"$EXPERIMENT_MANIFEST\"; export RUNEVIDENCE_BAG_COMPRESSION_MODE=file; export RUNEVIDENCE_BAG_COMPRESSION_FORMAT=zstd; echo READY_EPISODE_\$i; read -r -p \"按回车开始 episode \$i（Ctrl-C 可中止）: \"; \"$RUNEVIDENCE_BIN\" run --domain robotics --runs-root \"$RUN_ROOT\" --label \"$EXPERIMENT_ID-$CONDITION_ID-episode-\$i\" --input experiment_id=\"$EXPERIMENT_ID\" --input condition_id=\"$CONDITION_ID\" --input operator_id=\"$OPERATOR_ID\" --input task_id=\"$TASK_ID\" --input experiment_profile=\"$EXPERIMENT_PROFILE\" --input camera_serial=\"$CAMERA_SERIAL\" --input camera_profile=\"${WIDTH}x${HEIGHT}x${FPS}\" --input teleop_armed=\"$ARMED_ARG\" --input teleop_config=\"$CONFIG\" -- bash \"$RECORDER\"; done; echo ALL_EPISODES_COMPLETE; exec bash"
 
 tmux select-window -t "$SESSION:preflight"
 log "tmux session started: $SESSION"

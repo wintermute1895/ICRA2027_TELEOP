@@ -53,6 +53,7 @@
 #include "lbot_arm_interfaces/msg/lbot_pose.hpp"
 #include "lbot_arm_interfaces/msg/lbot_frame.hpp"
 #include "lbot_arm_interfaces/msg/follow_joint.hpp"
+#include "lbot_arm_interfaces/msg/vendor_arm_command.hpp"
 
 // 自定义 Service 类型
 #include "lbot_arm_interfaces/srv/change_frame.hpp"
@@ -144,6 +145,10 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr right_joint_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr left_pose_pub_;
     rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr right_pose_pub_;
+    // Mirrors a command after driver validation and immediately before the
+    // official SDK call.  It is an attempted vendor call, not an execution ack.
+    rclcpp::Publisher<lbot_arm_interfaces::msg::VendorArmCommand>::SharedPtr left_vendor_command_pub_;
+    rclcpp::Publisher<lbot_arm_interfaces::msg::VendorArmCommand>::SharedPtr right_vendor_command_pub_;
 
     /****************************** 订阅器 ******************************/
     
@@ -288,6 +293,8 @@ private:
     rclcpp::Service<lbot_arm_interfaces::srv::SetEnable>::SharedPtr set_enable_service_;
     rclcpp::Service<lbot_arm_interfaces::srv::SetEmergency>::SharedPtr set_emergency_service_;
 
+    rclcpp::Publisher<lbot_arm_interfaces::msg::VendorArmCommand>::SharedPtr vendor_command_pub_;
+
     /****************************** 灵巧手Topic ******************************/
 
     rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr left_hand_l6_joint_sub_;
@@ -411,6 +418,8 @@ private:
     rclcpp::Service<lbot_arm_interfaces::srv::SetZero>::SharedPtr set_zero_service_;
     rclcpp::Service<lbot_arm_interfaces::srv::SetEnable>::SharedPtr set_enable_service_;
     rclcpp::Service<lbot_arm_interfaces::srv::SetEmergency>::SharedPtr set_emergency_service_;
+
+    rclcpp::Publisher<lbot_arm_interfaces::msg::VendorArmCommand>::SharedPtr vendor_command_pub_;
 
     /****************************** 灵巧手Topic ******************************/
 

@@ -1,0 +1,9 @@
+schema: robot_teleop.safety-profile/v1
+safety_id: precision_assembly_v1
+joint_limits_source: urdf
+projection_order: [finite_check, unit_check, joint_limit_margin, velocity_limit, singularity_guard, collision_guard]
+command_contract:
+  arm_command_unit: rad
+  residual_command_space: tcp_pose_delta
+  policy_command_order: nominal_reference + policy_residual -> safety_projection -> executed_command
+real_robot: {require_physical_estop: true, allow_unattended_execution: false}

@@ -47,6 +47,17 @@ and joint_limit_margin >= configured_margin
 
 质量门判断数据是否可分析，不判断任务是否成功。
 
+`tools/score_episode_data_quality.py` is the executable form of this first
+data-quality gate. It reports episode completeness, timestamp monotonicity and
+gaps, state/command coverage, and camera coverage without reading a robot SDK
+or changing an episode. It intentionally calls the result `data_quality_score`
+rather than `A`, because condition `A` already denotes the baseline.
+
+`tools/export_rosbag_episode.py` and `scripts/export_episode.sh` turn either a
+real or simulation rosbag into the same canonical per-arm JSONL before this
+gate. Their namespace choices are explicit rather than inferred from the bag;
+the full record/export/evaluation procedure is in `docs/DATA_PIPELINE.md`.
+
 ## 统计分析
 
 - success：混合效应 logistic model，或适合被试内设计的 McNemar/置换检验。
@@ -64,4 +75,3 @@ and joint_limit_margin >= configured_margin
 - Hart and Staveland, 1988；NASA-TLX 官方材料，用于操作者负担测量。
 
 标准链接和引用细节见 `docs/REFERENCES.md`。
-
