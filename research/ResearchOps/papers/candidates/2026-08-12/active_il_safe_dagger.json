@@ -1,0 +1,860 @@
+{
+  "schema": "vist.researchops.paper-candidates/v1",
+  "source": "OpenAlex",
+  "query": "active imitation learning query human demonstrations robot learning safe DAgger budgeted data collection",
+  "from_year": 2020,
+  "title_include": [],
+  "retrieved_on": "2026-08-12",
+  "candidates": [
+    {
+      "openalex_id": "https://openalex.org/W4385430674",
+      "title": "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware",
+      "publication_date": "2023-07-10",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2023.xix.016",
+      "open_access_url": "https://doi.org/10.15607/rss.2023.xix.016",
+      "landing_page": "https://doi.org/10.15607/rss.2023.xix.016",
+      "authors": [
+        "Tony Z. Zhao",
+        "Vikas Kumar",
+        "Sergey Levine",
+        "Chelsea Finn"
+      ],
+      "cited_by_count": 500,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4394963598",
+      "title": "A survey on interpretable reinforcement learning",
+      "publication_date": "2024-04-19",
+      "venue": "Machine Learning",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1007/s10994-024-06543-w",
+      "open_access_url": "https://link.springer.com/content/pdf/10.1007/s10994-024-06543-w.pdf",
+      "landing_page": "https://doi.org/10.1007/s10994-024-06543-w",
+      "authors": [
+        "Claire Glanois",
+        "Paul Weng",
+        "Matthieu Zimmer",
+        "Dong Li",
+        "Tianpei Yang",
+        "Jianye Hao",
+        "Wulong Liu"
+      ],
+      "cited_by_count": 82,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4382766142",
+      "title": "End-to-end Autonomous Driving: Challenges and Frontiers",
+      "publication_date": "2023-06-29",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2306.16927",
+      "open_access_url": "https://arxiv.org/pdf/2306.16927",
+      "landing_page": "http://arxiv.org/abs/2306.16927",
+      "authors": [
+        "Li Chen",
+        "Penghao Wu",
+        "Kashyap Chitta",
+        "Bernhard Jaeger",
+        "Andreas Geiger",
+        "Hongyang Li"
+      ],
+      "cited_by_count": 22,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4385403839",
+      "title": "PATO: Policy Assisted TeleOperation for Scalable Robot Data Collection",
+      "publication_date": "2023-07-10",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2023.xix.013",
+      "open_access_url": "https://doi.org/10.15607/rss.2023.xix.013",
+      "landing_page": "https://doi.org/10.15607/rss.2023.xix.013",
+      "authors": [
+        "Shivin Dass",
+        "Karl Pertsch",
+        "Hejia Zhang",
+        "Youngwoon Lee",
+        "Joseph J. Lim",
+        "Stefanos Nikolaidis"
+      ],
+      "cited_by_count": 16,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4225908986",
+      "title": "A Survey on Interpretable Reinforcement Learning",
+      "publication_date": "2021-12-24",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2112.13112",
+      "open_access_url": "https://arxiv.org/pdf/2112.13112",
+      "landing_page": "http://arxiv.org/abs/2112.13112",
+      "authors": [
+        "Claire Glanois",
+        "Paul Weng",
+        "Matthieu Zimmer",
+        "Dong Li",
+        "Tianpei Yang",
+        "Jianye Hao",
+        "Wulong Liu"
+      ],
+      "cited_by_count": 15,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4316662143",
+      "title": "Knowledge- and ambiguity-aware robot learning from corrective and evaluative feedback",
+      "publication_date": "2023-01-16",
+      "venue": "Neural Computing and Applications",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1007/s00521-022-08118-z",
+      "open_access_url": "https://link.springer.com/content/pdf/10.1007/s00521-022-08118-z.pdf",
+      "landing_page": "https://doi.org/10.1007/s00521-022-08118-z",
+      "authors": [
+        "Carlos Celemin",
+        "Jens Kober"
+      ],
+      "cited_by_count": 14,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4367191050",
+      "title": "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware",
+      "publication_date": "2023-04-23",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2304.13705",
+      "open_access_url": "https://arxiv.org/pdf/2304.13705",
+      "landing_page": "http://arxiv.org/abs/2304.13705",
+      "authors": [
+        "Tony Z. Zhao",
+        "Vikas Kumar",
+        "Sergey Levine",
+        "Chelsea Finn"
+      ],
+      "cited_by_count": 12,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4327991490",
+      "title": "Motion Planning for Autonomous Driving: The State of the Art and Future Perspectives",
+      "publication_date": "2023-03-17",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2303.09824",
+      "open_access_url": "https://arxiv.org/pdf/2303.09824",
+      "landing_page": "http://arxiv.org/abs/2303.09824",
+      "authors": [
+        "Siyu Teng",
+        "Xuemin Hu",
+        "Deng Peng",
+        "Bai Li",
+        "Yuchen Li",
+        "Yang, Dongsheng",
+        "Yunfeng Ai",
+        "Lingxi Li",
+        "Zhe Xuanyuan",
+        "Zhu, Fenghua",
+        "Long Chen"
+      ],
+      "cited_by_count": 11,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4283742149",
+      "title": "Fleet-DAgger: Interactive Robot Fleet Learning with Scalable Human Supervision",
+      "publication_date": "2022-06-29",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2206.14349",
+      "open_access_url": "https://arxiv.org/pdf/2206.14349",
+      "landing_page": "http://arxiv.org/abs/2206.14349",
+      "authors": [
+        "Ryan Hoque",
+        "Lawrence Yunliang Chen",
+        "Satvik Sharma",
+        "Karthik Dharmarajan",
+        "Brijen Thananjeyan",
+        "Pieter Abbeel",
+        "Ken Goldberg"
+      ],
+      "cited_by_count": 8,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W3103079199",
+      "title": "Policy Improvement via Imitation of Multiple Oracles",
+      "publication_date": "2020-07-01",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2007.00795",
+      "open_access_url": "https://arxiv.org/pdf/2007.00795",
+      "landing_page": "http://arxiv.org/abs/2007.00795",
+      "authors": [
+        "Ching-An Cheng",
+        "Andrey Kolobov",
+        "Alekh Agarwal"
+      ],
+      "cited_by_count": 6,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4391892588",
+      "title": "Leveraging Demonstrator-Perceived Precision for Safe Interactive Imitation Learning of Clearance-Limited Tasks",
+      "publication_date": "2024-02-16",
+      "venue": "IEEE Robotics and Automation Letters",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1109/lra.2024.3366755",
+      "open_access_url": "https://arxiv.org/pdf/2402.13466",
+      "landing_page": "https://doi.org/10.1109/lra.2024.3366755",
+      "authors": [
+        "Hanbit Oh",
+        "Takamitsu Matsubara"
+      ],
+      "cited_by_count": 5,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4386555702",
+      "title": "A Survey of Imitation Learning: Algorithms, Recent Developments, and Challenges",
+      "publication_date": "2023-09-05",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2309.02473",
+      "open_access_url": "https://arxiv.org/pdf/2309.02473",
+      "landing_page": "http://arxiv.org/abs/2309.02473",
+      "authors": [
+        "Maryam Zare",
+        "Parham M. Kebria",
+        "Abbas Khosravi",
+        "Saeid Nahavandi"
+      ],
+      "cited_by_count": 3,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4306815217",
+      "title": "Eliciting Compatible Demonstrations for Multi-Human Imitation Learning",
+      "publication_date": "2022-10-14",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2210.08073",
+      "open_access_url": "https://arxiv.org/pdf/2210.08073",
+      "landing_page": "http://arxiv.org/abs/2210.08073",
+      "authors": [
+        "Kanishk Gandhi",
+        "Siddharth Karamcheti",
+        "Madeline Liao",
+        "Dorsa Sadigh"
+      ],
+      "cited_by_count": 2,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4286894802",
+      "title": "Multi-Agent Advisor Q-Learning",
+      "publication_date": "2021-10-26",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2111.00345",
+      "open_access_url": "https://arxiv.org/pdf/2111.00345",
+      "landing_page": "http://arxiv.org/abs/2111.00345",
+      "authors": [
+        "Sriram Ganapathi Subramanian",
+        "Matthew E. Taylor",
+        "Kate Larson",
+        "Mark Crowley"
+      ],
+      "cited_by_count": 1,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4417174623",
+      "title": "A Survey on Reinforcement Learning of Vision-Language-Action Models for Robotic Manipulation",
+      "publication_date": "2025-12-09",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.36227/techrxiv.176531955.54563920/v1",
+      "open_access_url": "https://www.techrxiv.org/doi/pdf/10.36227/techrxiv.176531955.54563920",
+      "landing_page": "https://doi.org/10.36227/techrxiv.176531955.54563920/v1",
+      "authors": [
+        "Haoyuan Deng",
+        "Zhenyu Wu",
+        "Haichao Liu",
+        "Wenkai Guo",
+        "Yuquan Xue",
+        "Ziyu Shan",
+        "Chuanrui Zhang",
+        "Bofang Jia",
+        "Yuan Ling",
+        "Guanxing Lu",
+        "Ziwei Wang"
+      ],
+      "cited_by_count": 1,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4311250086",
+      "title": "PATO: Policy Assisted TeleOperation for Scalable Robot Data Collection",
+      "publication_date": "2022-12-09",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2212.04708",
+      "open_access_url": "https://arxiv.org/pdf/2212.04708",
+      "landing_page": "http://arxiv.org/abs/2212.04708",
+      "authors": [
+        "Shivin Dass",
+        "Karl Pertsch",
+        "Hejia Zhang",
+        "Youngwoon Lee",
+        "Joseph J. Lim",
+        "Stefanos Nikolaidis"
+      ],
+      "cited_by_count": 1,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4311879119",
+      "title": "Data-Driven Robotic Manipulation of Cloth-like Deformable Objects: Present, Challenges, and Future Prospects",
+      "publication_date": "2022-12-16",
+      "venue": "Preprints.org",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.20944/preprints202212.0305.v1",
+      "open_access_url": "https://www.preprints.org/manuscript/202212.0305/v1/download",
+      "landing_page": "https://doi.org/10.20944/preprints202212.0305.v1",
+      "authors": [
+        "Halid Kadi",
+        "Kasim Terzić"
+      ],
+      "cited_by_count": 1,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7165220333",
+      "title": "Uncertainty Quantification for Flow-Based Vision-Language-Action Models",
+      "publication_date": "2026-06-16",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2606.18043",
+      "landing_page": "https://arxiv.org/abs/2606.18043",
+      "authors": [
+        "Ralf Römer",
+        "Maximilian Seeliger",
+        "Saida Liu",
+        "Ben Sturgis",
+        "Marco Bagatella",
+        "Daniel Marta",
+        "Andreas Krause",
+        "Angela P. Schoellig"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7138824578",
+      "title": "Easy-IIL: Reducing Human Operational Burden in Interactive Imitation Learning via Assistant Experts",
+      "publication_date": "2026-03-13",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2603.12769",
+      "landing_page": "http://arxiv.org/abs/2603.12769",
+      "authors": [
+        "Chengjie Zhang",
+        "Chao Tang",
+        "Wenlong Dong",
+        "Dehao Huang",
+        "Aoxiang Gu",
+        "Hong Zhang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7144050333",
+      "title": "Leveraging Human Risk Sensitivity for Enriching Imitation Learning",
+      "publication_date": "2024-03-31",
+      "venue": "Institutional Repositories DataBase (IRDB)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.34413/dr.02036",
+      "open_access_url": "https://naist.repo.nii.ac.jp/records/2000243",
+      "landing_page": "https://naist.repo.nii.ac.jp/records/2000243",
+      "authors": [
+        "HANBIT OH"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7131910135",
+      "title": "When to Act, Ask, or Learn: Uncertainty-Aware Policy Steering",
+      "publication_date": "2026-02-25",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2602.22474",
+      "landing_page": "https://arxiv.org/abs/2602.22474",
+      "authors": [
+        "Jessie Yuan",
+        "Yilin Wu",
+        "Andrea Bajcsy"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7169689258",
+      "title": "Zero2Skill: Bootstrapping Robot Skills through Autonomous Data Collection, Training, and Deployment",
+      "publication_date": "2026-07-15",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2607.14047",
+      "landing_page": "https://arxiv.org/abs/2607.14047",
+      "authors": [
+        "Boyuan Wang",
+        "Zhenyuan Zhang",
+        "Zhiqin Yang",
+        "Peijun Gu",
+        "Shuya Wang",
+        "Xiaofeng Wang",
+        "Xianghui Ze",
+        "Yifan Chang",
+        "Guosheng Zhao",
+        "Jianbo Shao",
+        "G Q Huang",
+        "Hengyu Liu",
+        "Yonggang Zhang",
+        "Wei Xue",
+        "Chunyuan Guan",
+        "普成林",
+        "Yike Guo",
+        "Xingang Wang",
+        "Zheng Zhu"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7196923017",
+      "title": "A Comprehensive Review of End-to-End Autonomous Driving: Architectures and Emerging Trends",
+      "publication_date": "2026-08-06",
+      "venue": "Actuators",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/act15080427",
+      "open_access_url": "https://www.mdpi.com/2076-0825/15/8/427/pdf?version=1785981183",
+      "landing_page": "https://doi.org/10.3390/act15080427",
+      "authors": [
+        "Yunxing Chen",
+        "Yu Guo",
+        "Pengfei Ran",
+        "Zhijun Chen"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7168054562",
+      "title": "Post-Training in End-to-End Autonomous Driving",
+      "publication_date": "2026-07-09",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2607.08072",
+      "landing_page": "https://arxiv.org/abs/2607.08072",
+      "authors": [
+        "Ruining Yang",
+        "Muxing Wang",
+        "Yixiao Chen",
+        "Tongfei Guo",
+        "Yi Xu",
+        "Can Cui",
+        "Zichong Yang",
+        "Yitian Zhang",
+        "Ziran Wang",
+        "Y Fu",
+        "Lili Su"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4417100516",
+      "title": "Fine-tuning Behavioral Cloning Policies with Preference-Based Reinforcement Learning",
+      "publication_date": "2025-09-30",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2509.26605",
+      "open_access_url": "https://arxiv.org/pdf/2509.26605",
+      "landing_page": "http://arxiv.org/abs/2509.26605",
+      "authors": [
+        "Maël Macuglia",
+        "Paul Friedrich",
+        "Giorgia Ramponi"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4404352944",
+      "title": "So You Think You Can Scale Up Autonomous Robot Data Collection?",
+      "publication_date": "2024-11-04",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2411.01813",
+      "open_access_url": "https://arxiv.org/pdf/2411.01813",
+      "landing_page": "http://arxiv.org/abs/2411.01813",
+      "authors": [
+        "Suvir Mirchandani",
+        "Suneel Belkhale",
+        "Joey Hejna",
+        "Choi, Evelyn",
+        "Md Sazzad Islam",
+        "Dorsa Sadigh"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4413638658",
+      "title": "Recipe for Vision-Language-Action Models in Robotic Manipulation: A Survey",
+      "publication_date": "2025-08-26",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.36227/techrxiv.175624610.06665789/v1",
+      "open_access_url": "https://www.techrxiv.org/doi/pdf/10.36227/techrxiv.175624610.06665789/v1",
+      "landing_page": "https://doi.org/10.36227/techrxiv.175624610.06665789/v1",
+      "authors": [
+        "Tomohiro Motoda",
+        "Koshi Makihara",
+        "Ryoichi Nakajo",
+        "Hanbit Oh",
+        "Keisuke Shirai",
+        "Ryo Hanai",
+        "Masaki Murooka",
+        "Yuma Suzuki",
+        "Hiroki Nishihara",
+        "Mitsuru Takeda",
+        "T. Takada",
+        "Takayuki Hori",
+        "Yukiyasu Domae"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4403347021",
+      "title": "Reinforcement Learning From Imperfect Corrective Actions And Proxy Rewards",
+      "publication_date": "2024-10-08",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2410.05782",
+      "open_access_url": "https://arxiv.org/pdf/2410.05782",
+      "landing_page": "http://arxiv.org/abs/2410.05782",
+      "authors": [
+        "Zhaohui Jiang",
+        "Xuening Feng",
+        "Paul Weng",
+        "Yifei Zhu",
+        "Yan Song",
+        "Tianze Zhou",
+        "Yujing Hu",
+        "Tangjie Lv",
+        "Changjie Fan"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7134094458",
+      "title": "RoboPocket: Improve Robot Policies Instantly with Your Phone",
+      "publication_date": "2026-03-05",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2603.05504",
+      "landing_page": "http://arxiv.org/abs/2603.05504",
+      "authors": [
+        "Junjie Fang",
+        "Wendi Chen",
+        "Han Xue",
+        "F. Zhou",
+        "Tian Le",
+        "Yi Wang",
+        "Yuting Zhang",
+        "Jun Lv",
+        "Chuan Wen",
+        "CeWu Lu"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7163287467",
+      "title": "Uncertainty-Aware and Temporally Regulated Expert Advice in Reinforcement Learning for Autonomous Driving",
+      "publication_date": "2026-05-28",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2605.30576",
+      "landing_page": "https://arxiv.org/abs/2605.30576",
+      "authors": [
+        "Ahmed Abouelazm",
+        "Felix Klingebiel",
+        "Philip Schörner",
+        "J. Marius Zöllner"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4415270258",
+      "title": "Diffusion Models for Reinforcement Learning: Foundations, Taxonomy, and Development",
+      "publication_date": "2025-10-14",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2510.12253",
+      "open_access_url": "https://arxiv.org/pdf/2510.12253",
+      "landing_page": "http://arxiv.org/abs/2510.12253",
+      "authors": [
+        "Changfu Xu",
+        "Jianxiong Guo",
+        "Liang, Yuzhu",
+        "Haiyang Huang",
+        "Haodong Zou",
+        "Xi Zheng",
+        "Yu Shui",
+        "Xiaowen Chu",
+        "Jiannong Cao",
+        "Tian Wang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7171614595",
+      "title": "A Review of Language-Guided Dexterous Grasping with Human-in-the-Loop Adaptation",
+      "publication_date": "2026-07-29",
+      "venue": "Mathematics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/math14152709",
+      "open_access_url": "https://www.mdpi.com/2227-7390/14/15/2709/pdf?version=1785299555",
+      "landing_page": "https://doi.org/10.3390/math14152709",
+      "authors": [
+        "Eugene Jeong",
+        "Soo‐Chul Lim"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7168328479",
+      "title": "SafeExplorer: An Unbiased Policy Gradient for Reinforcement Learning with Recovery Interventions",
+      "publication_date": "2026-07-09",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2607.08925",
+      "landing_page": "https://arxiv.org/abs/2607.08925",
+      "authors": [
+        "Elham Daneshmand",
+        "Majid Khadiv",
+        "Glen Berseth",
+        "Hsiu-Chin Lin"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7131910306",
+      "title": "SPARR: Simulation-based Policies with Asymmetric Real-world Residuals for Assembly",
+      "publication_date": "2026-02-26",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2602.23253",
+      "landing_page": "http://arxiv.org/abs/2602.23253",
+      "authors": [
+        "Yijie Guo",
+        "Iretiayo Akinola",
+        "Lars Johannsmeier",
+        "Hugo Hadfield",
+        "Dr. Abhishek Kumar Gupta",
+        "Yashraj Narang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W3154779563",
+      "title": "Neural Tree Expansion for Multi-Robot Planning in Non-Cooperative Environments",
+      "publication_date": "2021-07-26",
+      "venue": "IEEE Robotics and Automation Letters",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1109/lra.2021.3096758",
+      "open_access_url": "https://arxiv.org/pdf/2104.09705",
+      "landing_page": "https://doi.org/10.1109/lra.2021.3096758",
+      "authors": [
+        "Benjamin Rivière",
+        "Wolfgang Hoenig",
+        "Matthew Anderson",
+        "Soon‐Jo Chung"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7167154012",
+      "title": "Robustness of Robotic Manipulation: Foundations and Frontiers",
+      "publication_date": "2026-06-30",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2606.31494",
+      "landing_page": "https://arxiv.org/abs/2606.31494",
+      "authors": [
+        "Y H Dong",
+        "Z X Sun",
+        "L Yang",
+        "Manuel Baum",
+        "Kei Ikemura",
+        "Shuran Song",
+        "Florian T. Pokorny",
+        "Xianyi Cheng"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4404305690",
+      "title": "Diff-DAgger: Uncertainty Estimation with Diffusion Policy for Robotic Manipulation",
+      "publication_date": "2024-10-18",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2410.14868",
+      "open_access_url": "https://arxiv.org/pdf/2410.14868",
+      "landing_page": "http://arxiv.org/abs/2410.14868",
+      "authors": [
+        "Sungwook Lee",
+        "Kang, Xuhui",
+        "Kuo, Yen-Ling"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4353007552",
+      "title": "A Survey of Demonstration Learning",
+      "publication_date": "2023-03-20",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2303.11191",
+      "open_access_url": "https://arxiv.org/pdf/2303.11191",
+      "landing_page": "http://arxiv.org/abs/2303.11191",
+      "authors": [
+        "André Correia",
+        "Luı́s A. Alexandre"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4392488573",
+      "title": "RT-H: Action Hierarchies Using Language",
+      "publication_date": "2024-03-04",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2403.01823",
+      "open_access_url": "https://arxiv.org/pdf/2403.01823",
+      "landing_page": "http://arxiv.org/abs/2403.01823",
+      "authors": [
+        "Suneel Belkhale",
+        "Tianli Ding",
+        "Ted Xiao",
+        "Pierre Sermanet",
+        "Quon Vuong",
+        "Jonathan Tompson",
+        "Yevgen Chebotar",
+        "Debidatta Dwibedi",
+        "Dorsa Sadigh"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4417447058",
+      "title": "A review of learning-based motion planning: toward a data-driven optimal control approach",
+      "publication_date": "2026-05-25",
+      "venue": "Transportation Research Part C Emerging Technologies",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1016/j.trc.2026.105767",
+      "open_access_url": "https://arxiv.org/pdf/2512.11944",
+      "landing_page": "https://doi.org/10.1016/j.trc.2026.105767",
+      "authors": [
+        "Jia Hu",
+        "Yang Chang",
+        "Haoran Wang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4387995696",
+      "title": "Model-Based Runtime Monitoring with Interactive Imitation Learning",
+      "publication_date": "2023-10-26",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2310.17552",
+      "open_access_url": "https://arxiv.org/pdf/2310.17552",
+      "landing_page": "http://arxiv.org/abs/2310.17552",
+      "authors": [
+        "Huihan Liu",
+        "Shivin Dass",
+        "Roberto Martín-Martín",
+        "Yuke Zhu"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W3202212882",
+      "title": "NEAT: Neural Attention Fields for End-to-End Autonomous Driving",
+      "publication_date": "2021-09-09",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2109.04456",
+      "open_access_url": "https://arxiv.org/pdf/2109.04456",
+      "landing_page": "http://arxiv.org/abs/2109.04456",
+      "authors": [
+        "Kashyap Chitta",
+        "Aditya Prakash",
+        "Andreas Geiger"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4405254993",
+      "title": "Interactive and Hybrid Imitation Learning: Provably Beating Behavior Cloning",
+      "publication_date": "2024-12-09",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2412.07057",
+      "open_access_url": "https://arxiv.org/pdf/2412.07057",
+      "landing_page": "http://arxiv.org/abs/2412.07057",
+      "authors": [
+        "Yichen Li",
+        "Chicheng Zhang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    }
+  ],
+  "required_next_step": "Verify official venue/year/DOI and inspect full text before creating a paper evidence card or using as claim evidence."
+}

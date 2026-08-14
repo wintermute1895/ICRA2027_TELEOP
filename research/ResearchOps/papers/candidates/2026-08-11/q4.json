@@ -1,0 +1,33 @@
+{
+  "schema": "vist.researchops.paper-candidates/v1",
+  "source": "OpenAlex",
+  "query": "uncertainty calibrated robot manipulation shared autonomy",
+  "from_year": 2023,
+  "title_include": [
+    "uncertainty",
+    "calibrat",
+    "shared autonomy",
+    "manipulation"
+  ],
+  "retrieved_on": "2026-08-11",
+  "candidates": [
+    {
+      "openalex_id": "https://openalex.org/W4366548373",
+      "title": "Measuring and Understanding Trust Calibrations for Automated Systems: A Survey of the State-Of-The-Art and Future Directions",
+      "publication_date": "2023-04-19",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1145/3544548.3581197",
+      "open_access_url": "https://dl.acm.org/doi/pdf/10.1145/3544548.3581197",
+      "landing_page": "https://doi.org/10.1145/3544548.3581197",
+      "authors": [
+        "Magdalena Wischnewski",
+        "Nicole C. Krämer",
+        "Emmanuel Müller"
+      ],
+      "cited_by_count": 116,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    }
+  ],
+  "required_next_step": "Verify official venue/year/DOI and inspect full text before creating a paper evidence card or using as claim evidence."
+}

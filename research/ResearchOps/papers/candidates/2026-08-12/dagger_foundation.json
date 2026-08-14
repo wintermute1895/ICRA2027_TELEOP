@@ -1,0 +1,415 @@
+{
+  "schema": "vist.researchops.paper-candidates/v1",
+  "source": "OpenAlex",
+  "query": "A Reduction of Imitation Learning and Structured Prediction to No-Regret Online Learning Ross Gordon Bagnell",
+  "from_year": 2010,
+  "title_include": [],
+  "retrieved_on": "2026-08-12",
+  "candidates": [
+    {
+      "openalex_id": "https://openalex.org/W2783963507",
+      "title": "Planning and Decision-Making for Autonomous Vehicles",
+      "publication_date": "2018-01-12",
+      "venue": "Annual Review of Control Robotics and Autonomous Systems",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1146/annurev-control-060117-105157",
+      "open_access_url": "https://www.annualreviews.org/doi/pdf/10.1146/annurev-control-060117-105157",
+      "landing_page": "https://doi.org/10.1146/annurev-control-060117-105157",
+      "authors": [
+        "Wilko Schwarting",
+        "Javier Alonso–Mora",
+        "Daniela Rus"
+      ],
+      "cited_by_count": 952,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2788862220",
+      "title": "Deep Q-learning From Demonstrations",
+      "publication_date": "2018-04-29",
+      "venue": "Proceedings of the AAAI Conference on Artificial Intelligence",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1609/aaai.v32i1.11757",
+      "open_access_url": "https://doi.org/10.1609/aaai.v32i1.11757",
+      "landing_page": "https://doi.org/10.1609/aaai.v32i1.11757",
+      "authors": [
+        "Todd Hester",
+        "Matej Vecerík",
+        "Olivier Pietquin",
+        "Marc Lanctot",
+        "Tom Schaul",
+        "Bilal Piot",
+        "Dan Horgan",
+        "John Quan",
+        "Andrew Sendonaris",
+        "Ian Osband",
+        "Gabriel Dulac-Arnold",
+        "John Agapiou",
+        "Joel Z. Leibo",
+        "Audrūnas Gruslys"
+      ],
+      "cited_by_count": 821,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2963736842",
+      "title": "Sequence-Level Knowledge Distillation",
+      "publication_date": "2016-01-01",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.18653/v1/d16-1139",
+      "open_access_url": "https://www.aclweb.org/anthology/D16-1139.pdf",
+      "landing_page": "https://doi.org/10.18653/v1/d16-1139",
+      "authors": [
+        "Yoon Kim",
+        "Alexander M. Rush"
+      ],
+      "cited_by_count": 784,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2994446013",
+      "title": "Recent Advances in Robot Learning from Demonstration",
+      "publication_date": "2019-12-06",
+      "venue": "Annual Review of Control Robotics and Autonomous Systems",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1146/annurev-control-100819-063206",
+      "open_access_url": "https://www.annualreviews.org/doi/pdf/10.1146/annurev-control-100819-063206",
+      "landing_page": "https://doi.org/10.1146/annurev-control-100819-063206",
+      "authors": [
+        "Harish Ravichandar",
+        "Athanasios Polydoros",
+        "Sonia Chernova",
+        "Aude Billard"
+      ],
+      "cited_by_count": 734,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4383112908",
+      "title": "Transfer Learning in Deep Reinforcement Learning: A Survey",
+      "publication_date": "2023-07-04",
+      "venue": "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1109/tpami.2023.3292075",
+      "open_access_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11018366/pdf/nihms-1982062.pdf",
+      "landing_page": "https://doi.org/10.1109/tpami.2023.3292075",
+      "authors": [
+        "Zhuangdi Zhu",
+        "Kaixiang Lin",
+        "Anil K. Jain",
+        "Jiayu Zhou"
+      ],
+      "cited_by_count": 707,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2905173465",
+      "title": "ChauffeurNet: Learning to Drive by Imitating the Best and Synthesizing the Worst",
+      "publication_date": "2019-06-22",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2019.xv.031",
+      "open_access_url": "https://doi.org/10.15607/rss.2019.xv.031",
+      "landing_page": "https://doi.org/10.15607/rss.2019.xv.031",
+      "authors": [
+        "Mayank Bansal",
+        "Alex Krizhevsky",
+        "Abhijit S. Ogale"
+      ],
+      "cited_by_count": 703,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2981030070",
+      "title": "Solving Rubik's Cube with a Robot Hand",
+      "publication_date": "2019-10-16",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.1910.07113",
+      "open_access_url": "https://arxiv.org/pdf/1910.07113",
+      "landing_page": "http://arxiv.org/abs/1910.07113",
+      "authors": [
+        "OpenAI",
+        "Ilge Akkaya",
+        "Marcin Andrychowicz",
+        "Maciek Chociej",
+        "Mateusz Litwin",
+        "Bob McGrew",
+        "Arthur J Petron",
+        "Alex Paino",
+        "Matthias Plappert",
+        "Glenn Powell",
+        "Raphael Ribas",
+        "Jonas Schneider",
+        "Nikolas Tezak",
+        "Jerry Tworek",
+        "Peter Welinder",
+        "Lilian Weng",
+        "Qiming Yuan",
+        "Wojciech Zaremba",
+        "Lei Zhang"
+      ],
+      "cited_by_count": 634,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W3121342653",
+      "title": "Challenges of real-world reinforcement learning: definitions, benchmarks and analysis",
+      "publication_date": "2021-04-22",
+      "venue": "Machine Learning",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1007/s10994-021-05961-4",
+      "open_access_url": "https://link.springer.com/content/pdf/10.1007/s10994-021-05961-4.pdf",
+      "landing_page": "https://doi.org/10.1007/s10994-021-05961-4",
+      "authors": [
+        "Gabriel Dulac-Arnold",
+        "Nir Levine",
+        "Daniel J. Mankowitz",
+        "Jerry Li",
+        "Cosmin Păduraru",
+        "Sven Gowal",
+        "Todd Hester"
+      ],
+      "cited_by_count": 605,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4224220194",
+      "title": "Deep learning, reinforcement learning, and world models",
+      "publication_date": "2022-04-19",
+      "venue": "Neural Networks",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1016/j.neunet.2022.03.037",
+      "open_access_url": "https://www.sciencedirect.com/science/article/pii/S0893608022001150/pdf",
+      "landing_page": "https://doi.org/10.1016/j.neunet.2022.03.037",
+      "authors": [
+        "Yutaka Matsuo",
+        "Yann LeCun",
+        "Maneesh Sahani",
+        "Doina Precup",
+        "David Silver",
+        "Masashi Sugiyama",
+        "Eiji Uchibe",
+        "Jun Morimoto"
+      ],
+      "cited_by_count": 508,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4385430674",
+      "title": "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware",
+      "publication_date": "2023-07-10",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2023.xix.016",
+      "open_access_url": "https://doi.org/10.15607/rss.2023.xix.016",
+      "landing_page": "https://doi.org/10.15607/rss.2023.xix.016",
+      "authors": [
+        "Tony Z. Zhao",
+        "Vikas Kumar",
+        "Sergey Levine",
+        "Chelsea Finn"
+      ],
+      "cited_by_count": 500,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4385403811",
+      "title": "Diffusion Policy: Visuomotor Policy Learning via Action Diffusion",
+      "publication_date": "2023-07-10",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2023.xix.026",
+      "open_access_url": "https://doi.org/10.15607/rss.2023.xix.026",
+      "landing_page": "https://doi.org/10.15607/rss.2023.xix.026",
+      "authors": [
+        "Cheng Chi",
+        "Siyuan Feng",
+        "Yilun Du",
+        "Zhenjia Xu",
+        "Eric Cousineau",
+        "Benjamin Burchfiel",
+        "Shuran Song"
+      ],
+      "cited_by_count": 447,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2963620441",
+      "title": "Sequence-to-Sequence Learning as Beam-Search Optimization",
+      "publication_date": "2016-01-01",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.18653/v1/d16-1137",
+      "open_access_url": "https://www.aclweb.org/anthology/D16-1137.pdf",
+      "landing_page": "https://doi.org/10.18653/v1/d16-1137",
+      "authors": [
+        "Sam Wiseman",
+        "Alexander M. Rush"
+      ],
+      "cited_by_count": 444,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2546950329",
+      "title": "Neural Symbolic Machines: Learning Semantic Parsers on Freebase with Weak Supervision",
+      "publication_date": "2017-01-01",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.18653/v1/p17-1003",
+      "open_access_url": "https://www.aclweb.org/anthology/P17-1003.pdf",
+      "landing_page": "https://doi.org/10.18653/v1/p17-1003",
+      "authors": [
+        "Liang Chen",
+        "Jonathan Berant",
+        "Quoc V. Le",
+        "Kenneth D. Forbus",
+        "Ni Lao"
+      ],
+      "cited_by_count": 382,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W3101780148",
+      "title": "An Algorithmic Perspective on Imitation Learning",
+      "publication_date": "2018-03-27",
+      "venue": "Foundations and Trends in Robotics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1561/2300000053",
+      "open_access_url": "https://www.nowpublishers.com/article/Download/ROB-053",
+      "landing_page": "https://doi.org/10.1561/2300000053",
+      "authors": [
+        "Takayuki Osa",
+        "Joni Pajarinen",
+        "Gerhard Neumann",
+        "J. Andrew Bagnell",
+        "Pieter Abbeel",
+        "Jan Peters"
+      ],
+      "cited_by_count": 377,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W3147968035",
+      "title": "AMP",
+      "publication_date": "2021-07-19",
+      "venue": "ACM Transactions on Graphics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1145/3450626.3459670",
+      "open_access_url": "https://dl.acm.org/doi/pdf/10.1145/3450626.3459670",
+      "landing_page": "https://doi.org/10.1145/3450626.3459670",
+      "authors": [
+        "Xue Bin Peng",
+        "Ze Ma",
+        "Pieter Abbeel",
+        "Sergey Levine",
+        "Angjoo Kanazawa"
+      ],
+      "cited_by_count": 366,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2542835211",
+      "title": "Professor Forcing: A New Algorithm for Training Recurrent Networks",
+      "publication_date": "2016-10-27",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.1610.09038",
+      "open_access_url": "https://arxiv.org/pdf/1610.09038",
+      "landing_page": "http://arxiv.org/abs/1610.09038",
+      "authors": [
+        "Alex Lamb",
+        "Anirudh Goyal",
+        "Ying Zhang",
+        "Saizheng Zhang",
+        "Aaron Courville",
+        "Yoshua Bengio"
+      ],
+      "cited_by_count": 328,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2963376229",
+      "title": "Deep Q-learning from Demonstrations",
+      "publication_date": "2017-04-12",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.1704.03732",
+      "open_access_url": "https://arxiv.org/pdf/1704.03732",
+      "landing_page": "http://arxiv.org/abs/1704.03732",
+      "authors": [
+        "Todd Hester",
+        "Matej Vecerík",
+        "Olivier Pietquin",
+        "Marc Lanctot",
+        "Tom Schaul",
+        "Bilal Piot",
+        "Dan Horgan",
+        "John Quan",
+        "Andrew Sendonaris",
+        "Gabriel Dulac-Arnold",
+        "Ian Osband",
+        "John Agapiou",
+        "Joel Z. Leibo",
+        "Audrūnas Gruslys"
+      ],
+      "cited_by_count": 306,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2982095652",
+      "title": "Deep Drone Racing: From Simulation to Reality With Domain Randomization",
+      "publication_date": "2019-10-21",
+      "venue": "IEEE Transactions on Robotics",
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.1109/tro.2019.2942989",
+      "open_access_url": "https://ieeexplore.ieee.org/ielx7/8860/8984601/08877728.pdf",
+      "landing_page": "https://doi.org/10.1109/tro.2019.2942989",
+      "authors": [
+        "Antonio Loquercio",
+        "Elia Kaufmann",
+        "René Ranftl",
+        "Alexey Dosovitskiy",
+        "Vladlen Koltun",
+        "Davide Scaramuzza"
+      ],
+      "cited_by_count": 271,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2963035276",
+      "title": "Long-Term Mobile Traffic Forecasting Using Deep Spatio-Temporal Neural Networks",
+      "publication_date": "2018-06-20",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1145/3209582.3209606",
+      "open_access_url": "http://hdl.handle.net/20.500.11820/824abcdc-5fb8-4d61-9f71-e77681eb6ae0",
+      "landing_page": "https://doi.org/10.1145/3209582.3209606",
+      "authors": [
+        "Chaoyun Zhang",
+        "Paul Patras"
+      ],
+      "cited_by_count": 267,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W2604765399",
+      "title": "Agent-based model calibration using machine learning surrogates",
+      "publication_date": "2018-03-28",
+      "venue": "Journal of Economic Dynamics and Control",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1016/j.jedc.2018.03.011",
+      "open_access_url": "https://arxiv.org/pdf/1703.10639",
+      "landing_page": "https://doi.org/10.1016/j.jedc.2018.03.011",
+      "authors": [
+        "Francesco Lamperti",
+        "Andrea Roventini",
+        "Amir Sani"
+      ],
+      "cited_by_count": 259,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    }
+  ],
+  "required_next_step": "Verify official venue/year/DOI and inspect full text before creating a paper evidence card or using as claim evidence."
+}

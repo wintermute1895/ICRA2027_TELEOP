@@ -1,0 +1,26 @@
+schema: vist.researchops.legacy-vist-rgb-only-quality-gate/v1
+inherits_semantics: robot_teleop.data-quality-gate/v1
+requirements:
+  require_rgb: true
+  require_depth: false
+  require_strictly_increasing_timestamps: true
+thresholds:
+  state_coverage_min: 0.99
+  command_coverage_min: 0.99
+  rgb_coverage_min: 0.95
+  depth_coverage_min: 0.0
+  maximum_gap_ms: 100.0
+minimum_samples: 100
+required_fields:
+  - schema
+  - episode_id
+  - source_domain
+  - sample_index
+  - header_stamp_ns
+  - arm
+  - joint_names
+  - robot_joint_state_rad
+  - mapped_joint_command_rad
+notes:
+  - This config is only for historical VIST RGB-only replay.
+  - A pass means the record can enter legacy analysis; it does not make it eligible for confirmatory RGB-D A/B experiments.

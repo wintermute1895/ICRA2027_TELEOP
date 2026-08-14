@@ -1,0 +1,45 @@
+{
+  "schema": "vist.researchops.code-interfaces/v1",
+  "interfaces": [
+    {
+      "id": "I1",
+      "name": "Canonical episode export",
+      "project": "ICRA2027_TELEOP",
+      "path": "/mnt/F/ICRA2027_TELEOP/tools/export_rosbag_episode.py",
+      "contract": "robot_teleop.episode/v1",
+      "role": "Exports real or simulation ROS2 bags into the same JSONL semantic contract.",
+      "research_use": ["E1", "E2", "E3", "E4"],
+      "safety": "offline read-only"
+    },
+    {
+      "id": "I2",
+      "name": "Episode data-quality gate",
+      "project": "ICRA2027_TELEOP",
+      "path": "/mnt/F/ICRA2027_TELEOP/tools/score_episode_data_quality.py",
+      "contract": "robot_teleop.episode-data-quality-report/v1",
+      "role": "Checks completeness and timing eligibility before any research scoring.",
+      "research_use": ["E2", "E3"],
+      "safety": "offline read-only; does not assess task success or robot safety"
+    },
+    {
+      "id": "I3",
+      "name": "Time synchronization diagnosis",
+      "project": "ICRA2027_TELEOP",
+      "path": "/mnt/F/ICRA2027_TELEOP/tools/diagnose_time_sync.py",
+      "contract": "robot_teleop.time-sync-report/v1",
+      "role": "Measures ROS header timing consistency before capture.",
+      "research_use": ["E2"],
+      "safety": "diagnostic; ROS graph read only"
+    },
+    {
+      "id": "I4",
+      "name": "Offline nominal-reference and feasibility evaluation",
+      "project": "DexCatch-cx-integretion",
+      "path": "/mnt/F/DexCatch-cx-integretion",
+      "contract": "per-experiment evaluator must record revision and configuration",
+      "role": "Provides offline FK/IK, reachability, constraint and reference-trajectory analysis.",
+      "research_use": ["E1", "E3"],
+      "safety": "not a real-time teleoperation dependency"
+    }
+  ]
+}

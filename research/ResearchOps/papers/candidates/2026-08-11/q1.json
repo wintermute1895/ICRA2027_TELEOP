@@ -1,0 +1,521 @@
+{
+  "schema": "vist.researchops.paper-candidates/v1",
+  "source": "OpenAlex",
+  "query": "robotic precision insertion teleoperation demonstration learning",
+  "from_year": 2023,
+  "title_include": [
+    "insertion",
+    "assembly",
+    "teleoperation",
+    "demonstration",
+    "manipulation"
+  ],
+  "retrieved_on": "2026-08-11",
+  "candidates": [
+    {
+      "openalex_id": "https://openalex.org/W4385430674",
+      "title": "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware",
+      "publication_date": "2023-07-10",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2023.xix.016",
+      "open_access_url": "https://doi.org/10.15607/rss.2023.xix.016",
+      "landing_page": "https://doi.org/10.15607/rss.2023.xix.016",
+      "authors": [
+        "Tony Z. Zhao",
+        "Vikas Kumar",
+        "Sergey Levine",
+        "Chelsea Finn"
+      ],
+      "cited_by_count": 479,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4399767172",
+      "title": "Enhancing the LLM-Based Robot Manipulation Through Human-Robot Collaboration",
+      "publication_date": "2024-06-18",
+      "venue": "IEEE Robotics and Automation Letters",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1109/lra.2024.3415931",
+      "open_access_url": "https://arxiv.org/pdf/2406.14097",
+      "landing_page": "https://doi.org/10.1109/lra.2024.3415931",
+      "authors": [
+        "Haokun Liu",
+        "Yaonan Zhu",
+        "Kenji Kato",
+        "Atsushi Tsukahara",
+        "Izumi Kondo",
+        "Tadayoshi Aoyama",
+        "Yasuhisa Hasegawa"
+      ],
+      "cited_by_count": 82,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4316038374",
+      "title": "A Review on Dynamic Recycling of Electric Vehicle Battery: Disassembly and Echelon Utilization",
+      "publication_date": "2023-01-12",
+      "venue": "Batteries",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/batteries9010057",
+      "open_access_url": "https://www.mdpi.com/2313-0105/9/1/57/pdf?version=1673937719",
+      "landing_page": "https://doi.org/10.3390/batteries9010057",
+      "authors": [
+        "Jinhua Xiao",
+        "Chengran Jiang",
+        "Bo Wang"
+      ],
+      "cited_by_count": 79,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4398158946",
+      "title": "Robotised disassembly of electric vehicle batteries: A systematic literature review",
+      "publication_date": "2024-05-21",
+      "venue": "Journal of Manufacturing Systems",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1016/j.jmsy.2024.05.013",
+      "open_access_url": "https://doi.org/10.1016/j.jmsy.2024.05.013",
+      "landing_page": "https://doi.org/10.1016/j.jmsy.2024.05.013",
+      "authors": [
+        "Tero Kaarlela",
+        "Enrico Villagrossi",
+        "Alireza Rastegarpanah",
+        "Alberto San-Miguel",
+        "Tomi Pitkäaho"
+      ],
+      "cited_by_count": 76,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4389879612",
+      "title": "Cutaneous/Tactile Haptic Feedback in Robotic Teleoperation: Motivation, Survey, and Perspectives",
+      "publication_date": "2023-12-18",
+      "venue": "IEEE Transactions on Robotics",
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.1109/tro.2023.3344027",
+      "open_access_url": "https://inria.hal.science/hal-04354568/document",
+      "landing_page": "https://doi.org/10.1109/tro.2023.3344027",
+      "authors": [
+        "Claudio Pacchierotti",
+        "Domenico Prattichizzo"
+      ],
+      "cited_by_count": 71,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4386995285",
+      "title": "Enhancing Disassembly Practices for Electric Vehicle Battery Packs: A Narrative Comprehensive Review",
+      "publication_date": "2023-09-22",
+      "venue": "Designs",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/designs7050109",
+      "open_access_url": "https://doi.org/10.3390/designs7050109",
+      "landing_page": "https://doi.org/10.3390/designs7050109",
+      "authors": [
+        "Matteo Beghi",
+        "Francesco Braghin",
+        "Loris Roveda"
+      ],
+      "cited_by_count": 44,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4386499064",
+      "title": "Hybrid hierarchical learning for solving complex sequential tasks using the robotic manipulation network ROMAN",
+      "publication_date": "2023-09-07",
+      "venue": "Nature Machine Intelligence",
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.1038/s42256-023-00709-2",
+      "open_access_url": "https://www.nature.com/articles/s42256-023-00709-2.pdf",
+      "landing_page": "https://doi.org/10.1038/s42256-023-00709-2",
+      "authors": [
+        "Eleftherios Triantafyllidis",
+        "Fernando Acero",
+        "Zhaocheng Liu",
+        "Zhibin Li"
+      ],
+      "cited_by_count": 40,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4403526028",
+      "title": "Robotic disassembly for end-of-life products focusing on task and motion planning: A comprehensive survey",
+      "publication_date": "2024-10-19",
+      "venue": "Journal of Manufacturing Systems",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1016/j.jmsy.2024.09.010",
+      "open_access_url": "https://doi.org/10.1016/j.jmsy.2024.09.010",
+      "landing_page": "https://doi.org/10.1016/j.jmsy.2024.09.010",
+      "authors": [
+        "Mohammed Eesa Asif",
+        "Alireza Rastegarpanah",
+        "Rustam Stolkin"
+      ],
+      "cited_by_count": 32,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4404402657",
+      "title": "Robotic disassembly of electric vehicle batteries: Technologies and opportunities",
+      "publication_date": "2024-11-15",
+      "venue": "Computers & Industrial Engineering",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1016/j.cie.2024.110727",
+      "open_access_url": "https://doi.org/10.1016/j.cie.2024.110727",
+      "landing_page": "https://doi.org/10.1016/j.cie.2024.110727",
+      "authors": [
+        "Yue Zang",
+        "Mo Qu",
+        "Duc Truong Pham",
+        "Roger Dixon",
+        "Farzaneh Goli",
+        "Yongquan Zhang",
+        "Yongjing Wang"
+      ],
+      "cited_by_count": 27,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4385430633",
+      "title": "FurnitureBench: Reproducible Real-World Benchmark for Long-Horizon Complex Manipulation",
+      "publication_date": "2023-07-10",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2023.xix.041",
+      "open_access_url": "https://doi.org/10.15607/rss.2023.xix.041",
+      "landing_page": "https://doi.org/10.15607/rss.2023.xix.041",
+      "authors": [
+        "Minho Heo",
+        "Youngwoon Lee",
+        "Doohyun Lee",
+        "Joseph J. Lim"
+      ],
+      "cited_by_count": 25,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4399399445",
+      "title": "Pseudo-Haptics Survey: Human-Computer Interaction in Extended Reality and Teleoperation",
+      "publication_date": "2024-01-01",
+      "venue": "IEEE Access",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1109/access.2024.3409449",
+      "open_access_url": "https://doi.org/10.1109/access.2024.3409449",
+      "landing_page": "https://doi.org/10.1109/access.2024.3409449",
+      "authors": [
+        "Rui Xavier",
+        "José Luís Silva",
+        "Rodrigo Ventura",
+        "Joaquim Jorge"
+      ],
+      "cited_by_count": 18,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4321497910",
+      "title": "Data-Driven Robotic Manipulation of Cloth-like Deformable Objects: The Present, Challenges and Future Prospects",
+      "publication_date": "2023-02-21",
+      "venue": "Sensors",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/s23052389",
+      "open_access_url": "https://www.mdpi.com/1424-8220/23/5/2389/pdf?version=1677383918",
+      "landing_page": "https://doi.org/10.3390/s23052389",
+      "authors": [
+        "Halid Abdulrahim Kadi",
+        "Kasim Terzić"
+      ],
+      "cited_by_count": 18,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4404082195",
+      "title": "Variable impedance control on contact-rich manipulation of a collaborative industrial mobile manipulator: An imitation learning approach",
+      "publication_date": "2024-11-05",
+      "venue": "Robotics and Computer-Integrated Manufacturing",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1016/j.rcim.2024.102896",
+      "open_access_url": "https://doi.org/10.1016/j.rcim.2024.102896",
+      "landing_page": "https://doi.org/10.1016/j.rcim.2024.102896",
+      "authors": [
+        "Zhengxue Zhou",
+        "Xingyu Yang",
+        "Xuping Zhang"
+      ],
+      "cited_by_count": 14,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4399694401",
+      "title": "A Practical Roadmap to Learning from Demonstration for Robotic Manipulators in Manufacturing",
+      "publication_date": "2024-07-10",
+      "venue": "Robotics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/robotics13070100",
+      "open_access_url": "https://www.mdpi.com/2218-6581/13/7/100/pdf?version=1720596532",
+      "landing_page": "https://doi.org/10.3390/robotics13070100",
+      "authors": [
+        "Alireza Barekatain",
+        "Hamed Habibi",
+        "Holger Voos"
+      ],
+      "cited_by_count": 12,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4402354147",
+      "title": "AutoMate: Specialist and Generalist Assembly Policies over Diverse Geometries",
+      "publication_date": "2024-07-15",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2024.xx.064",
+      "open_access_url": "https://doi.org/10.15607/rss.2024.xx.064",
+      "landing_page": "https://doi.org/10.15607/rss.2024.xx.064",
+      "authors": [
+        "Bingjie Tang",
+        "Iretiayo Akinola",
+        "Jie Xu",
+        "Bowen Wen",
+        "Ankur Handa",
+        "Karl Van Wyk",
+        "Dieter Fox",
+        "Gaurav S. Sukhatme",
+        "Fábio Ramos",
+        "Yashraj Narang"
+      ],
+      "cited_by_count": 12,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4367191050",
+      "title": "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware",
+      "publication_date": "2023-04-23",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2304.13705",
+      "open_access_url": "https://arxiv.org/pdf/2304.13705",
+      "landing_page": "http://arxiv.org/abs/2304.13705",
+      "authors": [
+        "Tony Z. Zhao",
+        "Vikas Kumar",
+        "Sergey Levine",
+        "Chelsea Finn"
+      ],
+      "cited_by_count": 12,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4390972100",
+      "title": "Robot Grasp Planning: A Learning from Demonstration-Based Approach",
+      "publication_date": "2024-01-18",
+      "venue": "Sensors",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/s24020618",
+      "open_access_url": "https://www.mdpi.com/1424-8220/24/2/618/pdf?version=1705575197",
+      "landing_page": "https://doi.org/10.3390/s24020618",
+      "authors": [
+        "Kaimeng Wang",
+        "Yongxiang Fan",
+        "Ichiro Sakuma"
+      ],
+      "cited_by_count": 11,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4365138785",
+      "title": "Haptic-guided grasping to minimise torque effort during robotic telemanipulation",
+      "publication_date": "2023-04-01",
+      "venue": "Autonomous Robots",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1007/s10514-023-10096-7",
+      "open_access_url": "https://inria.hal.science/hal-04002085/document",
+      "landing_page": "https://doi.org/10.1007/s10514-023-10096-7",
+      "authors": [
+        "Rahaf Rahal",
+        "Amir M. Ghalamzan E.",
+        "Firas Abi-Farraj",
+        "Claudio Pacchierotti",
+        "Paolo Robuffo Giordano"
+      ],
+      "cited_by_count": 6,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4414050698",
+      "title": "Flying Hand: End-Effector-Centric Framework for Versatile Aerial Manipulation Teleoperation and Policy Learning",
+      "publication_date": "2025-06-21",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2025.xxi.130",
+      "open_access_url": "https://doi.org/10.15607/rss.2025.xxi.130",
+      "landing_page": "https://doi.org/10.15607/rss.2025.xxi.130",
+      "authors": [
+        "Guanqi He",
+        "Xiaofeng Guo",
+        "Luyi Tang",
+        "Yuanhang Zhang",
+        "Mohammadreza Mousaei",
+        "Jia‐Zhuang Xu",
+        "Junyi Geng",
+        "Sebastian Scherer",
+        "Guanya Shi"
+      ],
+      "cited_by_count": 6,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4396224479",
+      "title": "Extended residual learning with one-shot imitation learning for robotic assembly in semi-structured environment",
+      "publication_date": "2024-04-29",
+      "venue": "Frontiers in Neurorobotics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3389/fnbot.2024.1355170",
+      "open_access_url": "https://www.frontiersin.org/articles/10.3389/fnbot.2024.1355170/pdf?isPublishedV2=False",
+      "landing_page": "https://doi.org/10.3389/fnbot.2024.1355170",
+      "authors": [
+        "Chuang Wang",
+        "Chupeng Su",
+        "Baozheng Sun",
+        "Gang Chen",
+        "Longhan Xie"
+      ],
+      "cited_by_count": 5,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4387957904",
+      "title": "Learning Compliant Box-in-Box Insertion through Haptic-Based Robotic Teleoperation",
+      "publication_date": "2023-10-25",
+      "venue": "Sensors",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/s23218721",
+      "open_access_url": "https://www.mdpi.com/1424-8220/23/21/8721/pdf?version=1698247667",
+      "landing_page": "https://doi.org/10.3390/s23218721",
+      "authors": [
+        "Sreekanth Kana",
+        "Juhi Gurnani",
+        "Vishal Ramanathan",
+        "Mohammad Zaidi Ariffin",
+        "Sri Harsha Turlapati",
+        "Domenico Campolo"
+      ],
+      "cited_by_count": 5,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4321787715",
+      "title": "Robot Programming from a Single Demonstration for High Precision Industrial Insertion",
+      "publication_date": "2023-02-24",
+      "venue": "Sensors",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/s23052514",
+      "open_access_url": "https://www.mdpi.com/1424-8220/23/5/2514/pdf?version=1677222288",
+      "landing_page": "https://doi.org/10.3390/s23052514",
+      "authors": [
+        "Kaimeng Wang",
+        "Yongxiang Fan",
+        "Ichiro Sakuma"
+      ],
+      "cited_by_count": 5,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4389983797",
+      "title": "Bridging Language and Action: A Survey of Language-Conditioned Robot Manipulation",
+      "publication_date": "2023-12-17",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2312.10807",
+      "open_access_url": "https://arxiv.org/pdf/2312.10807",
+      "landing_page": "http://arxiv.org/abs/2312.10807",
+      "authors": [
+        "Xiangtong Yao",
+        "Hongkuan Zhou",
+        "Mees, Oier",
+        "Yuan Meng",
+        "Xiao, Ted",
+        "Bisk, Yonatan",
+        "Oh, Jean",
+        "Johns, Edward",
+        "Shridhar, Mohit",
+        "Shah, Dhruv",
+        "Thomason, Jesse",
+        "Kai Huang",
+        "Chai, Joyce",
+        "Zhenshan Bing",
+        "Alois Knoll"
+      ],
+      "cited_by_count": 4,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4417483688",
+      "title": "Interactive imitation learning for dexterous robotic manipulation: challenges and perspectives—a survey",
+      "publication_date": "2025-12-19",
+      "venue": "Frontiers in Robotics and AI",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3389/frobt.2025.1682437",
+      "open_access_url": "https://public-pages-files-2025.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1682437/pdf",
+      "landing_page": "https://doi.org/10.3389/frobt.2025.1682437",
+      "authors": [
+        "Edgar Welte",
+        "Rania Rayyes"
+      ],
+      "cited_by_count": 3,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4414051096",
+      "title": "Sim-and-Real Co-Training: A Simple Recipe for Vision-Based Robotic Manipulation",
+      "publication_date": "2025-06-21",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2025.xxi.109",
+      "open_access_url": "https://doi.org/10.15607/rss.2025.xxi.109",
+      "landing_page": "https://doi.org/10.15607/rss.2025.xxi.109",
+      "authors": [
+        "Abhiram Maddukuri",
+        "Zhenyu Jiang",
+        "Lawrence R. Chen",
+        "Soroush Nasiriany",
+        "Yuqi Xie",
+        "Yu Fang",
+        "Wenqi Huang",
+        "Zu Wang",
+        "Zhenjia Xu",
+        "Nikita Chernyadev",
+        "Scott Reed",
+        "Ken Goldberg",
+        "Ajay Mandlekar",
+        "Linxi Fan",
+        "Yuke Zhu"
+      ],
+      "cited_by_count": 3,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4404483490",
+      "title": "Introspective Perception for Long-Term Aerial Telemanipulation With Virtual Reality",
+      "publication_date": "2024-01-01",
+      "venue": "IEEE transactions on field robotics.",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1109/tfr.2024.3494719",
+      "open_access_url": "https://elib.dlr.de/210926/2/Lee2024_copyright.pdf",
+      "landing_page": "https://doi.org/10.1109/tfr.2024.3494719",
+      "authors": [
+        "Jongseok Lee",
+        "Ribin Balachandran",
+        "Konstantin Kondak",
+        "Andre Coelho",
+        "Marco De Stefano",
+        "Matthias Humt",
+        "Jianxiang Feng",
+        "Tamim Asfour",
+        "Rudolph Triebel"
+      ],
+      "cited_by_count": 3,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    }
+  ],
+  "required_next_step": "Verify official venue/year/DOI and inspect full text before creating a paper evidence card or using as claim evidence."
+}

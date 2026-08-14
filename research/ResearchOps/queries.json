@@ -1,0 +1,31 @@
+{
+  "schema": "vist.researchops.query-set/v1",
+  "from_year": 2023,
+  "queries": [
+    {
+      "id": "Q1",
+      "query": "robotic precision insertion teleoperation demonstration learning",
+      "title_include": ["insertion", "assembly", "teleoperation", "demonstration", "manipulation"],
+      "purpose": "局部纠偏与精密插入主线"
+    },
+    {
+      "id": "Q2",
+      "query": "robot teleoperation demonstration quality manipulation",
+      "title_include": ["teleoperation", "demonstration", "imitation", "data", "manipulation"],
+      "purpose": "示范质量、筛选和数据效率"
+    },
+    {
+      "id": "Q3",
+      "query": "contact rich insertion imitation learning robot manipulation",
+      "title_include": ["insertion", "contact", "imitation", "assembly", "manipulation"],
+      "purpose": "接触密集闭环与恢复"
+    },
+    {
+      "id": "Q4",
+      "query": "uncertainty calibrated robot manipulation shared autonomy",
+      "title_include": ["uncertainty", "calibrat", "shared autonomy", "manipulation"],
+      "purpose": "仅用于 C3 局部 proposal validity，不回到意图推断叙事"
+    }
+  ],
+  "venue_policy": "OpenAlex results are leads. Verify official venue/year/full text; RSS can be absent from source metadata and must be checked by DOI/official proceedings."
+}

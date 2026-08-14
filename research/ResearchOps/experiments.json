@@ -1,0 +1,100 @@
+{
+  "schema": "vist.research-experiments/v1",
+  "updated": "2026-08-13",
+  "experiments": [
+    {
+      "id": "E1",
+      "name": "名义参考与视觉闭环残差",
+      "hypothesis": "残差策略在 held-out 位姿扰动和短时遮挡下优于仅执行名义参考。",
+      "conditions": ["nominal_reference_only", "behavior_cloning_all", "reference_plus_residual"],
+      "task_families": ["usb_c_insertion", "ethernet_insertion", "peg_in_hole"],
+      "factors": ["target_pose_perturbation", "occlusion_duration", "camera_noise"],
+      "primary_metrics": ["success_rate", "recovery_rate"],
+      "secondary_metrics": ["completion_time_s", "reference_deviation", "constraint_violations"],
+      "data_contract": "robot_teleop.episode/v1",
+      "code_hooks": [
+        "/mnt/F/ICRA2027_TELEOP/scripts/record_episode.sh",
+        "/mnt/F/ICRA2027_TELEOP/tools/export_rosbag_episode.py",
+        "/mnt/F/ICRA2027_TELEOP/tools/score_episode_data_quality.py",
+        "/mnt/F/DexCatch-cx-integretion"
+      ],
+      "failure_criterion": "如果残差方法在无扰动和扰动测试上均未优于名义参考，或依赖未建模的人工接管，则 C1 不成立。"
+    },
+    {
+      "id": "E6",
+      "name": "规划器与学习恢复的能力图",
+      "status": "fallback_systems_evaluation_if_RFC_fails",
+      "hypothesis": "在已知几何、可行参考的插入任务中，reference-only、M0 重定位重规划与 B1 参考条件残差恢复在预注册 reference-relative 扰动、可见性和恢复结果网格上具有不同的有效区域；该能力图比 IID episode 平均分数更能决定何时执行 M0、B1 或 abstain。",
+      "conditions": ["nominal_reference_only", "reference_relocalize_replan", "reference_residual_bc", "safety_abstain"],
+      "task_families": ["peg_in_hole", "usb_c_insertion", "ethernet_insertion"],
+      "factors": ["reference_progress", "normalized_translation_deviation", "normalized_rotation_deviation", "observability_validity", "predeclared_contact_outcome_stratum"],
+      "primary_metrics": ["cellwise_recovery_success", "all_attempt_success", "abstention_correctness", "controller_selection_regret_vs_oracle_cell_label"],
+      "secondary_metrics": ["iid_episode_score", "recovery_cell_split_score", "constraint_violation_rate", "relocalization_error"],
+      "data_contract": "robot_teleop.episode/v1",
+      "decision_rule": "系统/评测路线仅在下列条件下保留：至少一个可测单元区域中 M0 明显优于 B1 或 B1 明显优于 M0，且该差异改变预注册的 controller/abstain 选择；区域外的安全 abstain 必须计入 all-attempt 分母。若只有平均指标微小差异或所有方法排序恒定，则该能力图不构成论文主贡献。",
+      "failure_criterion": "若 M0 与 B1 在所有 held-out 单元中无实质可区分差异，或能力图不能预测一个实际 controller 选择，C1 只能作为工程能力演示而非系统/评测论文主线。"
+    },
+    {
+      "id": "E2",
+      "name": "仿真到真机分层验证",
+      "hypothesis": "同一 episode contract 允许先在仿真筛除不安全/无效条件，再以预注册的小规模真机试验验证方向一致性。",
+      "conditions": ["sim", "real"],
+      "task_families": ["usb_c_insertion"],
+      "factors": ["source_domain"],
+      "primary_metrics": ["success_rate", "failure_mode_distribution"],
+      "secondary_metrics": ["timestamp_completeness", "trajectory_distribution_shift"],
+      "data_contract": "robot_teleop.episode/v1",
+      "code_hooks": [
+        "/mnt/F/ICRA2027_TELEOP/tools/export_rosbag_episode.py",
+        "/mnt/F/ICRA2027_TELEOP/tools/diagnose_time_sync.py"
+      ],
+      "failure_criterion": "若仿真与真机的观测/动作语义不一致，或未报告差异，则不能声称 sim-to-real 验证。"
+    },
+    {
+      "id": "E3",
+      "name": "历史候选：固定预算的数据质量选择",
+      "status": "superseded_by_RFC_viability_pilot",
+      "hypothesis": "质量分层采样优于随机同预算采样。",
+      "conditions": ["random_subset", "smoothness_only", "multi_signal_quality_subset"],
+      "task_families": ["usb_c_insertion", "peg_in_hole"],
+      "factors": ["data_budget", "selection_rule"],
+      "primary_metrics": ["held_out_success_rate", "recovery_rate"],
+      "secondary_metrics": ["retained_recovery_fraction", "calibration_error"],
+      "data_contract": "robot_teleop.episode/v1",
+      "code_hooks": [
+        "/mnt/F/ICRA2027_TELEOP/tools/score_episode_data_quality.py",
+        "/mnt/F/DexCatch-cx-integretion"
+      ],
+      "failure_criterion": "若多信号规则仅提升平滑度而降低扰动恢复，则 C2 不能作为数据质量结论。"
+    },
+    {
+      "id": "E5",
+      "name": "RFC 仿真生死测试：共享 oracle 的跨回合纠正预算分配",
+      "status": "preregistered_simulation_only",
+      "hypothesis": "RFC 在预声明、安全、有限候选池和固定 oracle query/corrected horizon 预算下，优于随机候选、reactive DAgger、DPIIL 风格风险查询、ThriftyDAgger 风格 gate、通用 uncertainty/coverage 选择的 held-out recovery；B3-no-z 检验参考进度，B3-no-rec 检验历史恢复性带来的额外价值。",
+      "conditions": ["random_safe_candidate_allocation", "reactive_dagger", "precision_risk_iil_style", "thriftydagger_style_novelty_risk_gating", "generic_uncertainty_coverage_allocation", "rfc_without_reference_progress", "rfc_without_historical_recoverability", "reference_aligned_recovery_frontier_collection", "juicer_style_success_rollout_expansion_supplementary"],
+      "task_families": ["single_peg_or_usb_like_insertion"],
+      "factors": ["reference_progress", "normalized_reference_relative_deviation", "pre_query_observability_validity", "historical_outcome_summary"],
+      "post_query_audit_labels": ["contact_recovery_label", "oracle_correction_outcome", "recovery_success", "task_success", "abstention_reason"],
+      "primary_metrics": ["held_out_recovery_success_per_matched_oracle_query_corrected_horizon"],
+      "secondary_metrics": ["all_attempt_success_rate", "abstention_rate", "constraint_violation_rate", "frontier_cell_coverage"],
+      "data_contract": "lri.rfc-viability-pilot/v1",
+      "preregistration": "config/rfc_viability_pilot.yaml",
+      "correction_source": "deterministic_local_geometric_mpc_oracle; not human data",
+      "failure_criterion": "若 RFC 未同时超过随机候选、reactive DAgger、DPIIL 风格查询、ThriftyDAgger 风格 gate 与通用 uncertainty/coverage 选择，或通过不同安全门控、更大预算、候选池构造、暴露分布或未来标签泄漏获得增益，RFC 不得作为算法贡献。若未超过 B3-no-z，不得主张参考进度额外价值；若未超过 B3-no-rec，不得主张历史恢复性或 recovery frontier 的额外价值。J0 是资源不同的补充对照，不进入共同 oracle 主估计。"
+    },
+    {
+      "id": "E4",
+      "name": "局部 proposal validity 校准",
+      "hypothesis": "校准后的 proposal validity 能减少高风险采纳。",
+      "conditions": ["always_apply", "uncalibrated_threshold", "calibrated_risk_coverage"],
+      "task_families": ["usb_c_insertion"],
+      "factors": ["confidence_threshold"],
+      "primary_metrics": ["risk_coverage_auc", "expected_calibration_error"],
+      "secondary_metrics": ["success_rate", "constraint_violations"],
+      "data_contract": "robot_teleop.episode/v1",
+      "code_hooks": ["/mnt/F/ICRA2027_TELEOP/tools/export_rosbag_episode.py"],
+      "failure_criterion": "若拒绝低置信 proposal 不降低风险，或无法覆盖分布外状态，C3 保持 exploratory。"
+    }
+  ]
+}

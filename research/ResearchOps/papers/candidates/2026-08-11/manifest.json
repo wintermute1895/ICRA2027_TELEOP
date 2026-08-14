@@ -1,0 +1,8 @@
+{
+  "schema": "vist.researchops.scan-manifest/v1",
+  "date": "2026-08-11",
+  "query_set": "queries.json",
+  "output_dir": "/mnt/F/Obsidian/Vault/ResearchOps/papers/candidates/2026-08-11",
+  "failed_queries": [],
+  "next_step": "Review candidates against official sources; do not cite or import automatically."
+}

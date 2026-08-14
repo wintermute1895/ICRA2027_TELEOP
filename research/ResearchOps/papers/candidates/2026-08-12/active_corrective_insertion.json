@@ -1,0 +1,961 @@
+{
+  "schema": "vist.researchops.paper-candidates/v1",
+  "source": "OpenAlex",
+  "query": "robot learning active data collection corrective demonstrations precision insertion contact-rich assembly",
+  "from_year": 2023,
+  "title_include": [],
+  "retrieved_on": "2026-08-12",
+  "candidates": [
+    {
+      "openalex_id": "https://openalex.org/W4385430674",
+      "title": "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware",
+      "publication_date": "2023-07-10",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2023.xix.016",
+      "open_access_url": "https://doi.org/10.15607/rss.2023.xix.016",
+      "landing_page": "https://doi.org/10.15607/rss.2023.xix.016",
+      "authors": [
+        "Tony Z. Zhao",
+        "Vikas Kumar",
+        "Sergey Levine",
+        "Chelsea Finn"
+      ],
+      "cited_by_count": 500,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4414198610",
+      "title": "Vision-Language-Action Models for Robotics: A Review Towards Real-World Applications",
+      "publication_date": "2025-01-01",
+      "venue": "IEEE Access",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1109/access.2025.3609980",
+      "open_access_url": "https://doi.org/10.1109/access.2025.3609980",
+      "landing_page": "https://doi.org/10.1109/access.2025.3609980",
+      "authors": [
+        "Kento Kawaharazuka",
+        "Jihoon Oh",
+        "Jun Yamada",
+        "Ingmar Posner",
+        "Yuke Zhu"
+      ],
+      "cited_by_count": 43,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4385431139",
+      "title": "Robot Learning on the Job: Human-in-the-Loop Autonomy and Learning During Deployment",
+      "publication_date": "2023-07-10",
+      "venue": null,
+      "venue_allowlist_match": true,
+      "doi": "https://doi.org/10.15607/rss.2023.xix.005",
+      "open_access_url": "https://doi.org/10.15607/rss.2023.xix.005",
+      "landing_page": "https://doi.org/10.15607/rss.2023.xix.005",
+      "authors": [
+        "Huihan Liu",
+        "Soroush Nasiriany",
+        "Lance Zhang",
+        "Zhiyao Bao",
+        "Yuke Zhu"
+      ],
+      "cited_by_count": 25,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4399694401",
+      "title": "A Practical Roadmap to Learning from Demonstration for Robotic Manipulators in Manufacturing",
+      "publication_date": "2024-07-10",
+      "venue": "Robotics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/robotics13070100",
+      "open_access_url": "https://www.mdpi.com/2218-6581/13/7/100/pdf?version=1720596532",
+      "landing_page": "https://doi.org/10.3390/robotics13070100",
+      "authors": [
+        "Alireza Barekatain",
+        "Hamed Habibi",
+        "Holger Voos"
+      ],
+      "cited_by_count": 12,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4367191050",
+      "title": "Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware",
+      "publication_date": "2023-04-23",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2304.13705",
+      "open_access_url": "https://arxiv.org/pdf/2304.13705",
+      "landing_page": "http://arxiv.org/abs/2304.13705",
+      "authors": [
+        "Tony Z. Zhao",
+        "Vikas Kumar",
+        "Sergey Levine",
+        "Chelsea Finn"
+      ],
+      "cited_by_count": 12,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4405426927",
+      "title": "A Survey of Embodied Learning for Object-centric Robotic Manipulation",
+      "publication_date": "2025-06-20",
+      "venue": "Machine Intelligence Research",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1007/s11633-025-1542-8",
+      "open_access_url": "https://link.springer.com/content/pdf/10.1007/s11633-025-1542-8.pdf",
+      "landing_page": "https://doi.org/10.1007/s11633-025-1542-8",
+      "authors": [
+        "Ying Zheng",
+        "Lei Yao",
+        "Yuejiao Su",
+        "Yi Zhang",
+        "Yi Wang",
+        "Sicheng Zhao",
+        "Yiyi Zhang",
+        "Lap‐Pui Chau"
+      ],
+      "cited_by_count": 12,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4417483688",
+      "title": "Interactive imitation learning for dexterous robotic manipulation: challenges and perspectives—a survey",
+      "publication_date": "2025-12-19",
+      "venue": "Frontiers in Robotics and AI",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3389/frobt.2025.1682437",
+      "open_access_url": "https://public-pages-files-2025.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2025.1682437/pdf",
+      "landing_page": "https://doi.org/10.3389/frobt.2025.1682437",
+      "authors": [
+        "Edgar Welte",
+        "Rania Rayyes"
+      ],
+      "cited_by_count": 4,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4389983797",
+      "title": "Bridging Language and Action: A Survey of Language-Conditioned Robot Manipulation",
+      "publication_date": "2023-12-17",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2312.10807",
+      "open_access_url": "https://arxiv.org/pdf/2312.10807",
+      "landing_page": "https://arxiv.org/abs/2312.10807",
+      "authors": [
+        "Xiangtong Yao",
+        "Hongkuan Zhou",
+        "Mees, Oier",
+        "Yuan Meng",
+        "Xiao, Ted",
+        "Bisk, Yonatan",
+        "Oh, Jean",
+        "Johns, Edward",
+        "Shridhar, Mohit",
+        "Shah, Dhruv",
+        "Thomason, Jesse",
+        "Kai Huang",
+        "Chai, Joyce",
+        "Zhenshan Bing",
+        "Alois Knoll"
+      ],
+      "cited_by_count": 4,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4410766881",
+      "title": "Haptic–Vision Fusion for Accurate Position Identification in Robotic Multiple Peg-in-Hole Assembly",
+      "publication_date": "2025-05-26",
+      "venue": "Electronics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/electronics14112163",
+      "open_access_url": "https://www.mdpi.com/2079-9292/14/11/2163/pdf?version=1748267247",
+      "landing_page": "https://doi.org/10.3390/electronics14112163",
+      "authors": [
+        "Jinlong Chen",
+        "Deming Luo",
+        "Zhigang Xiao",
+        "Minghao Yang",
+        "Xingguo Qin",
+        "Yongsong Zhan"
+      ],
+      "cited_by_count": 2,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4415938232",
+      "title": "Physical AI: Bridging the Sim-to-Real Divide Toward Embodied, Ethical, and Autonomous Intelligence",
+      "publication_date": "2025-11-05",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.36227/techrxiv.176238257.73914361/v1",
+      "open_access_url": "https://www.techrxiv.org/doi/pdf/10.36227/techrxiv.176238257.73914361",
+      "landing_page": "https://doi.org/10.36227/techrxiv.176238257.73914361/v1",
+      "authors": [
+        "Partha Pratim Ray"
+      ],
+      "cited_by_count": 1,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4413141837",
+      "title": "Vision-Language-Action Models for Robotics: A Review Towards Real-World Applications",
+      "publication_date": "2025-08-12",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.36227/techrxiv.175502755.53627529/v1",
+      "open_access_url": "https://www.techrxiv.org/doi/pdf/10.36227/techrxiv.175502755.53627529",
+      "landing_page": "https://doi.org/10.36227/techrxiv.175502755.53627529/v1",
+      "authors": [
+        "Kento Kawaharazuka",
+        "Jihoon Oh",
+        "Jun Yamada",
+        "Ingmar Posner",
+        "Yuke Zhu"
+      ],
+      "cited_by_count": 1,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4416137892",
+      "title": "Fabrica: Dual-Arm Assembly of General Multi-Part Objects via Integrated Planning and Learning",
+      "publication_date": "2025-06-05",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2506.05168",
+      "open_access_url": "https://arxiv.org/pdf/2506.05168",
+      "landing_page": "http://arxiv.org/abs/2506.05168",
+      "authors": [
+        "Yunsheng Tian",
+        "Joshua Jacob",
+        "Yijiang Huang",
+        "Jialiang Zhao",
+        "Edward Gu",
+        "Pingchuan Ma",
+        "Annan Zhang",
+        "Farhad Javid",
+        "Branden Romero",
+        "Sachin Chitta",
+        "Shinjiro Sueda",
+        "Hui Li",
+        "Wojciech Matusik"
+      ],
+      "cited_by_count": 1,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4415108917",
+      "title": "A Survey on Imitation Learning for Contact-Rich Tasks in Robotics",
+      "publication_date": "2025-06-16",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2506.13498",
+      "open_access_url": "https://arxiv.org/pdf/2506.13498",
+      "landing_page": "http://arxiv.org/abs/2506.13498",
+      "authors": [
+        "Toshiaki Tsuji",
+        "Yasuhiro Kato",
+        "Gökhan Solak",
+        "Heng Zhang",
+        "Tadej Petrič",
+        "Francesco Nori",
+        "Arash Ajoudani"
+      ],
+      "cited_by_count": 1,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7144050333",
+      "title": "Leveraging Human Risk Sensitivity for Enriching Imitation Learning",
+      "publication_date": "2024-03-31",
+      "venue": "Institutional Repositories DataBase (IRDB)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.34413/dr.02036",
+      "open_access_url": "https://naist.repo.nii.ac.jp/records/2000243",
+      "landing_page": "https://naist.repo.nii.ac.jp/records/2000243",
+      "authors": [
+        "HANBIT OH"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7167583955",
+      "title": "Robotic deconstruction of brickwork enabled by Spatial AI",
+      "publication_date": "2026-07-07",
+      "venue": "Construction Robotics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1007/s41693-026-00185-1",
+      "open_access_url": "https://link.springer.com/content/pdf/10.1007/s41693-026-00185-1.pdf",
+      "landing_page": "https://doi.org/10.1007/s41693-026-00185-1",
+      "authors": [
+        "Begüm Saral",
+        "Hanzhi Chen",
+        "Stefan Leutenegger",
+        "Kathrin Dörfler"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7118199443",
+      "title": "INNOVATIVE APPROACHES TO SOLVING SCIENTIFIC PROBLEMS IN EDUCATION",
+      "publication_date": "2026-01-05",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.46299/isg.p.2026.1.1",
+      "open_access_url": "https://doi.org/10.46299/isg.p.2026.1.1",
+      "landing_page": "https://doi.org/10.46299/isg.p.2026.1.1",
+      "authors": [
+        "International Science Group",
+        "Denis Vladlenov"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7159891715",
+      "title": "FlexiTac: A Low-Cost, Open-Source, Scalable Tactile Sensing Solution for Robotic Systems",
+      "publication_date": "2026-04-30",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2604.28156",
+      "landing_page": "https://arxiv.org/abs/2604.28156",
+      "authors": [
+        "Binghao Huang",
+        "Yunzhu Li"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7171550045",
+      "title": "A scoping review of reinforcement learning methods for long horizon robotic manipulation",
+      "publication_date": "2026-07-28",
+      "venue": "Discover Robotics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1007/s44430-026-00037-1",
+      "open_access_url": "https://link.springer.com/content/pdf/10.1007/s44430-026-00037-1.pdf",
+      "landing_page": "https://doi.org/10.1007/s44430-026-00037-1",
+      "authors": [
+        "Matthew Acs",
+        "Xiangnan Zhong"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4417512042",
+      "title": "Shared Control/Autonomy: A Historical Perspective, Current Trends, and the Role of Generative AI",
+      "publication_date": "2025-12-19",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.36227/techrxiv.176617724.41163595/v1",
+      "open_access_url": "https://www.techrxiv.org/doi/pdf/10.36227/techrxiv.176617724.41163595",
+      "landing_page": "https://doi.org/10.36227/techrxiv.176617724.41163595/v1",
+      "authors": [
+        "Michael Hagenow",
+        "Mario Selvaggio",
+        "Xuehui Yu",
+        "Yanwei Wang",
+        "Yiannis Demiris",
+        "Andreea Bobu",
+        "Yilun Du",
+        "Harold Soh",
+        "Dylan P. Losey",
+        "Julie Shah"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7118166817",
+      "title": "Proceedings of the I International Scientific and Practical Conference",
+      "publication_date": "2026-01-05",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.46299/isg.2026.1.1",
+      "open_access_url": "https://doi.org/10.46299/isg.2026.1.1",
+      "landing_page": "https://doi.org/10.46299/isg.2026.1.1",
+      "authors": [],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7168424643",
+      "title": "A physics-grounded tactile representation for generalizable contact-rich manipulation",
+      "publication_date": "2026-07-15",
+      "venue": "Research Square",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.21203/rs.3.rs-9874749/v1",
+      "open_access_url": "https://www.researchsquare.com/article/rs-9874749/latest.pdf",
+      "landing_page": "https://doi.org/10.21203/rs.3.rs-9874749/v1",
+      "authors": [
+        "Yajing Shen",
+        "Baihui You",
+        "Yifeng Tang",
+        "Jinzhao Yang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7134861450",
+      "title": "CONTACT: CONtact-aware TACTile Learning for Robotic Disassembly",
+      "publication_date": "2026-03-09",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2603.08560",
+      "landing_page": "https://arxiv.org/abs/2603.08560",
+      "authors": [
+        "Yosuke Saka",
+        "Jyun-Chi Hu",
+        "Adeesh Desai",
+        "Zhiyuan Zhang",
+        "B. Zhang",
+        "Quan Khanh Luu",
+        "Md Rakibul Islam Prince",
+        "Minghui Zheng",
+        "Yu She"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4416594690",
+      "title": "Visual Localization and Policy Learning for Robotic Large-Diameter Peg-in-Hole Assembly Tasks",
+      "publication_date": "2025-11-23",
+      "venue": "Electronics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/electronics14234592",
+      "open_access_url": "https://www.mdpi.com/2079-9292/14/23/4592/pdf?version=1763966522",
+      "landing_page": "https://doi.org/10.3390/electronics14234592",
+      "authors": [
+        "Tao Liang",
+        "Dingrong Wang",
+        "Wenzhi Ma",
+        "Lei Zhang",
+        "Dongsheng Chen"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4414000163",
+      "title": "Cortical control of a forelimb prosthesis in mice",
+      "publication_date": "2025-09-03",
+      "venue": "bioRxiv (Cold Spring Harbor Laboratory)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.1101/2025.09.02.673681",
+      "open_access_url": "https://www.biorxiv.org/content/biorxiv/early/2025/09/03/2025.09.02.673681.full.pdf",
+      "landing_page": "https://doi.org/10.1101/2025.09.02.673681",
+      "authors": [
+        "Édouard Ferrand",
+        "Zineb Hayatou",
+        "Daniel E. Shulz",
+        "Maria Makarov",
+        "Valérie Ego‐Stengel",
+        "Luc Estebanez"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7128555924",
+      "title": "TwinRL: Digital Twin-Driven Reinforcement Learning for Real-World Robotic Manipulation",
+      "publication_date": "2026-02-09",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2602.09023",
+      "landing_page": "https://arxiv.org/abs/2602.09023",
+      "authors": [
+        "Qinwen Xu",
+        "Jiaming Liu",
+        "Rui Zhou",
+        "Shaojun Shi",
+        "Nuowei Han",
+        "Zhuoyang Liu",
+        "Chenyang Gu",
+        "Shuo Gu",
+        "Yang Yue",
+        "Gao Huang",
+        "Wenzhao Zheng",
+        "Sirui Han",
+        "Peng Jia",
+        "Shanghang Zhang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7117239693",
+      "title": "Implantable Microdevices for Real-Time Drug Delivery and Precision Disease Management",
+      "publication_date": "2025-01-01",
+      "venue": "Bright Sky Publications eBooks",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.62906/bs.book.463",
+      "open_access_url": "https://www.bspublications.com/book-pdf/1762003010-implantable-microdevices-for-real-time-drug-delivery-and-precision-disease-management.pdf",
+      "landing_page": "https://doi.org/10.62906/bs.book.463",
+      "authors": [
+        "Noor safaa abd Mahdi",
+        "Mohammed Qasem Ismail Jehad",
+        "Abdulaziz Abdulhamid Mustafa",
+        "Mustafa Huseen Mahmood",
+        "Mohammed Haidar Adai Mohsen"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4413638658",
+      "title": "Recipe for Vision-Language-Action Models in Robotic Manipulation: A Survey",
+      "publication_date": "2025-08-26",
+      "venue": null,
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.36227/techrxiv.175624610.06665789/v1",
+      "open_access_url": "https://www.techrxiv.org/doi/pdf/10.36227/techrxiv.175624610.06665789/v1",
+      "landing_page": "https://doi.org/10.36227/techrxiv.175624610.06665789/v1",
+      "authors": [
+        "Tomohiro Motoda",
+        "Koshi Makihara",
+        "Ryoichi Nakajo",
+        "Hanbit Oh",
+        "Keisuke Shirai",
+        "Ryo Hanai",
+        "Masaki Murooka",
+        "Yuma Suzuki",
+        "Hiroki Nishihara",
+        "Mitsuru Takeda",
+        "T. Takada",
+        "Takayuki Hori",
+        "Yukiyasu Domae"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4396820125",
+      "title": "What Foundation Models can Bring for Robot Learning in Manipulation : A Survey",
+      "publication_date": "2024-04-28",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2404.18201",
+      "open_access_url": "https://arxiv.org/pdf/2404.18201",
+      "landing_page": "http://arxiv.org/abs/2404.18201",
+      "authors": [
+        "Dingzhe Li",
+        "Yixiang Jin",
+        "Sun, Yuhao",
+        "A. Yong",
+        "Hongze Yu",
+        "Junren Shi",
+        "Xiaoshuai Hao",
+        "Hao Peng",
+        "Huaping Liu",
+        "Li, Xiang",
+        "Li, Xinde",
+        "Fuchun Sun",
+        "Zhang, Jianwei",
+        "Bin Fang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4394591139",
+      "title": "JUICER: Data-Efficient Imitation Learning for Robotic Assembly",
+      "publication_date": "2024-04-04",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2404.03729",
+      "open_access_url": "https://arxiv.org/pdf/2404.03729",
+      "landing_page": "http://arxiv.org/abs/2404.03729",
+      "authors": [
+        "Lars Ankile",
+        "Anthony Simeonov",
+        "Idan Shenfeld",
+        "Pulkit Agrawal"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4414845542",
+      "title": "Fundamentals of applied robotics: an integrated guide on control, programming and training",
+      "publication_date": "2025-10-04",
+      "venue": "Prohominum",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.47606/acven/ph0383",
+      "open_access_url": "https://acvenisproh.com/revistas/index.php/prohominum/article/download/1012/2316",
+      "landing_page": "https://doi.org/10.47606/acven/ph0383",
+      "authors": [
+        "Yuri Merizalde",
+        "Moroslav Alulema Cuestab",
+        "Tyron Alcivar Reynac",
+        "Joel Alejandro Barba-Salazar"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7165817963",
+      "title": "HiL-ResRL: A Model-Agnostic Finetuning Adapter via Human-in-the-loop Residual Reinforcement Learning",
+      "publication_date": "2026-06-22",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2606.22860",
+      "landing_page": "https://arxiv.org/abs/2606.22860",
+      "authors": [
+        "Jingyi Liu",
+        "Zhaohong Mai",
+        "Shunsen He",
+        "Hang Ren",
+        "Chao Wang",
+        "Shunbo Zhou",
+        "XiaoDong Wu",
+        "Heng Zhang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7162614628",
+      "title": "Intelligent Adaptive Robotic System for Physical Interaction Tasks",
+      "publication_date": "2026-01-23",
+      "venue": "Communities in ADDI (University of the Basque Country)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "http://hdl.handle.net/10810/79506",
+      "landing_page": "http://hdl.handle.net/10810/79506",
+      "authors": [
+        "Benjamín Tapia Sal Paz"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7171614595",
+      "title": "A Review of Language-Guided Dexterous Grasping with Human-in-the-Loop Adaptation",
+      "publication_date": "2026-07-29",
+      "venue": "Mathematics",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/math14152709",
+      "open_access_url": "https://www.mdpi.com/2227-7390/14/15/2709/pdf?version=1785299555",
+      "landing_page": "https://doi.org/10.3390/math14152709",
+      "authors": [
+        "Eugene Jeong",
+        "Soo‐Chul Lim"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4415026044",
+      "title": "A Survey of Robotic Navigation and Manipulation with Physics Simulators in the Era of Embodied AI",
+      "publication_date": "2025-05-01",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2505.01458",
+      "open_access_url": "https://arxiv.org/pdf/2505.01458",
+      "landing_page": "https://arxiv.org/abs/2505.01458",
+      "authors": [
+        "Liang Wei Wong",
+        "Xueyang Kang",
+        "Kaixin Bai",
+        "Jianwei Zhang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7130481790",
+      "title": "Feasibility-aware Imitation Learning from Observation with Multimodal Feedback",
+      "publication_date": "2026-02-17",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2602.15351",
+      "landing_page": "http://arxiv.org/abs/2602.15351",
+      "authors": [
+        "Kei Takahashi",
+        "Hikaru Sasaki",
+        "Takamitsu Matsubara"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4409651093",
+      "title": "Advances in Medical Devices: Innovations and Clinical Applications",
+      "publication_date": "2025-01-01",
+      "venue": "Bright Sky Publications eBooks",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.62906/bs.book.314",
+      "open_access_url": "https://www.bspublications.com/book-pdf/1742796654-advances-in-medical-devices-innovations-and-clinical-applications.pdf",
+      "landing_page": "https://doi.org/10.62906/bs.book.314",
+      "authors": [
+        "M. Hameed",
+        "Aya Rfaat Majeed",
+        "Aseel falah Hassan Ali",
+        "Ahmed Ayad Hussein",
+        "Noora Hazim Nadhim"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4396651370",
+      "title": "IntervenGen: Interventional Data Generation for Robust and Data-Efficient Robot Imitation Learning",
+      "publication_date": "2024-05-02",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.48550/arxiv.2405.01472",
+      "open_access_url": "https://arxiv.org/pdf/2405.01472",
+      "landing_page": "http://arxiv.org/abs/2405.01472",
+      "authors": [
+        "Ryan Hoque",
+        "Ajay Mandlekar",
+        "Caelan Reed Garrett",
+        "Ken Goldberg",
+        "Dieter Fox"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7131910306",
+      "title": "SPARR: Simulation-based Policies with Asymmetric Real-world Residuals for Assembly",
+      "publication_date": "2026-02-26",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2602.23253",
+      "landing_page": "http://arxiv.org/abs/2602.23253",
+      "authors": [
+        "Yijie Guo",
+        "Iretiayo Akinola",
+        "Lars Johannsmeier",
+        "Hugo Hadfield",
+        "Dr. Abhishek Kumar Gupta",
+        "Yashraj Narang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7120342450",
+      "title": "Digital transformation in the brazilian automotive industry : impacts and critical success factors",
+      "publication_date": "2024-12-09",
+      "venue": "LA Referencia (Red Federada de Repositorios Institucionales de Publicaciones Científicas)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://repositorio.ufpe.br/bitstream/123456789/63335/1/TESE%20Egon%20Ferreira%20Daxbacher.pdf",
+      "landing_page": "https://repositorio.ufpe.br/handle/123456789/63335",
+      "authors": [
+        "Egon Ferreira Daxbacher"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7167154012",
+      "title": "Robustness of Robotic Manipulation: Foundations and Frontiers",
+      "publication_date": "2026-06-30",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2606.31494",
+      "landing_page": "https://arxiv.org/abs/2606.31494",
+      "authors": [
+        "Y H Dong",
+        "Z X Sun",
+        "L Yang",
+        "Manuel Baum",
+        "Kei Ikemura",
+        "Shuran Song",
+        "Florian T. Pokorny",
+        "Xianyi Cheng"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W4411352376",
+      "title": "Physics of Medical Robotics and Assistive Devices",
+      "publication_date": "2025-01-01",
+      "venue": "Bright Sky Publications eBooks",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.62906/bs.book.389",
+      "open_access_url": "https://www.bspublications.com/book-pdf/1749467453-physics-of-medical-robotics-and-assistive-devices.pdf",
+      "landing_page": "https://doi.org/10.62906/bs.book.389",
+      "authors": [
+        "Imam Ali Salman",
+        "Hamza Amin Hamza",
+        "Mohammed Najeeb Abdulmaged",
+        "Jaafar Muhammad Jaber",
+        "Mawzar Abd Ulsatar Abd Uljabar"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7172558435",
+      "title": "Demystifying When and Why VLAs Fail in Contact-Rich Tasks and How to Fix Them",
+      "publication_date": "2026-08-02",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2608.01402",
+      "landing_page": "https://arxiv.org/abs/2608.01402",
+      "authors": [
+        "Carlota Parés",
+        "Nils Kuhn",
+        "Isabel Liu",
+        "Alberta Longhini",
+        "Jeannette Bohg"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7133058889",
+      "title": "Natural Language Pathfinding for Industrial Applications on a Collaborative Robot : Application of CLIPort for OpenDR",
+      "publication_date": "2023-01-01",
+      "venue": "Tampere University Institutional Repository (Tampere University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://trepo.tuni.fi/bitstream/10024/152661/2/PetajaMikael.pdf",
+      "landing_page": "https://trepo.tuni.fi/handle/10024/152661",
+      "authors": [
+        "Mikael Petäjä"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7139145686",
+      "title": "Efficient and Reliable Teleoperation through Real-to-Sim-to-Real Shared Autonomy",
+      "publication_date": "2026-03-17",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2603.17016",
+      "landing_page": "http://arxiv.org/abs/2603.17016",
+      "authors": [
+        "Shuo Sha",
+        "Yixuan Wang",
+        "Binghao Huang",
+        "Antonio Loquercio",
+        "Yunzhu Li"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7138834220",
+      "title": "Fast reprogramming and adaptive reproduction of contact-rich assembly",
+      "publication_date": "2026-03-18",
+      "venue": "Frontiers in Robotics and AI",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3389/frobt.2026.1746577",
+      "open_access_url": "https://public-pages-files-2025.frontiersin.org/journals/robotics-and-ai/articles/10.3389/frobt.2026.1746577/pdf",
+      "landing_page": "https://doi.org/10.3389/frobt.2026.1746577",
+      "authors": [
+        "Dimitrios Rakovitis",
+        "Vamsi Krishna Origanti",
+        "Vinzenz Bargsten",
+        "Adrian Danzglock",
+        "Dennis Mronga",
+        "Frank Kirchner"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7165796742",
+      "title": "Three-Dimensional Reconstruction and Real-Time Deformation of Flexible Bodies: A Scoping Review (2009–2025)",
+      "publication_date": "2026-06-24",
+      "venue": "Sensors",
+      "venue_allowlist_match": false,
+      "doi": "https://doi.org/10.3390/s26134007",
+      "open_access_url": "https://www.mdpi.com/1424-8220/26/13/4007/pdf?version=1782303825",
+      "landing_page": "https://doi.org/10.3390/s26134007",
+      "authors": [
+        "Silvia Zisu",
+        "Silviu Butnariu"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7155244929",
+      "title": "Foundation Models in Robotics: A Comprehensive Review of Methods, Models, Datasets, Challenges and Future Research Directions",
+      "publication_date": "2026-04-16",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2604.15395",
+      "landing_page": "https://arxiv.org/abs/2604.15395",
+      "authors": [
+        "Aggelos Psiris",
+        "Vasileios Argyriou",
+        "Evangelos Markakis",
+        "Panagiotis Sarigiannidis",
+        "Efstratios Gavves",
+        "Kostas Bekris",
+        "Arash Ajoudani adn Georgios Th. Papadopoulos",
+        "Georgios Th. Papadopoulos"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7171749074",
+      "title": "The Curse of Precision: A Data Scaling Law for High-Precision Robotic Manipulation",
+      "publication_date": "2026-07-25",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2607.23108",
+      "landing_page": "https://arxiv.org/abs/2607.23108",
+      "authors": [
+        "Cuijie Xu",
+        "Yuanfan Xu",
+        "Min Xue",
+        "Jianjie Lin",
+        "Jian Wang",
+        "Xudong Zhang",
+        "Yu Wang",
+        "Jincheng Yu"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    },
+    {
+      "openalex_id": "https://openalex.org/W7152330865",
+      "title": "Human-Robot Copilot for Data-Efficient Imitation Learning",
+      "publication_date": "2026-04-04",
+      "venue": "arXiv (Cornell University)",
+      "venue_allowlist_match": false,
+      "doi": null,
+      "open_access_url": "https://arxiv.org/pdf/2604.03613",
+      "landing_page": "http://arxiv.org/abs/2604.03613",
+      "authors": [
+        "Rui Yan",
+        "Zaitian Gongye",
+        "Lars Paulsen",
+        "Xuxin Cheng",
+        "Xiaolong Wang"
+      ],
+      "cited_by_count": 0,
+      "verification_status": "candidate_not_citable_until_primary_source_checked"
+    }
+  ],
+  "required_next_step": "Verify official venue/year/DOI and inspect full text before creating a paper evidence card or using as claim evidence."
+}

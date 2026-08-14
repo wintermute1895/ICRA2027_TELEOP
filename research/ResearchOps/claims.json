@@ -1,0 +1,39 @@
+{
+  "schema": "vist.research-claims/v1",
+  "updated": "2026-08-13",
+  "claims": [
+    {
+      "id": "C1",
+      "status": "candidate",
+      "claim": "在名义参考可获得的精密插入中，任务条件化的视觉闭环残差策略可在未见的局部位姿扰动和短时遮挡下提高成功率，而不是仅复现固定参考轨迹。",
+      "scope": "已知任务与完成几何；有限扰动；局部/短时遮挡。",
+      "counterexample": "无遮挡且标定准确时，纯几何规划已近乎饱和；或遮挡持续到视觉与接触均无法恢复状态。",
+      "required_evidence": ["P1", "P2", "E1"],
+      "nearest_prior_art": ["P1", "P2"],
+      "experiment_ids": ["E1", "E2"],
+      "decision_rule": "相同训练预算下，在 held-out 扰动上成功率提升的置信区间不与零重叠；同时不得以显著更高的安全违规率交换成功率。"
+    },
+    {
+      "id": "C2",
+      "status": "candidate",
+      "claim": "在预声明、安全、有限的候选状态池上，以名义几何参考的进度和归一化局部偏差定义的跨回合纠正预算分配，在共享外层安全门控和固定 correction-source 预算下，可提高 held-out recovery。",
+      "scope": "仿真只对共同 deterministic local geometric/MPC oracle 在固定候选池上的预算分配作结论；不代表自然部署失败分布、人类时间效率或生成式纠正数据效率。人类时间效率必须由可重复物理候选池上的匹配遥操实验复现。",
+      "counterexample": "若 A0 随机候选、reactive DAgger、DPIIL 风格风险查询、ThriftyDAgger 风格 novelty/risk gate、U0 通用主动选择相同或更好，或 RFC 的收益来自不同安全门控、暴露分布、候选池构造或未来标签泄漏，则 RFC 不成立。若 B3-no-z 相同或更好，不得声称参考进度有额外价值；若 B3-no-rec 相同或更好，不得声称历史恢复性或 recovery frontier 有额外价值。",
+      "required_evidence": ["P3", "P12", "P14", "P18", "E5"],
+      "nearest_prior_art": ["P3", "P12", "P14", "P18"],
+      "experiment_ids": ["E5"],
+      "decision_rule": "在预注册 oracle query/corrected horizon 预算下，RFC 同时超过 A0、reactive DAgger、DPIIL 风格查询、ThriftyDAgger 风格 gate 与 U0 的 paired outer-trial 判定，并且没有更差的 all-attempt 安全/abstention 结果；否则从标题和贡献中删除 RFC。参考进度特异性还要求超过 B3-no-z；recovery-frontier/recoverability-aware 表述还要求超过 B3-no-rec。"
+    },
+    {
+      "id": "C3",
+      "status": "exploratory",
+      "claim": "由策略预测分布校准得到的局部 proposal validity 可用于决定何时采纳残差，而不是将其解释为人的意图置信度。",
+      "scope": "只调节局部残差/恢复建议；不承诺解决全局目标识别。",
+      "counterexample": "置信度失校准，或任务分布外导致高置信失败。",
+      "required_evidence": ["P4", "E4"],
+      "nearest_prior_art": ["P4"],
+      "experiment_ids": ["E4"],
+      "decision_rule": "proposal validity 的 calibration error 与风险-覆盖曲线优于未校准分数，并在低置信拒绝后减少安全违规。"
+    }
+  ]
+}

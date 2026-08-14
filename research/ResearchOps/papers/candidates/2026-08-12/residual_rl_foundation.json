@@ -1,0 +1,10 @@
+{
+  "schema": "vist.researchops.paper-candidates/v1",
+  "source": "OpenAlex",
+  "query": "Residual Reinforcement Learning for Robot Control Johannink Bahl Nair Luo Kumar Losky Ojea Solowjow Levine",
+  "from_year": 2018,
+  "title_include": [],
+  "retrieved_on": "2026-08-12",
+  "candidates": [],
+  "required_next_step": "Verify official venue/year/DOI and inspect full text before creating a paper evidence card or using as claim evidence."
+}
