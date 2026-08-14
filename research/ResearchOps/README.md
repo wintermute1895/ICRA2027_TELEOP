@@ -15,6 +15,7 @@
 - `papers/`：已核实论文的逐篇证据卡，以及网络搜索候选；候选不等于可引用证据。
 - `reports/`：由工具生成的本地审计、矩阵和周报，默认不提交。
 - `tools/`：只读审计、schema 检查、矩阵生成和网络候选检索。
+- `config/rfc_trial_contract.yaml`：RFC 每个外层 collection trial 的冻结资产、事件时序和预算账本契约。
 
 ## 日常工作流
 
@@ -54,6 +55,18 @@ python3 Vault/ResearchOps/tools/research_ops.py matrix \
 python3 Vault/ResearchOps/tools/research_ops.py brief \
   --output Vault/ResearchOps/reports/research_brief.md
 ```
+
+RFC viability pilot 还必须在每个 outer trial 结束后验证 immutable manifest 与 append-only event log：
+
+```bash
+python3 Vault/ResearchOps/tools/validate_rfc_trial.py \
+  --manifest /path/to/trial_manifest.json \
+  --events /path/to/events.jsonl \
+  --output Vault/ResearchOps/reports/rfc_trial_validation.json
+```
+
+通过仅表示 trial 的数据谱系、事件时序、`B3_no_rec` 消融和预算字段符合契约；不表示机器人安全、
+任务成功或 RFC 优于 baseline。
 
 ## 与代码的边界
 

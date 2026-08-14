@@ -9,6 +9,15 @@ purpose: >
   human data efficiency, shared autonomy, force-aware contact control, general assembly,
   or augmentation/synthetic-correction generation.
 
+provenance_contract:
+  path: rfc_trial_contract.yaml
+  validator: ../tools/validate_rfc_trial.py
+  required_before_paired_analysis: true
+  rule: >
+    Each outer trial must save a frozen manifest and append-only event log that
+    pass the contract validator. This checks data provenance and causal label
+    availability only; it is not evidence of safety or method superiority.
+
 task:
   family: locally_recoverable_insertion
   geometry:

@@ -78,9 +78,10 @@
       "post_query_audit_labels": ["contact_recovery_label", "oracle_correction_outcome", "recovery_success", "task_success", "abstention_reason"],
       "primary_metrics": ["held_out_recovery_success_per_matched_oracle_query_corrected_horizon"],
       "secondary_metrics": ["all_attempt_success_rate", "abstention_rate", "constraint_violation_rate", "frontier_cell_coverage"],
-      "data_contract": "lri.rfc-viability-pilot/v1",
+      "data_contract": "lri.rfc-viability-pilot/v1 plus lri.rfc-trial-contract/v1",
       "preregistration": "config/rfc_viability_pilot.yaml",
       "correction_source": "deterministic_local_geometric_mpc_oracle; not human data",
+      "provenance_gate": "Every outer trial must pass tools/validate_rfc_trial.py before paired analysis. The validator requires frozen asset hashes, pre-query/post-query separation, B3_no_rec history removal, and per-condition budget fields; it does not substitute for success or safety evaluation.",
       "failure_criterion": "若 RFC 未同时超过随机候选、reactive DAgger、DPIIL 风格查询、ThriftyDAgger 风格 gate 与通用 uncertainty/coverage 选择，或通过不同安全门控、更大预算、候选池构造、暴露分布或未来标签泄漏获得增益，RFC 不得作为算法贡献。若未超过 B3-no-z，不得主张参考进度额外价值；若未超过 B3-no-rec，不得主张历史恢复性或 recovery frontier 的额外价值。J0 是资源不同的补充对照，不进入共同 oracle 主估计。"
     },
     {

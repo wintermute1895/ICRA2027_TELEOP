@@ -1,0 +1,86 @@
+schema: lri.rfc-trial-contract/v1
+purpose: >
+  Machine-checkable audit contract for the RFC viability pilot. This is an
+  offline artifact contract; it does not launch ROS2, query a robot, or train a policy.
+
+trial_manifest:
+  required:
+    - schema
+    - trial_id
+    - geometry_id
+    - initial_dataset_sha256
+    - candidate_pool_sha256
+    - validation_distribution_sha256
+    - held_out_target_distribution_sha256
+    - conditions
+    - budgets
+  common_assets_across_conditions:
+    - initial_dataset_sha256
+    - candidate_pool_sha256
+    - validation_distribution_sha256
+    - held_out_target_distribution_sha256
+  condition_fields:
+    - condition_id
+    - allocation_rule_version
+    - random_seed
+
+event_log:
+  format: jsonl
+  required_fields:
+    - event_id
+    - trial_id
+    - condition_id
+    - round
+    - candidate_id
+    - event_type
+    - recorded_at_unix_ns
+  event_types:
+    candidate_selected:
+      required:
+        - pre_query_score_inputs
+        - history_cutoff_round
+        - score_components
+        - selection_rank
+      forbidden:
+        - post_query_audit_labels
+        - oracle_outcome
+    query_result:
+      required:
+        - selected_event_id
+        - post_query_audit_labels
+        - observed_after_selection
+      forbidden:
+        - pre_query_score_inputs
+    budget_snapshot:
+      required:
+        - attempted_queries
+        - oracle_queries
+        - corrected_horizon_steps
+        - rejected_queries
+        - accepted_training_frames
+      forbidden: []
+  temporal_rules:
+    - candidate_selection_history_cutoff_must_be_less_than_current_round
+    - query_result_must_reference_prior_candidate_selection
+    - query_result_must_be_marked_observed_after_selection
+    - candidate_selection_cannot_contain_post_query_labels
+  ablation_rules:
+    B3_no_rec:
+      - history_derived_score_components_must_be_zero_or_absent
+      - selection_must_not_use_prior_outcome_labels
+
+budget_accounting:
+  required_per_condition:
+    - candidate_opportunities_exposed
+    - attempted_queries
+    - rejected_queries
+    - oracle_queries
+    - corrected_horizon_steps
+    - unique_accepted_episodes
+    - unique_training_frames
+    - duplicated_or_replayed_frames
+    - training_updates
+  rule: >
+    All primary conditions must expose the same candidate pool and use the
+    declared matched correction budget. Different accepted-frame counts are
+    reported, not silently treated as equal data.

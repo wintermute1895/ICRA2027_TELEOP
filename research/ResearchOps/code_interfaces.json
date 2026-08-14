@@ -40,6 +40,16 @@
       "role": "Provides offline FK/IK, reachability, constraint and reference-trajectory analysis.",
       "research_use": ["E1", "E3"],
       "safety": "not a real-time teleoperation dependency"
+    },
+    {
+      "id": "I5",
+      "name": "RFC trial provenance validator",
+      "project": "ICRA2027_TELEOP",
+      "path": "/mnt/F/ICRA2027_TELEOP/research/ResearchOps/tools/validate_rfc_trial.py",
+      "contract": "lri.rfc-trial-contract/v1",
+      "role": "Offline validator for frozen trial assets, pre-query versus post-query event separation, B3_no_rec history removal, and per-condition budget accounting.",
+      "research_use": ["E5"],
+      "safety": "offline read-only; does not start ROS2, command hardware, or score task success"
     }
   ]
 }
