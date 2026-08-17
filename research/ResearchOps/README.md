@@ -1,83 +1,25 @@
 # ResearchOps
 
-这是 VIST 精密装配研究的证据和实验工作台，不替代 Zotero，也不自动改写 Zotero
-数据库。它把研究推进约束成一条可审计链路：
+This directory contains the evidence and experiment plan for the active precision-insertion teleoperation study. It does not control the robot or replace the primary data recorder.
 
-```text
-研究边界 -> 可证伪 claim -> 文献原始证据 -> 可执行实验 -> episode/evaluation artifact
-```
+## Active Direction
 
-## 目录
+Read [CURRENT_DIRECTION.md](CURRENT_DIRECTION.md) first. The detailed discussion-meeting record is [论文讨论会议文档8_16.pdf](discussions/论文讨论会议文档8_16.pdf).
 
-- `research_goal.md`：当前唯一有效的研究边界与主问题。
-- `claims.json`：每个候选贡献的精确定义、最近工作、反例和验收实验。
-- `experiments.json`：A/B 条件、数据需求、指标、代码接口与停止条件。
-- `papers/`：已核实论文的逐篇证据卡，以及网络搜索候选；候选不等于可引用证据。
-- `reports/`：由工具生成的本地审计、矩阵和周报，默认不提交。
-- `tools/`：只读审计、schema 检查、矩阵生成和网络候选检索。
-- `config/rfc_trial_contract.yaml`：RFC 每个外层 collection trial 的冻结资产、事件时序和预算账本契约。
+The active research question is whether a quality-audited, self-supervised, context-conditioned causal command filter can increase task-valid precision-insertion demonstrations per active operator minute under a fixed safety envelope.
 
-## 日常工作流
+The primary experimental comparison is `F_rule` versus `F_static` versus `F_flywheel`. A downstream ACT study is secondary and does not influence episode admission or filter training.
 
-1. 写/更新 `research_goal.md`，先收紧问题边界。
-2. 在 `claims.json` 新增 claim 前必须填入 `counterexample`、`required_evidence` 和
-   `experiment_ids`。没有反例和实验的想法只能是备忘，不是论文主张。
-3. 用本地导出的 Better BibTeX JSON 做审计：
+## Evidence and Literature
 
-```bash
-python3 Vault/ResearchOps/tools/research_ops.py audit-zotero \
-  --input 'Zotero/better-bibtex/My Library-VIST*.json' \
-  --output Vault/ResearchOps/reports/zotero_audit.json
-```
+- `papers/` contains verified paper cards and unverified search candidates.
+- `reports/` contains generated local reports and is not committed by default.
+- `tools/` contains read-only research-audit utilities that remain relevant to active work.
 
-4. 先做外部候选搜索，再逐篇打开原文/官方页面核验 DOI、会期、实验和限制：
+## Archived RFC Direction
 
-```bash
-python3 Vault/ResearchOps/tools/search_openalex.py \
-  --query 'robotic precision insertion teleoperation demonstration learning' \
-  --from-year 2023 --output Vault/ResearchOps/papers/candidates/openalex_insertion.json
-```
+[archive/rfc_superseded](archive/rfc_superseded) contains the prior reference-relative corrective-allocation RFC draft, claims, experiment indexes, configurations, and provenance validator. These materials are preserved for historical traceability but must not be used as active claims, methods, or experiment plans.
 
-一轮完整的近三年扫描使用已版本化的查询集，并按日期隔离候选：
+## Research Boundary
 
-```bash
-python3 Vault/ResearchOps/scripts/run_recent_scan.py
-```
-
-5. 只有核验后才把论文写成 `papers/<citekey>.md`，并把其 ID 加入 `claims.json`。
-6. 每次准备实验前运行：
-
-```bash
-python3 Vault/ResearchOps/tools/research_ops.py validate
-python3 Vault/ResearchOps/tools/research_ops.py check-code-paths
-python3 Vault/ResearchOps/tools/research_ops.py matrix \
-  --output Vault/ResearchOps/reports/claim_evidence_matrix.md
-python3 Vault/ResearchOps/tools/research_ops.py brief \
-  --output Vault/ResearchOps/reports/research_brief.md
-```
-
-RFC viability pilot 还必须在每个 outer trial 结束后验证 immutable manifest 与 append-only event log：
-
-```bash
-python3 Vault/ResearchOps/tools/validate_rfc_trial.py \
-  --manifest /path/to/trial_manifest.json \
-  --events /path/to/events.jsonl \
-  --output Vault/ResearchOps/reports/rfc_trial_validation.json
-```
-
-通过仅表示 trial 的数据谱系、事件时序、`B3_no_rec` 消融和预算字段符合契约；不表示机器人安全、
-任务成功或 RFC 优于 baseline。
-
-## 与代码的边界
-
-`/mnt/F/ICRA2027_TELEOP` 是实时遥操、同步、录制与 episode 基础设施。ResearchOps
-只链接它的只读导出/评分入口，不控制机器人。
-
-`/mnt/F/DexCatch-cx-integretion` 只作为离线轨迹、可达性、安全和名义参考评估能力；
-不进入遥操实时闭环，也不改变 DexCatch 的项目叙事。
-
-## 近期检索纪律
-
-“近三年”按 2023--2026 过滤。候选优先核验 ICRA、IROS、RSS、CoRL、RA-L、T-RO、IJRR、
-Science Robotics、Nature Machine Intelligence，以及确实以机器人为主的 NeurIPS/ICLR/ICML。
-arXiv 只作候选线索，不能作为“顶会顶刊证据”。
+ResearchOps consumes recorded episode artifacts and offline audit results. Real-time teleoperation, synchronization, and safety enforcement remain in the main repository infrastructure.
