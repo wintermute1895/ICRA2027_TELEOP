@@ -32,5 +32,16 @@ class CausalFilterTest(unittest.TestCase):
         self.assertTrue(diagnostics["fallback"])
 
 
+    def test_context_is_required_by_context_model(self):
+        features, targets = [], []
+        for value in np.linspace(-0.2, 0.2, 16):
+            features.append(build_feature([[value], [value + 0.01]], [0.0], 1, 2, [value], 1))
+            targets.append([2.0 * value])
+        model = train_ridge(features, targets, joint_count=1, history_length=2, context_size=1)
+        prediction, _ = predict(model, [[0.1], [0.11]], [0.0], [0.1])
+        self.assertAlmostEqual(float(prediction[0]), 0.2, places=3)
+        with self.assertRaises(ValueError):
+            blend_command(model, [[0.1], [0.11]], [0.0], blend=0.5, max_correction_rad=0.1, max_ood_z=3.0)
+
 if __name__ == "__main__":
     unittest.main()

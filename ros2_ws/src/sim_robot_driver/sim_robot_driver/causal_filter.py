@@ -28,6 +28,8 @@ class CausalFilterModel:
     residual_scale: list[float]
     training_samples: int
 
+    context_size: int = 0
+
     def save(self, path: Path) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(asdict(self), indent=2) + "\n", encoding="utf-8")
@@ -35,10 +37,11 @@ class CausalFilterModel:
     @classmethod
     def load(cls, path: Path) -> "CausalFilterModel":
         payload = json.loads(path.read_text(encoding="utf-8"))
-        if payload.get("schema") != "robot_teleop.causal-command-filter/v0":
+        if payload.get("schema") not in {"robot_teleop.causal-command-filter/v0", "robot_teleop.causal-command-filter/v0.1"}:
             raise ValueError("unsupported causal filter model schema")
+        payload.setdefault("context_size", 0)
         model = cls(**payload)
-        feature_size = model.joint_count * (model.history_length + 1)
+        feature_size = model.joint_count * (model.history_length + 1) + model.context_size
         if len(model.feature_mean) != feature_size or len(model.feature_scale) != feature_size:
             raise ValueError("model feature dimensions are inconsistent")
         if len(model.weights) != model.joint_count or any(len(row) != feature_size for row in model.weights):
@@ -53,14 +56,19 @@ def _finite_vector(values: Sequence[float], length: int) -> np.ndarray:
     return result
 
 
-def build_feature(history: Sequence[Sequence[float]], state: Sequence[float], joint_count: int, history_length: int) -> np.ndarray:
+def build_feature(history: Sequence[Sequence[float]], state: Sequence[float], joint_count: int, history_length: int, context: Sequence[float] | None = None, context_size: int = 0) -> np.ndarray:
     if len(history) != history_length:
         raise ValueError(f"expected {history_length} command-history frames")
     commands = [_finite_vector(frame, joint_count) for frame in history]
-    return np.concatenate([*commands, _finite_vector(state, joint_count)])
+    parts = [*commands, _finite_vector(state, joint_count)]
+    if context_size:
+        if context is None:
+            raise ValueError("context is required by this model")
+        parts.append(_finite_vector(context, context_size))
+    return np.concatenate(parts)
 
 
-def train_ridge(features: Sequence[np.ndarray], targets: Sequence[Sequence[float]], *, joint_count: int, history_length: int, ridge: float = 1e-3) -> CausalFilterModel:
+def train_ridge(features: Sequence[np.ndarray], targets: Sequence[Sequence[float]], *, joint_count: int, history_length: int, context_size: int = 0, ridge: float = 1e-3) -> CausalFilterModel:
     if not features or len(features) != len(targets):
         raise ValueError("features and targets must be non-empty and aligned")
     if ridge < 0.0:
@@ -78,7 +86,7 @@ def train_ridge(features: Sequence[np.ndarray], targets: Sequence[Sequence[float
     predictions = augmented @ coefficients
     residual_scale = np.maximum(np.std(y - predictions, axis=0), 1e-5)
     return CausalFilterModel(
-        schema="robot_teleop.causal-command-filter/v0",
+        schema="robot_teleop.causal-command-filter/v0.1",
         joint_count=joint_count,
         history_length=history_length,
         feature_mean=mean.tolist(),
@@ -87,11 +95,12 @@ def train_ridge(features: Sequence[np.ndarray], targets: Sequence[Sequence[float
         bias=coefficients[-1].tolist(),
         residual_scale=residual_scale.tolist(),
         training_samples=len(features),
+        context_size=context_size,
     )
 
 
-def predict(model: CausalFilterModel, history: Sequence[Sequence[float]], state: Sequence[float]) -> tuple[np.ndarray, float]:
-    feature = build_feature(history, state, model.joint_count, model.history_length)
+def predict(model: CausalFilterModel, history: Sequence[Sequence[float]], state: Sequence[float], context: Sequence[float] | None = None) -> tuple[np.ndarray, float]:
+    feature = build_feature(history, state, model.joint_count, model.history_length, context, model.context_size)
     mean = np.asarray(model.feature_mean, dtype=np.float64)
     scale = np.asarray(model.feature_scale, dtype=np.float64)
     normalized = (feature - mean) / scale
@@ -108,11 +117,12 @@ def blend_command(
     blend: float,
     max_correction_rad: float,
     max_ood_z: float,
+    context: Sequence[float] | None = None,
 ) -> tuple[list[float], dict[str, float | bool]]:
     baseline = _finite_vector(history[-1], model.joint_count)
     if not 0.0 <= blend <= 1.0 or max_correction_rad < 0.0 or max_ood_z <= 0.0:
         raise ValueError("invalid blend or safety bound")
-    prediction, ood_z = predict(model, history, state)
+    prediction, ood_z = predict(model, history, state, context)
     confidence = max(0.0, min(1.0, 1.0 - ood_z / max_ood_z))
     alpha = blend * confidence
     correction = np.clip(prediction - baseline, -max_correction_rad, max_correction_rad)

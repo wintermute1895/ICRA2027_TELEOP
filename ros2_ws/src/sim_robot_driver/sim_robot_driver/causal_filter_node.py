@@ -35,18 +35,25 @@ class CausalFilterNode(Node):
         self.max_ood_z = float(self.get_parameter("max_ood_z").value)
         self.histories = {arm: deque(maxlen=self.model.history_length) for arm in ("left", "right")}
         self.states: dict[str, list[float] | None] = {"left": None, "right": None}
+        self.contexts: dict[str, list[float] | None] = {"left": None, "right": None}
         self.publishers = {arm: self.create_publisher(FollowJoint, f"{self.output_namespace}/{arm}_arm/joint_follow", 20) for arm in self.states}
         self.diagnostics = {arm: self.create_publisher(JointState, f"{self.output_namespace}/{arm}/command", 20) for arm in self.states}
         self.subscriptions = []
         for arm in self.states:
             self.subscriptions.append(self.create_subscription(JointState, f"{self.source_namespace}/{arm}/mapped_joint_command", lambda msg, a=arm: self.command_callback(a, msg), 20))
             self.subscriptions.append(self.create_subscription(JointState, f"{self.state_namespace}/{arm}_arm/joint_states", lambda msg, a=arm: self.state_callback(a, msg), 20))
+            self.subscriptions.append(self.create_subscription(JointState, f"{self.state_namespace}/{arm}_arm/filter_context", lambda msg, a=arm: self.context_callback(a, msg), 20))
         self.get_logger().info(f"causal filter v0 ready: model={model_path}, output={self.output_namespace} (simulation only)")
 
     def state_callback(self, arm: str, msg: JointState) -> None:
         values = [float(value) for value in msg.position]
         if len(values) == self.model.joint_count:
             self.states[arm] = values
+
+    def context_callback(self, arm: str, msg: JointState) -> None:
+        values = [float(value) for value in msg.position]
+        if len(values) == self.model.context_size:
+            self.contexts[arm] = values
 
     def command_callback(self, arm: str, msg: JointState) -> None:
         values = [float(value) for value in msg.position]
@@ -58,7 +65,7 @@ class CausalFilterNode(Node):
         output, diagnostics = values, {"fallback": True}
         if self.states[arm] is not None and len(history) == self.model.history_length:
             try:
-                output, diagnostics = blend_command(self.model, list(history), self.states[arm], blend=self.blend, max_correction_rad=self.max_correction_rad, max_ood_z=self.max_ood_z)
+                output, diagnostics = blend_command(self.model, list(history), self.states[arm], blend=self.blend, max_correction_rad=self.max_correction_rad, max_ood_z=self.max_ood_z, context=self.contexts[arm])
             except ValueError as exc:
                 self.get_logger().warn(f"{arm} filter fallback: {exc}")
         follow = FollowJoint()

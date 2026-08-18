@@ -129,6 +129,8 @@ robot-state fields, and should provide `executed_joint_command_rad` when the
 executed action differs from the mapped command. `success` is an admission
 label, never an online model input.
 
+For canonical v0.1 data, use `tools/canonical_episode_to_filter_jsonl.py` first; it enforces the episode-level `A_action` audit gate.
+
 Launch it in the simulation path only:
 
 ```bash

@@ -37,3 +37,22 @@ and action-prior experiments, but cannot by itself prove an improvement over
 the existing rule filter. To learn a nontrivial correction, the dataset needs
 at least one of: distinct executed-action labels, controlled command
 perturbation/recovery data, or verified local reference-progress targets.
+
+
+## Canonical v0.1 projection
+
+When the source is a canonical `teleop_episode/v0.1` manifest, first project materialized control, command, and task-context streams:
+
+```bash
+python3 tools/canonical_episode_to_filter_jsonl.py \
+  --manifest episode.manifest.json \
+  --control-jsonl streams/control.jsonl \
+  --commands-jsonl streams/commands.jsonl \
+  --task-context-jsonl streams/task_context.jsonl \
+  --output derived/filter_training.jsonl
+```
+
+The adapter requires the manifest terminal audit to be `A_action` and retains
+raw, filter, safety-projected, executed, state, and optional `filter_context`
+fields. Train with `--context-size N` only when every accepted row has exactly
+N context values; missing context is rejected, never zero-filled.

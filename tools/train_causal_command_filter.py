@@ -23,10 +23,13 @@ def main() -> int:
     parser.add_argument("--episode", type=Path, action="append", required=True, help="audited canonical JSONL; repeatable")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--history-length", type=int, default=8)
+    parser.add_argument("--context-size", type=int, default=0, help="number of task-context values; 0 disables context")
     parser.add_argument("--ridge", type=float, default=1e-3)
     args = parser.parse_args()
     if args.history_length < 1:
         parser.error("--history-length must be positive")
+    if args.context_size < 0:
+        parser.error("--context-size cannot be negative")
 
     features, targets, rejected = [], [], 0
     joint_count: int | None = None
@@ -40,16 +43,17 @@ def main() -> int:
         states = [finite_vector(record.get("robot_joint_state_rad"), count) for record in records]
         executed = [finite_vector(record.get("executed_joint_command_rad"), count) for record in records]
         targets_for_episode = [value if value is not None else commands[index] for index, value in enumerate(executed)]
+        contexts = [finite_vector(record.get("filter_context"), args.context_size) if args.context_size else None for record in records]
         for index in range(args.history_length - 1, len(records)):
             history = commands[index - args.history_length + 1:index + 1]
-            if records[index].get("success") is not True or any(value is None for value in history) or states[index] is None or targets_for_episode[index] is None:
+            if records[index].get("success") is not True or any(value is None for value in history) or (args.context_size and contexts[index] is None) or states[index] is None or targets_for_episode[index] is None:
                 rejected += 1
                 continue
-            features.append(build_feature(history, states[index], count, args.history_length))
+            features.append(build_feature(history, states[index], count, args.history_length, contexts[index] if args.context_size else None, args.context_size))
             targets.append(targets_for_episode[index])
     if joint_count is None or not features:
         raise SystemExit("no accepted training samples; require explicit success=true and complete causal records")
-    model = train_ridge(features, targets, joint_count=joint_count, history_length=args.history_length, ridge=args.ridge)
+    model = train_ridge(features, targets, joint_count=joint_count, history_length=args.history_length, context_size=args.context_size, ridge=args.ridge)
     model.save(args.output)
     print({"model": str(args.output), "training_samples": model.training_samples, "rejected_samples": rejected, "joint_count": joint_count})
     return 0
