@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://icra2027-teleop.local/schemas/teleop_episode_v0_1.schema.json",
+  "title": "Canonical Teleoperation Episode v0.1 Manifest",
+  "description": "Manifest schema for simulation and real teleoperation episodes. Time-indexed payloads live in HDF5 or timestamped external media referenced by this manifest.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "episode_id",
+    "source",
+    "collection_mode",
+    "intended_uses",
+    "task",
+    "configuration",
+    "clock",
+    "frames",
+    "calibration",
+    "action_spec",
+    "streams",
+    "terminal_audit",
+    "data_integrity",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": { "const": "teleop_episode/v0.1" },
+    "episode_id": { "type": "string", "minLength": 1 },
+    "source": { "enum": ["simulation", "real"] },
+    "collection_mode": { "enum": ["generated", "teleop_rule", "teleop_learned", "replay"] },
+    "intended_uses": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["filter_training", "policy_training", "audit_only"] }
+    },
+    "task": {
+      "type": "object",
+      "required": ["task_id", "task_family", "success_spec_version"],
+      "properties": {
+        "task_id": { "type": "string", "minLength": 1 },
+        "task_family": { "type": "string", "minLength": 1 },
+        "success_spec_version": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "configuration": {
+      "type": "object",
+      "required": ["configuration_id", "parameters", "split"],
+      "properties": {
+        "configuration_id": { "type": "string", "minLength": 1 },
+        "parameters": { "type": "object" },
+        "split": { "enum": ["unspecified", "train", "validation", "test", "heldout_configuration"] }
+      },
+      "additionalProperties": true
+    },
+    "clock": {
+      "type": "object",
+      "required": ["clock_domain", "control_hz", "timestamp_unit"],
+      "properties": {
+        "clock_domain": { "type": "string", "minLength": 1 },
+        "control_hz": { "type": "number", "exclusiveMinimum": 0 },
+        "timestamp_unit": { "const": "ns" },
+        "alignment_tolerance_ns": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": true
+    },
+    "frames": {
+      "type": "object",
+      "required": ["base_frame", "end_effector_frame"],
+      "properties": {
+        "base_frame": { "type": "string", "minLength": 1 },
+        "end_effector_frame": { "type": "string", "minLength": 1 },
+        "part_frame": { "type": "string" },
+        "receptacle_frame": { "type": "string" },
+        "camera_frames": { "type": "object", "additionalProperties": { "type": "string" } },
+        "transform_convention": { "const": "T_AB maps coordinates in B into A" }
+      },
+      "additionalProperties": true
+    },
+    "calibration": {
+      "type": "object",
+      "required": ["calibration_version"],
+      "properties": {
+        "calibration_version": { "type": "string", "minLength": 1 },
+        "transform_refs": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "action_spec": {
+      "type": "object",
+      "required": ["representation", "frame", "dimension", "units", "controller_interface"],
+      "properties": {
+        "representation": { "enum": ["cartesian_delta_pose_gripper", "joint_delta", "joint_position", "controller_native"] },
+        "frame": { "type": "string", "minLength": 1 },
+        "dimension": { "type": "integer", "minimum": 1 },
+        "units": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "controller_interface": { "type": "string", "minLength": 1 },
+        "joint_names": { "type": "array", "items": { "type": "string" } },
+        "gripper_convention": { "type": "string" },
+        "normalization": { "type": "object" },
+        "canonical_mapping_ref": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "streams": {
+      "type": "object",
+      "required": ["control", "task_context", "events"],
+      "properties": {
+        "control": { "$ref": "#/$defs/streamReference" },
+        "task_context": { "$ref": "#/$defs/streamReference" },
+        "commands": { "$ref": "#/$defs/streamReference" },
+        "events": { "$ref": "#/$defs/streamReference" },
+        "cameras": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/streamReference" }
+        },
+        "estimator": { "$ref": "#/$defs/streamReference" }
+      },
+      "additionalProperties": true
+    },
+    "terminal_audit": {
+      "type": "object",
+      "required": ["success", "termination_reason", "safety_violation", "unlogged_external_override", "buffer", "admission_rule_version", "failed_gates"],
+      "properties": {
+        "success": { "type": "boolean" },
+        "termination_reason": { "type": "string", "minLength": 1 },
+        "safety_violation": { "type": "boolean" },
+        "unlogged_external_override": { "type": "boolean" },
+        "buffer": { "enum": ["A_action", "A_audit", "quarantine"] },
+        "admission_rule_version": { "type": "string", "minLength": 1 },
+        "failed_gates": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "data_integrity": {
+      "type": "object",
+      "required": ["synchronization_valid", "complete_causal_record", "validator_report_ref"],
+      "properties": {
+        "synchronization_valid": { "type": "boolean" },
+        "complete_causal_record": { "type": "boolean" },
+        "validator_report_ref": { "type": "string", "minLength": 1 },
+        "content_hashes": { "type": "object" }
+      },
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["code_revision", "adapter_version"],
+      "properties": {
+        "code_revision": { "type": "string", "minLength": 1 },
+        "adapter_version": { "type": "string", "minLength": 1 },
+        "source_dataset_or_run": { "type": "string" },
+        "environment": { "type": "object" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "streamReference": {
+      "type": "object",
+      "required": ["storage_ref", "timestamp_field", "availability"],
+      "properties": {
+        "storage_ref": { "type": "string", "minLength": 1 },
+        "timestamp_field": { "type": "string", "minLength": 1 },
+        "availability": { "enum": ["available", "unavailable"] },
+        "unavailable_reason": { "type": "string" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "availability": { "const": "unavailable" } }, "required": ["availability"] },
+          "then": { "required": ["unavailable_reason"] }
+        }
+      ],
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "intended_uses": { "contains": { "const": "filter_training" } }
+        },
+        "required": ["intended_uses"]
+      },
+      "then": {
+        "properties": {
+          "streams": { "required": ["commands"] },
+          "data_integrity": {
+            "properties": { "complete_causal_record": { "const": true } },
+            "required": ["complete_causal_record"]
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
