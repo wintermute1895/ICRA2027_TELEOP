@@ -106,3 +106,35 @@ ros2 run sim_robot_driver mujoco_command_mirror --ros-args \
 
 Simulation state is intentionally published below `/sim/robot1`; hardware
 state remains below `/robot1`. This prevents accidental topic collisions.
+
+## Causal Command Filter v0
+
+`causal_filter_node` is a simulation-only experiment adapter. It reads the
+bridge's already mapped command and simulation joint state, predicts a
+successful-trajectory action prior from causal history, then emits a bounded
+blend on `/filter_v0/<arm>_arm/joint_follow`. Missing state, model mismatch,
+or an out-of-distribution feature vector falls back to the mapped command.
+It never starts a hardware driver and is not part of the hardware launch.
+
+Train only from explicitly audited canonical JSONL records:
+
+```bash
+python3 tools/train_causal_command_filter.py \
+  --episode evidence/sim/<episode>/derived/left_episode.jsonl \
+  --output models/causal_filter_left_v0.json
+```
+
+Each accepted record must have `success: true`, complete mapped-command and
+robot-state fields, and should provide `executed_joint_command_rad` when the
+executed action differs from the mapped command. `success` is an admission
+label, never an online model input.
+
+Launch it in the simulation path only:
+
+```bash
+ros2 launch sim_robot_driver sim_teleop.launch.py render:=false \
+  filter_enabled:=true filter_model_path:=/absolute/path/filter.json
+```
+
+With `filter_enabled:=true`, the ordinary bridge is deliberately unarmed and
+the mirror consumes only `/filter_v0`; this prevents competing command
