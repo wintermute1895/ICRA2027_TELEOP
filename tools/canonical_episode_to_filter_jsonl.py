@@ -8,6 +8,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from validate_canonical_episode import validate_manifest
+
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
@@ -66,8 +68,9 @@ def main() -> int:
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     if manifest.get("schema_version") != "teleop_episode/v0.1":
         raise SystemExit("manifest must use schema_version teleop_episode/v0.1")
-    if not admitted(manifest):
-        raise SystemExit("manifest is not admitted to filter_training/A_action")
+    manifest_failures = validate_manifest(manifest, require_filter_training=True)
+    if manifest_failures or not admitted(manifest):
+        raise SystemExit("manifest is not admitted to filter_training/A_action: " + ", ".join(manifest_failures))
     tolerance = args.alignment_tolerance_ns
     if tolerance is None:
         tolerance = int(manifest.get("clock", {}).get("alignment_tolerance_ns", 100_000_000))
@@ -93,25 +96,27 @@ def main() -> int:
         observed = get(control, "execution.observed_action")
         if not all(isinstance(item, list) for item in (raw, filtered, projected, state)):
             continue
+        if not isinstance(observed, list):
+            continue
         row: dict[str, Any] = {
             "schema": "robot_teleop.episode/v1", "episode_id": manifest["episode_id"],
             "source_domain": manifest["source"], "sample_index": index, "header_stamp_ns": stamp,
             "arm": manifest.get("configuration", {}).get("arm", "unknown"), "joint_names": joint_names,
             "master_joint_raw": raw, "filter_output_action": filtered,
             "mapped_joint_command_rad": projected,
-            "executed_joint_command_rad": observed if isinstance(observed, list) else projected,
+            "executed_joint_command_rad": observed,
             "robot_joint_state_rad": state, "success": True,
         }
         if context is not None:
-            context_values = get(context, "filter_context", "target.relative_pose_RP", "target_relative_pose")
-            if isinstance(context_values, list):
+            context_values = get(context, "filter_context")
+            if not isinstance(context_values, list):
+                relative_pose = get(context, "target.relative_pose_RP", "target_relative_pose")
+                progress = get(context, "reference.progress", "reference_progress")
+                visible = get(context, "target.visibility_valid", "visibility_valid")
+                if isinstance(relative_pose, list) and isinstance(progress, (int, float)) and isinstance(visible, bool):
+                    context_values = [*relative_pose, float(progress), 1.0 if visible else 0.0]
+            if isinstance(context_values, list) and len(context_values) == 8:
                 row["filter_context"] = list(context_values)
-            progress = get(context, "reference.progress", "reference_progress")
-            visible = get(context, "target.visibility_valid", "visibility_valid")
-            if isinstance(progress, (int, float)):
-                row.setdefault("filter_context", []).append(float(progress))
-            if isinstance(visible, bool):
-                row.setdefault("filter_context", []).append(1.0 if visible else 0.0)
         output.append(row)
     if not output:
         raise SystemExit("no complete causal rows could be projected")

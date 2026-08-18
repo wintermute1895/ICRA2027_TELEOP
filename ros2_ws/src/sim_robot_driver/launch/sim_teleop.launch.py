@@ -32,6 +32,7 @@ def generate_launch_description():
         DeclareLaunchArgument("filter_blend", default_value="0.5"),
         DeclareLaunchArgument("filter_max_correction_rad", default_value="0.08"),
         DeclareLaunchArgument("filter_max_ood_z", default_value="3.0"),
+        DeclareLaunchArgument("filter_max_context_age_ms", default_value="100.0"),
         Node(package="teleop_control_bridge", executable="joint_mapping_bridge_node", output="screen", parameters=[
             bridge_params,
             {"slave_namespaces": ["robot1"], "armed": PythonExpression(["'", LaunchConfiguration("filter_enabled"), "' != 'true'"]), "require_first_move_service": False},
@@ -41,6 +42,7 @@ def generate_launch_description():
                  "model_path": LaunchConfiguration("filter_model_path"), "state_namespace": "/sim/robot1",
                  "output_namespace": "/filter_v0", "blend": LaunchConfiguration("filter_blend"),
                  "max_correction_rad": LaunchConfiguration("filter_max_correction_rad"), "max_ood_z": LaunchConfiguration("filter_max_ood_z"),
+                 "max_context_age_ms": LaunchConfiguration("filter_max_context_age_ms"),
              }]),
 
         # The MuJoCo process deliberately uses the dedicated Python 3.10 environment.

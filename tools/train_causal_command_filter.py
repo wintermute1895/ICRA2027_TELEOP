@@ -41,8 +41,7 @@ def main() -> int:
         joint_count = count
         commands = [finite_vector(record.get("mapped_joint_command_rad"), count) for record in records]
         states = [finite_vector(record.get("robot_joint_state_rad"), count) for record in records]
-        executed = [finite_vector(record.get("executed_joint_command_rad"), count) for record in records]
-        targets_for_episode = [value if value is not None else commands[index] for index, value in enumerate(executed)]
+        targets_for_episode = [finite_vector(record.get("executed_joint_command_rad"), count) for record in records]
         contexts = [finite_vector(record.get("filter_context"), args.context_size) if args.context_size else None for record in records]
         for index in range(args.history_length - 1, len(records)):
             history = commands[index - args.history_length + 1:index + 1]

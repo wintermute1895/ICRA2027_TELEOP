@@ -58,6 +58,8 @@ class MujocoCommandMirror(Node):
         self.declare_parameter("camera_publish_rate_hz", 30.0)
         self.declare_parameter("camera_namespace", "/sim/camera")
         self.declare_parameter("publish_hands", True)
+        self.declare_parameter("publish_task_context", True)
+        self.declare_parameter("task_context_publish_rate_hz", 30.0)
         self.declare_parameter("left_hand_model", "L10")
         self.declare_parameter("right_hand_model", "L10")
         self.command_namespace = str(self.get_parameter("command_namespace").value).rstrip("/")
@@ -68,6 +70,8 @@ class MujocoCommandMirror(Node):
         self.camera_rate_hz = float(self.get_parameter("camera_publish_rate_hz").value)
         self.camera_namespace = str(self.get_parameter("camera_namespace").value).rstrip("/")
         self.publish_hands = bool(self.get_parameter("publish_hands").value)
+        self.publish_task_context = bool(self.get_parameter("publish_task_context").value)
+        self.task_context_rate_hz = float(self.get_parameter("task_context_publish_rate_hz").value)
         self.hand_models = {
             "left": str(self.get_parameter("left_hand_model").value).upper(),
             "right": str(self.get_parameter("right_hand_model").value).upper(),
@@ -101,6 +105,9 @@ class MujocoCommandMirror(Node):
         self.camera_publishers = {}
         self.camera_info_publishers = {}
         self.last_camera_publish_ns = 0
+        self.last_task_context_publish_ns = 0
+        self.task_context_site_ids = None
+        self.task_context_publishers = {}
         self.qpos_addresses: Dict[str, int] = {}
         self._load_mujoco()
         if self.input_mode == "vendor_command":
@@ -181,6 +188,17 @@ class MujocoCommandMirror(Node):
                     self.create_publisher(CameraInfo, f"{prefix}/depth/camera_info", 5),
                 )
             self.get_logger().info(f"simulation cameras enabled: namespace={self.camera_namespace}, rate={self.camera_rate_hz:.1f}Hz")
+        if self.publish_task_context and self.mj_model is not None:
+            if self.task_context_rate_hz <= 0.0:
+                raise ValueError("task_context_publish_rate_hz must be positive")
+            site_names = ("usb_c_plug_tip_site", "usb_c_receptacle_entry_site", "usb_c_receptacle_goal_site")
+            site_ids = [self.mujoco.mj_name2id(self.mj_model, self.mujoco.mjtObj.mjOBJ_SITE, name) for name in site_names]
+            if all(site_id >= 0 for site_id in site_ids):
+                self.task_context_site_ids = tuple(site_ids)
+                self.task_context_publishers = {arm: self.create_publisher(JointState, f"{arm}_arm/filter_context", 10) for arm in ARM_JOINTS}
+                self.get_logger().info(f"simulation task context enabled: sites={site_names}, rate={self.task_context_rate_hz:.1f}Hz")
+            else:
+                self.get_logger().warn("simulation task context disabled: model lacks USB-C task sites; no placeholder context will be published")
 
     @staticmethod
     def _valid(values: List[float]) -> bool:
@@ -241,6 +259,7 @@ class MujocoCommandMirror(Node):
             for arm in ARM_JOINTS:
                 self._publish_hand_state(arm)
         self._publish_cameras_if_due()
+        self._publish_task_context_if_due()
 
     def _joint_range(self, name: str) -> tuple[float, float]:
         joint_id = self.mujoco.mj_name2id(self.mj_model, self.mujoco.mjtObj.mjOBJ_JOINT, name)
@@ -326,6 +345,55 @@ class MujocoCommandMirror(Node):
             rgb_pub.publish(rgb_msg); depth_pub.publish(depth_msg)
             self.camera_info_publishers[camera_name][0].publish(info)
             self.camera_info_publishers[camera_name][1].publish(info)
+
+
+    @staticmethod
+    def _rotation_vector(rotation: np.ndarray) -> np.ndarray:
+        cosine = float(np.clip((np.trace(rotation) - 1.0) * 0.5, -1.0, 1.0))
+        angle = math.acos(cosine)
+        if angle < 1e-7:
+            return np.zeros(3, dtype=np.float64)
+        numerator = np.array([rotation[2, 1] - rotation[1, 2], rotation[0, 2] - rotation[2, 0], rotation[1, 0] - rotation[0, 1]], dtype=np.float64)
+        if math.pi - angle < 1e-5:
+            eigenvalues, eigenvectors = np.linalg.eigh((rotation + np.eye(3)) * 0.5)
+            axis = eigenvectors[:, int(np.argmax(eigenvalues))]
+            if np.dot(axis, numerator) < 0.0:
+                axis = -axis
+            return axis * angle
+        return numerator * (angle / (2.0 * math.sin(angle)))
+
+    def _publish_task_context_if_due(self) -> None:
+        if not self.task_context_publishers or self.task_context_site_ids is None:
+            return
+        now_ns = self.get_clock().now().nanoseconds
+        if self.last_task_context_publish_ns and now_ns - self.last_task_context_publish_ns < int(1e9 / self.task_context_rate_hz):
+            return
+        tip_id, entry_id, goal_id = self.task_context_site_ids
+        tip_position = np.asarray(self.mj_data.site_xpos[tip_id], dtype=np.float64)
+        entry_position = np.asarray(self.mj_data.site_xpos[entry_id], dtype=np.float64)
+        goal_position = np.asarray(self.mj_data.site_xpos[goal_id], dtype=np.float64)
+        tip_rotation = np.asarray(self.mj_data.site_xmat[tip_id], dtype=np.float64).reshape(3, 3)
+        entry_rotation = np.asarray(self.mj_data.site_xmat[entry_id], dtype=np.float64).reshape(3, 3)
+        relative_position = entry_rotation.T @ (tip_position - entry_position)
+        insertion_axis = entry_rotation.T @ (goal_position - entry_position)
+        axis_norm_sq = float(insertion_axis @ insertion_axis)
+        if axis_norm_sq <= 1e-12:
+            self.get_logger().warn("simulation task context disabled: entry and goal sites have no insertion axis")
+            self.task_context_publishers = {}
+            return
+        progress = float(np.clip((relative_position @ insertion_axis) / axis_norm_sq, 0.0, 1.0))
+        values = [*relative_position.tolist(), *self._rotation_vector(entry_rotation.T @ tip_rotation).tolist(), progress, 1.0]
+        if not all(math.isfinite(value) for value in values):
+            self.get_logger().error("simulation task context rejected: non-finite site geometry")
+            return
+        self.last_task_context_publish_ns = now_ns
+        stamp = self.get_clock().now().to_msg()
+        names = ["target_relative_x_m", "target_relative_y_m", "target_relative_z_m", "target_relative_rx_rad", "target_relative_ry_rad", "target_relative_rz_rad", "reference_progress", "visibility_valid"]
+        for publisher in self.task_context_publishers.values():
+            message = JointState()
+            message.header.stamp, message.header.frame_id = stamp, "usb_c_receptacle_entry_site"
+            message.name, message.position = names, values
+            publisher.publish(message)
 
     def _sync_mujoco(self) -> None:
         if self.mj_model is None:

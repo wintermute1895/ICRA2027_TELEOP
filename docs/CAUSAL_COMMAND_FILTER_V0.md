@@ -31,12 +31,13 @@ publishes to `/filter_v0`; it cannot share a topic with the hardware driver.
 
 ## Training Interpretation
 
-When `executed_joint_command_rad` is unavailable, the trainer uses
-`mapped_joint_command_rad` as its target. This supports integration testing
-and action-prior experiments, but cannot by itself prove an improvement over
-the existing rule filter. To learn a nontrivial correction, the dataset needs
-at least one of: distinct executed-action labels, controlled command
-perturbation/recovery data, or verified local reference-progress targets.
+`executed_joint_command_rad` is mandatory for training. A safety-projected
+command is still a command, not a record of robot execution, and is never
+substituted as a target. Missing execution observations are routed to audit or
+policy views rather than silently entering filter training. To learn a
+nontrivial correction, the dataset needs distinct executed-action labels,
+controlled command perturbation/recovery data, or verified local
+reference-progress targets.
 
 
 ## Canonical v0.1 projection
@@ -54,5 +55,10 @@ python3 tools/canonical_episode_to_filter_jsonl.py \
 
 The adapter requires the manifest terminal audit to be `A_action` and retains
 raw, filter, safety-projected, executed, state, and optional `filter_context`
-fields. Train with `--context-size N` only when every accepted row has exactly
-N context values; missing context is rejected, never zero-filled.
+fields. The shared 8-value context contract is defined in
+`config/filters/causal_command_filter_v0_1.json`: target pose in the
+receptacle frame, progress, then visibility. Simulation publishes it only from
+real MuJoCo task sites; real acquisition must provide the same ordering with
+estimator confidence and calibration metadata in the canonical stream. Train
+with `--context-size N` only when every accepted row has exactly N context
+values; missing context is rejected, never zero-filled.

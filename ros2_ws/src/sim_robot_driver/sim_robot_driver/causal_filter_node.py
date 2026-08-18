@@ -23,6 +23,7 @@ class CausalFilterNode(Node):
         self.declare_parameter("blend", 0.5)
         self.declare_parameter("max_correction_rad", 0.08)
         self.declare_parameter("max_ood_z", 3.0)
+        self.declare_parameter("max_context_age_ms", 100.0)
         model_path = Path(str(self.get_parameter("model_path").value)).expanduser()
         if not model_path.is_file():
             raise FileNotFoundError("filter_enabled requires a valid model_path")
@@ -33,9 +34,13 @@ class CausalFilterNode(Node):
         self.blend = float(self.get_parameter("blend").value)
         self.max_correction_rad = float(self.get_parameter("max_correction_rad").value)
         self.max_ood_z = float(self.get_parameter("max_ood_z").value)
+        self.max_context_age_ns = int(float(self.get_parameter("max_context_age_ms").value) * 1e6)
+        if self.max_context_age_ns < 0:
+            raise ValueError("max_context_age_ms must be non-negative")
         self.histories = {arm: deque(maxlen=self.model.history_length) for arm in ("left", "right")}
         self.states: dict[str, list[float] | None] = {"left": None, "right": None}
         self.contexts: dict[str, list[float] | None] = {"left": None, "right": None}
+        self.context_stamps_ns: dict[str, int | None] = {"left": None, "right": None}
         self.publishers = {arm: self.create_publisher(FollowJoint, f"{self.output_namespace}/{arm}_arm/joint_follow", 20) for arm in self.states}
         self.diagnostics = {arm: self.create_publisher(JointState, f"{self.output_namespace}/{arm}/command", 20) for arm in self.states}
         self.subscriptions = []
@@ -52,8 +57,22 @@ class CausalFilterNode(Node):
 
     def context_callback(self, arm: str, msg: JointState) -> None:
         values = [float(value) for value in msg.position]
-        if len(values) == self.model.context_size:
+        stamp_ns = int(msg.header.stamp.sec) * 1_000_000_000 + int(msg.header.stamp.nanosec)
+        if len(values) == self.model.context_size and stamp_ns > 0:
             self.contexts[arm] = values
+            self.context_stamps_ns[arm] = stamp_ns
+
+    def _fresh_context(self, arm: str, command: JointState) -> list[float] | None:
+        if self.model.context_size == 0:
+            return None
+        command_stamp_ns = int(command.header.stamp.sec) * 1_000_000_000 + int(command.header.stamp.nanosec)
+        context_stamp_ns = self.context_stamps_ns[arm]
+        if self.contexts[arm] is None or context_stamp_ns is None or command_stamp_ns <= 0:
+            return None
+        age_ns = command_stamp_ns - context_stamp_ns
+        if age_ns < 0 or age_ns > self.max_context_age_ns:
+            return None
+        return self.contexts[arm]
 
     def command_callback(self, arm: str, msg: JointState) -> None:
         values = [float(value) for value in msg.position]
@@ -65,7 +84,7 @@ class CausalFilterNode(Node):
         output, diagnostics = values, {"fallback": True}
         if self.states[arm] is not None and len(history) == self.model.history_length:
             try:
-                output, diagnostics = blend_command(self.model, list(history), self.states[arm], blend=self.blend, max_correction_rad=self.max_correction_rad, max_ood_z=self.max_ood_z, context=self.contexts[arm])
+                output, diagnostics = blend_command(self.model, list(history), self.states[arm], blend=self.blend, max_correction_rad=self.max_correction_rad, max_ood_z=self.max_ood_z, context=self._fresh_context(arm, msg))
             except ValueError as exc:
                 self.get_logger().warn(f"{arm} filter fallback: {exc}")
         follow = FollowJoint()

@@ -1,0 +1,16 @@
+{
+  "schema": "robot_teleop.task-context/v1",
+  "context_size": 8,
+  "values": [
+    {"name": "target_relative_position", "dimension": 3, "units": "m", "frame": "R"},
+    {"name": "target_relative_rotation_vector", "dimension": 3, "units": "rad", "frame": "R"},
+    {"name": "reference_progress", "dimension": 1, "units": "normalized", "range": [0.0, 1.0]},
+    {"name": "visibility_valid", "dimension": 1, "units": "bool01", "range": [0.0, 1.0]}
+  ],
+  "timestamp_policy": "header_stamp_ns in the declared canonical clock domain",
+  "invalid_context_policy": "fallback_to_rule_filter",
+  "source_semantics": {
+    "simulation": "target pose may be sim_ground_truth and progress must be geometry-derived",
+    "real": "target pose must carry estimator confidence and calibration version"
+  }
+}
