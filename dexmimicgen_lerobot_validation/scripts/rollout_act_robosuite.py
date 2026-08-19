@@ -74,6 +74,7 @@ def rollout(
     log_path = output_dir / "rollout_log.jsonl"
 
     policy = ACTPolicy.from_pretrained(policy_path, local_files_only=True)
+    policy_device = torch.device(policy.config.device)
     env = load_env_from_hdf5(hdf5_path)
 
     np.random.seed(seed)
@@ -101,8 +102,8 @@ def rollout(
         with torch.no_grad():
             action_tensor = policy.select_action(
                 {
-                    "observation.state": torch.from_numpy(state).unsqueeze(0),
-                    "observation.images.frontview": image,
+                    "observation.state": torch.from_numpy(state).unsqueeze(0).to(policy_device),
+                    "observation.images.frontview": image.to(policy_device),
                 }
             )
         action = action_tensor.squeeze(0).cpu().numpy().astype(np.float64)
@@ -110,6 +111,9 @@ def rollout(
 
         obs, reward, done, info = env.step(action)
         frame = obs["frontview_image"].copy()
+        # MuJoCo/robosuite default observation images are bottom-up. Flip
+        # vertically before encoding so the deployment video looks correct.
+        frame = cv2.flip(frame, 0)
         writer.write(frame)
 
         record = {
