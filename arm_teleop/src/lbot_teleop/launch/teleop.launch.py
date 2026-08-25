@@ -17,8 +17,12 @@ import yaml
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription, TimerAction
+from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
@@ -40,6 +44,8 @@ def generate_launch_description():
     
     # 自动生成命名空间列表: robot1, robot2, robot3...
     slave_namespaces = [f"robot{i+1}" for i in range(len(slave_arm_ips))]
+    launch_driver = LaunchConfiguration("launch_driver")
+    launch_linkerta = LaunchConfiguration("launch_linkerta")
     
     # 打印配置信息
     print(f"[teleop.launch.py] 从臂配置:")
@@ -59,6 +65,7 @@ def generate_launch_description():
             ],
             output='screen',
             emulate_tty=True,
+            condition=IfCondition(launch_driver),
         )
         driver_nodes.append(driver_node)
     
@@ -70,8 +77,9 @@ def generate_launch_description():
                 PythonLaunchDescriptionSource(
                     os.path.join(linkerta_dir, 'launch', 'run.launch.py')
                 )
-            )
-        ]
+            ),
+        ],
+            condition=IfCondition(launch_linkerta),
     )
     
     # 3. 启动 teleop_bridge (桥接节点) - 延迟2秒
@@ -82,7 +90,8 @@ def generate_launch_description():
         output='screen',
         parameters=[
             teleop_bridge_params,
-            {"slave_namespaces": slave_namespaces}  # 自动生成的命名空间列表
+            {"slave_namespaces": slave_namespaces},
+            {"armed": ParameterValue(LaunchConfiguration("armed"), value_type=bool)},
         ]
     )
 
@@ -92,6 +101,16 @@ def generate_launch_description():
     )
     
     return LaunchDescription([
+        DeclareLaunchArgument(
+            "launch_driver", default_value="true",
+            description="Launch lbot_driver nodes. Set false to reuse an already-running driver.",
+        ),
+        DeclareLaunchArgument(
+            "launch_linkerta", default_value="true",
+            description="Launch LinkerTA master-arm node.",
+        ),
+        DeclareLaunchArgument("armed", default_value="false",
+                              description="Explicitly allow commands to reach the robot"),
         *driver_nodes,          # 所有从臂驱动节点
         linkerta_launch,        # 主臂节点
         teleop_bridge_launch,   # 桥接节点

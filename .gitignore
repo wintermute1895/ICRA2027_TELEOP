@@ -2,6 +2,18 @@ SemanticTeleop_MPC/
 cyberdog_sim_project/
 sim-web-visualizer-main/
 
+# ROS2 colcon 构建产物
+arm_teleop/build*/
+arm_teleop/install*/
+arm_teleop/log*/
+__pycache__/
+*.pyc
+
+# 本地采集数据、训练产物与运行日志
+d0_data/
+d0_act_data/
+log/
+
 # VS Code browsing database (large binary files)
 .vscode/browse.vc.db
 .vscode/browse.vc.db-shm

@@ -14,6 +14,8 @@
 
 #include "lbot_driver.h"
 #include <std_srvs/srv/empty.hpp>
+#include <algorithm>
+#include <cmath>
 
 using namespace std::chrono_literals;
 using lbot_driver::LBot;
@@ -29,6 +31,8 @@ void lbot_state_callback_wrapper(const lbot_full_state_t* state) {
     if (state && lbot_driver::LBot::g_instance) {
         std::lock_guard<std::mutex> lock(lbot_driver::LBot::g_instance->state_mutex_);
         lbot_driver::LBot::g_instance->current_lbot_state_ = *state;
+        lbot_driver::LBot::g_instance->current_lbot_state_receipt_ns_ =
+            lbot_driver::LBot::g_instance->get_clock()->now().nanoseconds();
     }
 }
 
@@ -53,6 +57,40 @@ void lbot_error_callback_wrapper(int error_code, const char* error_msg) {
 }
 
 namespace lbot_driver {
+
+namespace {
+
+// The SDK state contains the controller-provided timestamp.  Prefer it for
+// robot state messages so camera/robot alignment does not depend on the
+// driver's 50 Hz timer scheduling.  Some older controller firmware returns
+// zero or an invalid nanosecond field; retain a receive-time fallback for
+// those devices and expose the source in the capture manifest.
+rclcpp::Time state_timestamp(
+    const lbot_arm_state_t& arm,
+    const rclcpp::Time& receipt_time,
+    bool& clock_initialized,
+    int64_t& controller_to_ros_offset_ns)
+{
+    if (arm.sec > 0 && arm.nanosec < 1000000000u) {
+        const int64_t controller_ns =
+            static_cast<int64_t>(arm.sec) * 1000000000LL + static_cast<int64_t>(arm.nanosec);
+        if (!clock_initialized) {
+            controller_to_ros_offset_ns = receipt_time.nanoseconds() - controller_ns;
+            clock_initialized = true;
+        }
+        int64_t mapped_ns = controller_ns + controller_to_ros_offset_ns;
+        // Controller reboot or a large clock correction invalidates the old
+        // affine offset. Re-anchor instead of publishing a discontinuous ROS stamp.
+        if (std::llabs(mapped_ns - receipt_time.nanoseconds()) > 1000000000LL) {
+            controller_to_ros_offset_ns = receipt_time.nanoseconds() - controller_ns;
+            mapped_ns = controller_ns + controller_to_ros_offset_ns;
+        }
+        return rclcpp::Time(mapped_ns, RCL_ROS_TIME);
+    }
+    return receipt_time;
+}
+
+}  // namespace
 
 // ========== 主节点实现 ==========
 LBot::LBot(const std::string& node_name) : rclcpp::Node(node_name) {
@@ -127,26 +165,35 @@ bool LBot::connect_robot() {
     g_conn_state.store(GlobalConnState::CONNECTING);  // 更新全局状态
 
     lbot_handle = lbot_api.lbot_init(arm_ip_.c_str());
-    if (lbot_handle.id <= 0) {
+
+    // SDK 1.0.3 returns slot index 0 for the first valid handle, even though
+    // the vendor header says 0 is invalid.  Do not reject id == 0 here.
+    // Validate the connection with get_controller_info and the state monitor.
+    std::string robot_model;
+    std::string controller_version;
+    bool info_ok = lbot_api.lbot_get_controller_info(
+        lbot_handle, robot_model, controller_version);
+    if (info_ok) {
         RCLCPP_INFO(this->get_logger(), "Connected to LBot at %s", arm_ip_.c_str());
-
-        // 获取机械臂信息
-        get_robot_info();
-
-        // 启动状态监控
-        if (lbot_api.lbot_start_state_monitor(lbot_state_callback_wrapper, lbot_error_callback_wrapper)) {
-            is_state_monitor_started_ = true;
-            RCLCPP_INFO(this->get_logger(), "State monitor started successfully");
-        } else {
-            is_state_monitor_started_ = false;
-            RCLCPP_ERROR(this->get_logger(), "Failed to start state monitor");
-        }
-
+        RCLCPP_INFO(
+            this->get_logger(), "Robot Model: %s, Controller Version: %s",
+            robot_model.c_str(), controller_version.c_str());
     } else {
-        RCLCPP_ERROR(this->get_logger(), "Failed to connect to LBot");
+        RCLCPP_ERROR(
+            this->get_logger(), "Failed to query LBot controller info at %s",
+            arm_ip_.c_str());
     }
 
-    bool success = lbot_handle.id > 0;
+    is_state_monitor_started_ = info_ok &&
+        lbot_api.lbot_start_state_monitor(
+            lbot_state_callback_wrapper, lbot_error_callback_wrapper);
+    if (is_state_monitor_started_) {
+        RCLCPP_INFO(this->get_logger(), "State monitor started successfully");
+    } else if (info_ok) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to start state monitor");
+    }
+
+    bool success = is_state_monitor_started_;
     conn_state_ = success ? GlobalConnState::CONNECTED : GlobalConnState::DISCONNECTED;
     g_conn_state.store(conn_state_);  // 更新全局状态
 
@@ -189,17 +236,27 @@ void LBot::state_publish_timer_callback() {
     if (conn_state_ != GlobalConnState::CONNECTED || !is_state_monitor_started_) return;
 
     lbot_full_state_t state;
+    int64_t state_receipt_ns = 0;
     {
         std::lock_guard<std::mutex> lock(state_mutex_);
         state = current_lbot_state_;
+        state_receipt_ns = current_lbot_state_receipt_ns_;
     }
 
-    rclcpp::Time time_now = this->get_clock()->now();
+    const rclcpp::Time receive_time = state_receipt_ns > 0
+        ? rclcpp::Time(state_receipt_ns, RCL_ROS_TIME)
+        : this->get_clock()->now();
+    const rclcpp::Time left_state_time = state_timestamp(
+        state.left_arm, receive_time,
+        left_controller_clock_initialized_, left_controller_to_ros_offset_ns_);
+    const rclcpp::Time right_state_time = state_timestamp(
+        state.right_arm, receive_time,
+        right_controller_clock_initialized_, right_controller_to_ros_offset_ns_);
 
     // ----------------------- 左臂 -----------------------
 
     sensor_msgs::msg::JointState left_joint;
-    left_joint.header.stamp = time_now;
+    left_joint.header.stamp = left_state_time;
     left_joint.header.frame_id = state.left_arm.frame_id; 
 
     // 关节名称
@@ -226,7 +283,7 @@ void LBot::state_publish_timer_callback() {
 
     // PoseStamped（末端状态）
     geometry_msgs::msg::PoseStamped left_pose;
-    left_pose.header.stamp = time_now;
+    left_pose.header.stamp = left_state_time;
     left_pose.header.frame_id = state.left_arm.frame_id;
 
     left_pose.pose.position.x = state.left_arm.end_effector_position.x;
@@ -243,7 +300,7 @@ void LBot::state_publish_timer_callback() {
     // ----------------------- 右臂 -----------------------
 
     sensor_msgs::msg::JointState right_joint;
-    right_joint.header.stamp = time_now;
+    right_joint.header.stamp = right_state_time;
     right_joint.header.frame_id = state.right_arm.frame_id;
 
     right_joint.name.resize(7);
@@ -265,7 +322,7 @@ void LBot::state_publish_timer_callback() {
     right_joint_pub_->publish(right_joint);
 
     geometry_msgs::msg::PoseStamped right_pose;
-    right_pose.header.stamp = time_now;
+    right_pose.header.stamp = right_state_time;
     right_pose.header.frame_id = state.right_arm.frame_id;
 
     right_pose.pose.position.x = state.right_arm.end_effector_position.x;
@@ -285,7 +342,12 @@ void LBot::state_publish_timer_callback() {
 
 // 左臂关节跟随回调
 void LBot::left_joint_follow_callback(const std::shared_ptr<lbot_arm_interfaces::msg::FollowJoint> msg) {
-    if (!msg || msg->joints.empty()) return;
+    if (!msg || msg->joints.size() != 7 ||
+        !std::all_of(msg->joints.begin(), msg->joints.end(), [](float value) { return std::isfinite(value); })) {
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+                              "Left joint follow rejected: expected 7 finite joint values");
+        return;
+    }
     
     if (g_conn_state.load() != GlobalConnState::CONNECTED) {
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Left joint follow: Robot not connected");
@@ -301,7 +363,12 @@ void LBot::left_joint_follow_callback(const std::shared_ptr<lbot_arm_interfaces:
 
 // 右臂关节跟随回调
 void LBot::right_joint_follow_callback(const std::shared_ptr<lbot_arm_interfaces::msg::FollowJoint> msg) {
-    if (!msg || msg->joints.empty()) return;
+    if (!msg || msg->joints.size() != 7 ||
+        !std::all_of(msg->joints.begin(), msg->joints.end(), [](float value) { return std::isfinite(value); })) {
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000,
+                              "Right joint follow rejected: expected 7 finite joint values");
+        return;
+    }
     
     if (g_conn_state.load() != GlobalConnState::CONNECTED) {
         RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "Right joint follow: Robot not connected");
@@ -402,7 +469,7 @@ LeftArmServiceNode::LeftArmServiceNode(const std::string& node_name) : rclcpp::N
 }
 
 void LeftArmServiceNode::create_services() {
-    rclcpp::QoS service_qos = rclcpp::ServicesQoS();
+    const rmw_qos_profile_t service_qos = rmw_qos_profile_services_default;
     auto sub_opt = rclcpp::SubscriptionOptions();
     sub_opt.callback_group = callback_group_subscribers_;
 
@@ -1030,7 +1097,7 @@ RightArmServiceNode::RightArmServiceNode(const std::string& node_name) : rclcpp:
 }
 
 void RightArmServiceNode::create_services() {
-    rclcpp::QoS service_qos = rclcpp::ServicesQoS();
+    const rmw_qos_profile_t service_qos = rmw_qos_profile_services_default;
     auto sub_opt = rclcpp::SubscriptionOptions();
     sub_opt.callback_group = callback_group_subscribers_;
 

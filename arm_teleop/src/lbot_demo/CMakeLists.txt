@@ -22,6 +22,8 @@ find_package(std_msgs REQUIRED)
 find_package(std_srvs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(OpenCV REQUIRED COMPONENTS core highgui imgproc)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(lbot_arm_interfaces REQUIRED)
@@ -80,8 +82,16 @@ ament_target_dependencies(demo_hand_l6_control rclcpp sensor_msgs lbot_arm_inter
 add_executable(demo_hand_l10_control src/demo_hand_l10_control.cpp)
 ament_target_dependencies(demo_hand_l10_control rclcpp sensor_msgs lbot_arm_interfaces)
 
+add_executable(demo_hand_grasp_control src/demo_hand_grasp_control.cpp)
+ament_target_dependencies(demo_hand_grasp_control rclcpp std_msgs)
+target_compile_features(demo_hand_grasp_control PRIVATE cxx_std_17)
+
 add_executable(demo_joint_bridge src/demo_joint_bridge.cpp)
 ament_target_dependencies(demo_joint_bridge rclcpp sensor_msgs lbot_arm_interfaces)
+
+add_executable(d0_camera_preview src/d0_camera_preview.cpp)
+ament_target_dependencies(d0_camera_preview rclcpp sensor_msgs cv_bridge)
+target_link_libraries(d0_camera_preview ${OpenCV_LIBRARIES})
 
 install(TARGETS
   demo_lkrs_movel
@@ -96,7 +106,9 @@ install(TARGETS
   demo_emergency_enable
   demo_hand_l6_control
   demo_hand_l10_control
+  demo_hand_grasp_control
   demo_joint_bridge
+  d0_camera_preview
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch 

@@ -1,0 +1,16 @@
+{
+  "hand_type": "l10",
+  "joint_names": [
+    "thumb_base",
+    "thumb_side",
+    "index_base",
+    "middle_base",
+    "ring_base",
+    "pinky_base",
+    "index_side",
+    "ring_side",
+    "pinky_side",
+    "thumb_rotate"
+  ],
+  "gestures": {}
+}

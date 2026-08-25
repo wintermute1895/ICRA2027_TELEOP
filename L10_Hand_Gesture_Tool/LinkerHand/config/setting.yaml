@@ -1,0 +1,56 @@
+VERSION: 2.1.8 # 修复撞帧
+LINKER_HAND:  # 手部配置信息
+  LEFT_HAND:
+    EXISTS: False # 是否存在左手
+    TOUCH: True # 是否有压力传感器
+    MODBUS: "None" # 通讯协议是否为485 默认None 当前支持RML(睿尔曼API2)
+    JOINT: L10 # 左手关节数 L7/L10/L20/L21/L25
+    NAME: # 无论l10还是l20 joint name都是20个
+      - joint41
+      - joint42
+      - joint43
+      - joint44
+      - joint45
+      - joint46
+      - joint47
+      - joint48
+      - joint49
+      - joint50
+      - joint51
+      - joint52
+      - joint53
+      - joint54
+      - joint55
+      - joint56
+      - joint57
+      - joint58
+      - joint59
+      - joint60
+    
+  RIGHT_HAND:
+    EXISTS: True # 是否存在右手
+    TOUCH: True # 是否有压力传感器
+    MODBUS: "None" # 通讯协议是否为485 默认None 当前支持RML(睿尔曼API2)
+    JOINT: L10 # 右手关节数量
+    NAME:  # 无论l10还是l20 joint name都是20个
+      - joint71
+      - joint72
+      - joint73
+      - joint77
+      - joint75
+      - joint76
+      - joint77
+      - joint78
+      - joint79
+      - joint80
+      - joint81
+      - joint82
+      - joint83
+      - joint84
+      - joint88
+      - joint86
+      - joint87
+      - joint88
+      - joint89
+      - joint90
+PASSWORD: "6" # 由于与can通讯，需要激活通讯接口用到系统管理员密码。只有Linux系统需要，windows系统不需要
