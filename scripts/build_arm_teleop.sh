@@ -7,7 +7,7 @@
 #   会让 rosidl_adapter 找不到 empy，构建直接失败。
 # - 构建/安装目录必须是纯 ASCII 路径：仓库路径含中文“桌面”，ROS2 的
 #   rosidl 生成器会丢掉中文段导致 .idl 路径错误。源码留在仓库没问题。
-# - 默认输出到 /home/pao/icra2027_teleop_ws（ASCII），可用
+# - 默认输出到当前用户目录下的 icra2027_teleop_ws（ASCII），可用
 #   ARM_TELEOP_WORKSPACE 覆盖。需要干净重编时先删除该目录。
 # 注意：不要加 -u。source /opt/ros/humble/setup.bash 会读取未绑定的
 # AMENT_TRACE_SETUP_FILES，set -u 会直接中止脚本。
@@ -15,7 +15,7 @@ set -eo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 ARM_SRC="$PROJECT_ROOT/arm_teleop/src"
-WS_ROOT="${ARM_TELEOP_WORKSPACE:-/home/pao/icra2027_teleop_ws}"
+WS_ROOT="${ARM_TELEOP_WORKSPACE:-$HOME/icra2027_teleop_ws}"
 
 export PATH="/usr/bin:/bin:/usr/local/bin:/usr/sbin:/sbin"
 hash -r

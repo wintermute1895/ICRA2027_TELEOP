@@ -1,0 +1,43 @@
+diff --git a/setup.py b/setup.py
+index 5fc7e47..9d6d3f4 100644
+--- a/setup.py
++++ b/setup.py
+@@ -1,7 +1,7 @@
+ # read the contents of your README file
+ from os import path
+ 
+-from setuptools import find_packages, setup
++from setuptools import find_namespace_packages, setup
+ 
+ this_directory = path.abspath(path.dirname(__file__))
+ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
+@@ -13,7 +13,11 @@ lines = [x for x in lines if ".png" not in x]
+ long_description = "".join(lines)
+ 
+ setup(
+     name="robosuite",
+-    packages=[package for package in find_packages() if package.startswith("robosuite")],
++    packages=[
++        package
++        for package in find_namespace_packages()
++        if package.startswith("robosuite")
++    ],
+     install_requires=[
+         "numpy>=1.13.3",
+         "numba>=0.49.1",
+diff --git a/robosuite/examples/third_party_controller/mink_controller.py b/robosuite/examples/third_party_controller/mink_controller.py
+index fe9f187..4946a22 100644
+--- a/robosuite/examples/third_party_controller/mink_controller.py
++++ b/robosuite/examples/third_party_controller/mink_controller.py
+@@ -9,7 +9,10 @@ import mujoco
+ import mujoco.viewer
+ import numpy as np
+ from mink.configuration import Configuration
+-from mink.tasks.exceptions import TargetNotSet
++try:
++    from mink.tasks.exceptions import TargetNotSet
++except ModuleNotFoundError:
++    from mink.exceptions import TargetNotSet
+ from mink.tasks.frame_task import FrameTask
+ 
+ import robosuite.utils.transform_utils as T

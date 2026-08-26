@@ -49,6 +49,12 @@ def _resolve_teleop_config(workspace_root: Path) -> Path:
 
 
 TELEOP_CONFIG = _resolve_teleop_config(WORKSPACE_ROOT)
+D0_BAG_ROOT = Path(
+    os.environ.get(
+        "D0_BAG_ROOT",
+        "/media/pao/Seagate Hub/ICRA2027_TELEOP_BAGS",
+    )
+)
 
 
 def sha256(path: Path) -> str | None:
@@ -232,7 +238,12 @@ def main() -> int:
         metavar="TOPIC",
         help="Override the default hand command topic (repeatable). At least one is required.",
     )
-    parser.add_argument("--out-root", type=Path, default=Path("d0_data"))
+    parser.add_argument(
+        "--out-root",
+        type=Path,
+        default=D0_BAG_ROOT,
+        help=f"Episode root directory (default: {D0_BAG_ROOT}).",
+    )
     parser.add_argument("--require-robot-state", action="store_true")
     parser.add_argument("--task-id", default="d0-unknown")
     parser.add_argument("--task-description", default="")

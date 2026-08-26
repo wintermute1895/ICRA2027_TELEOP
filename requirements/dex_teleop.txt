@@ -1,0 +1,35 @@
+# Python dependencies for the dedicated dex_teleop Conda environment.
+# PyTorch itself is installed separately by scripts/bootstrap_new_machine.sh,
+# because its index depends on the selected CUDA or CPU variant.
+numpy==1.26.4
+scipy==1.15.3
+h5py==3.12.1
+numba==0.61.2
+lerobot==0.3.2
+robomimic==0.3.0
+mujoco==3.3.6
+mink==1.0.0
+opencv-python==4.10.0.84
+opencv-contrib-python==4.10.0.84
+mediapipe==0.10.9
+pyrealsense2==2.56.5.9235
+protobuf==3.20.3
+tensorboard==2.15.2
+meshcat==0.3.2
+sounddevice==0.5.5
+python-can==4.6.1
+pydantic==2.13.4
+PyYAML==6.0.3
+# Installed with --no-deps by the bootstrapper so Conda's Pinocchio binary is
+# not replaced with the duplicate PyPI distribution named "pin".
+nlopt==2.7.1
+trimesh==5.0.0
+pytransform3d==3.16.0
+loop-rate-limiters==1.2.0
+anytree==2.13.0
+lxml==6.1.2
+qpsolvers==4.13.0
+quadprog==0.1.13
+huggingface-hub==0.35.3
+imageio==2.36.1
+termcolor==2.5.0

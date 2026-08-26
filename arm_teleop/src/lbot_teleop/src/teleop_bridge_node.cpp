@@ -169,6 +169,7 @@ private:
             {3.14, 2.0, 3.14, 2.0, 3.14, 2.0, 3.14});
         
         this->declare_parameter<bool>("enable_joint_limits", false);
+        this->declare_parameter<double>("joint_limit_tolerance_rad", 0.01);
         // Connection and motion permission are separate. The launch file keeps
         // this false unless the operator explicitly arms a real-robot run.
         this->declare_parameter<bool>("armed", false);
@@ -221,6 +222,10 @@ private:
         right_joint_mapping_.assign(right_mapping.begin(), right_mapping.end());
         
         enable_joint_limits_ = this->get_parameter("enable_joint_limits").as_bool();
+        joint_limit_tolerance_rad_ = this->get_parameter("joint_limit_tolerance_rad").as_double();
+        if (joint_limit_tolerance_rad_ < 0.0) {
+            throw std::runtime_error("joint_limit_tolerance_rad must not be negative");
+        }
         armed_ = this->get_parameter("armed").as_bool();
         enable_one_euro_filter_ = this->get_parameter("enable_one_euro_filter").as_bool();
         one_euro_min_cutoff_hz_ = this->get_parameter("one_euro_min_cutoff_hz").as_double();
@@ -373,12 +378,21 @@ private:
 
             // 安全限位
             if (enable_joint_limits_ && i < limits_min.size() && i < limits_max.size()) {
-                if (value < limits_min[i] || value > limits_max[i]) {
+                const double lower = limits_min[i];
+                const double upper = limits_max[i];
+                if (value < lower - joint_limit_tolerance_rad_ ||
+                    value > upper + joint_limit_tolerance_rad_) {
                     RCLCPP_ERROR_THROTTLE(
                         this->get_logger(), *this->get_clock(), 1000,
                         "Joint %zu command %.4f outside [%.4f, %.4f]; rejecting frame",
-                        i, value, limits_min[i], limits_max[i]);
+                        i, value, lower, upper);
                     safe = false;
+                } else if (value < lower || value > upper) {
+                    RCLCPP_WARN_THROTTLE(
+                        this->get_logger(), *this->get_clock(), 1000,
+                        "Joint %zu command %.4f near limit [%.4f, %.4f]; clamping",
+                        i, value, lower, upper);
+                    value = std::clamp(value, lower, upper);
                 }
             }
 
@@ -547,6 +561,7 @@ private:
     std::vector<double> right_joint_limits_min_;
     std::vector<double> right_joint_limits_max_;
     bool enable_joint_limits_;
+    double joint_limit_tolerance_rad_;
     bool armed_;
     bool enable_one_euro_filter_;
     double one_euro_min_cutoff_hz_;

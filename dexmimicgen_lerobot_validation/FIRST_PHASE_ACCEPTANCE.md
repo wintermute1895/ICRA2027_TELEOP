@@ -31,6 +31,15 @@
 
 Conda 环境：`/home/pao/miniconda3/envs/dex_teleop`
 
+LeRobot 安装方式：在上述 Conda 环境中使用 pip 从 PyPI 安装：
+
+```bash
+python -m pip install lerobot==0.3.2
+```
+
+本次验收使用 `lerobot==0.3.2`。该安装不是源码 checkout，因此没有对应的
+本地 Git commit hash；如需复现，应使用上述 PyPI 版本号。
+
 ## 1. Robomimic HDF5 数据校验
 
 源文件：

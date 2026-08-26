@@ -9,14 +9,30 @@ This workspace validates the infrastructure path:
 
 ## Environment
 
-Use the Conda environment:
+Use the Conda environment (the environment manager, not the LeRobot
+installation source):
 
 ```bash
 conda activate /home/pao/miniconda3/envs/dex_teleop
 ```
 
-Key pinned versions are recorded by the environment itself. The rollout currently
-uses MuJoCo 3.3.6 and mink 1.0.0 to support `WHOLE_BODY_MINK_IK`.
+Install the pinned LeRobot release from PyPI with `pip`:
+
+```bash
+python -m pip install lerobot==0.3.2
+```
+
+Verify the installation:
+
+```bash
+python -m pip show lerobot
+python -c "import lerobot; print(lerobot.__version__)"
+```
+
+The validated installation is `lerobot==0.3.2` from PyPI. It is not a source
+checkout, so there is no local Git repository or source commit hash to pin.
+Other pinned versions are recorded in the acceptance report below. The rollout
+currently uses MuJoCo 3.3.6 and mink 1.0.0 to support `WHOLE_BODY_MINK_IK`.
 
 ## Main scripts
 

@@ -14,6 +14,9 @@ d0_data/
 d0_act_data/
 log/
 
+# Bootstrapper source checkouts; pinned patches are tracked separately.
+.bootstrap-third-party/
+
 # VS Code browsing database (large binary files)
 .vscode/browse.vc.db
 .vscode/browse.vc.db-shm
