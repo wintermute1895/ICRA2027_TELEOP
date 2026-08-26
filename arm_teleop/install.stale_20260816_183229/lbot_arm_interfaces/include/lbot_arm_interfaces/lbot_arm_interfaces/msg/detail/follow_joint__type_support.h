@@ -1,0 +1,1 @@
+/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces/rosidl_generator_c/lbot_arm_interfaces/msg/detail/follow_joint__type_support.h

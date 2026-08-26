@@ -1,0 +1,2642 @@
+{
+  "schema": "robot_teleop.cleaned-d0-flywheel-plan/v1",
+  "mode": "offline_recommendation_only",
+  "hardware_accessed": false,
+  "high_confidence_episode_count": 20,
+  "high_confidence_episodes": [
+    {
+      "episode_id": "d0_right_hand_102",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_102.jsonl",
+      "output_samples": 298,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 298,
+          "rms": 0.07312358840868027,
+          "p95": 0.1688798561506387,
+          "maximum": 0.3135817795386808
+        },
+        "velocity_rad_s": {
+          "count": 297,
+          "rms": 0.17833969538759598,
+          "p95": 0.37460233759217526,
+          "maximum": 0.9557829705316256
+        },
+        "acceleration_rad_s2": {
+          "count": 296,
+          "rms": 1.143438166292538,
+          "p95": 1.669124871499574,
+          "maximum": 11.971135201765945
+        },
+        "jerk_rad_s3": {
+          "count": 295,
+          "rms": 15.206599664563532,
+          "p95": 16.571578748030632,
+          "maximum": 159.8710317305954
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_103",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_103.jsonl",
+      "output_samples": 253,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 253,
+          "rms": 0.039674910569230816,
+          "p95": 0.08737325380033983,
+          "maximum": 0.12840632576668976
+        },
+        "velocity_rad_s": {
+          "count": 252,
+          "rms": 0.09150625756320858,
+          "p95": 0.19963347178266996,
+          "maximum": 0.3102542888758614
+        },
+        "acceleration_rad_s2": {
+          "count": 251,
+          "rms": 0.3791344513188214,
+          "p95": 0.8102821987438974,
+          "maximum": 1.239756413508697
+        },
+        "jerk_rad_s3": {
+          "count": 250,
+          "rms": 4.108163115354473,
+          "p95": 6.977169140434822,
+          "maximum": 18.029660449774163
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_104",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_104.jsonl",
+      "output_samples": 289,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 289,
+          "rms": 0.039371302617321004,
+          "p95": 0.08481584601976173,
+          "maximum": 0.16610377088893524
+        },
+        "velocity_rad_s": {
+          "count": 288,
+          "rms": 0.09819570128212546,
+          "p95": 0.18975383182227246,
+          "maximum": 0.48986138174085897
+        },
+        "acceleration_rad_s2": {
+          "count": 287,
+          "rms": 0.5380560016179591,
+          "p95": 1.2729421537191723,
+          "maximum": 3.078727933820501
+        },
+        "jerk_rad_s3": {
+          "count": 286,
+          "rms": 6.160087898536335,
+          "p95": 12.402977399929025,
+          "maximum": 42.55029103180888
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_108",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_108.jsonl",
+      "output_samples": 185,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 185,
+          "rms": 0.06619053798195948,
+          "p95": 0.1305018142818477,
+          "maximum": 0.1509527064228547
+        },
+        "velocity_rad_s": {
+          "count": 184,
+          "rms": 0.14175547235042832,
+          "p95": 0.2740649262825979,
+          "maximum": 0.376307219880562
+        },
+        "acceleration_rad_s2": {
+          "count": 183,
+          "rms": 0.5881108072204461,
+          "p95": 1.1726763466092274,
+          "maximum": 1.9383874150202984
+        },
+        "jerk_rad_s3": {
+          "count": 182,
+          "rms": 6.643835763876902,
+          "p95": 13.555231166211705,
+          "maximum": 24.82331354248368
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_111",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_111.jsonl",
+      "output_samples": 224,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 224,
+          "rms": 0.06868433685721065,
+          "p95": 0.14838106772309753,
+          "maximum": 0.20614232802665095
+        },
+        "velocity_rad_s": {
+          "count": 223,
+          "rms": 0.1583329384752939,
+          "p95": 0.34024084507316255,
+          "maximum": 0.5291019619880475
+        },
+        "acceleration_rad_s2": {
+          "count": 222,
+          "rms": 0.6007513621143509,
+          "p95": 1.217373117851932,
+          "maximum": 2.50528316878488
+        },
+        "jerk_rad_s3": {
+          "count": 221,
+          "rms": 5.632244101013155,
+          "p95": 11.360165312509366,
+          "maximum": 23.543378786183002
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_112",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_112.jsonl",
+      "output_samples": 151,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 151,
+          "rms": 0.05314904183616906,
+          "p95": 0.10926886946086795,
+          "maximum": 0.16081464839446902
+        },
+        "velocity_rad_s": {
+          "count": 150,
+          "rms": 0.1258688575392282,
+          "p95": 0.253039334837761,
+          "maximum": 0.4240106971280677
+        },
+        "acceleration_rad_s2": {
+          "count": 149,
+          "rms": 0.523923570556902,
+          "p95": 1.1215370348420783,
+          "maximum": 1.6697956083169958
+        },
+        "jerk_rad_s3": {
+          "count": 148,
+          "rms": 5.377421384717931,
+          "p95": 11.386813692994037,
+          "maximum": 18.15444492703433
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_114",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_114.jsonl",
+      "output_samples": 213,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 213,
+          "rms": 0.05314466998589986,
+          "p95": 0.12596297236355036,
+          "maximum": 0.1422815024516334
+        },
+        "velocity_rad_s": {
+          "count": 212,
+          "rms": 0.11834372719563432,
+          "p95": 0.2838957125072075,
+          "maximum": 0.39971779699168025
+        },
+        "acceleration_rad_s2": {
+          "count": 211,
+          "rms": 0.45452741748297604,
+          "p95": 0.9286799371935051,
+          "maximum": 1.5622819494256337
+        },
+        "jerk_rad_s3": {
+          "count": 210,
+          "rms": 5.026893424629369,
+          "p95": 9.968739141717105,
+          "maximum": 22.567621450484776
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_115",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_115.jsonl",
+      "output_samples": 99,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 99,
+          "rms": 0.08453411308355288,
+          "p95": 0.16216952286288322,
+          "maximum": 0.20509747618484003
+        },
+        "velocity_rad_s": {
+          "count": 98,
+          "rms": 0.18057678427411764,
+          "p95": 0.37976617182193906,
+          "maximum": 0.47599172090308894
+        },
+        "acceleration_rad_s2": {
+          "count": 97,
+          "rms": 0.5839025347866806,
+          "p95": 1.2122273404962796,
+          "maximum": 1.3015812673956462
+        },
+        "jerk_rad_s3": {
+          "count": 96,
+          "rms": 6.000857177779724,
+          "p95": 10.792948575364148,
+          "maximum": 14.013849901243713
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_117",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_117.jsonl",
+      "output_samples": 251,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 251,
+          "rms": 0.06750674435436553,
+          "p95": 0.1411570198804324,
+          "maximum": 0.2158619647647542
+        },
+        "velocity_rad_s": {
+          "count": 250,
+          "rms": 0.1442798653358161,
+          "p95": 0.29639800988038256,
+          "maximum": 0.6608701255800844
+        },
+        "acceleration_rad_s2": {
+          "count": 249,
+          "rms": 0.5972175741627895,
+          "p95": 1.241559847035194,
+          "maximum": 3.200864573632168
+        },
+        "jerk_rad_s3": {
+          "count": 248,
+          "rms": 6.027301353415544,
+          "p95": 11.354562342177099,
+          "maximum": 44.744072301953075
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_118",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_118.jsonl",
+      "output_samples": 133,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 133,
+          "rms": 0.05827100968435687,
+          "p95": 0.10849984352045772,
+          "maximum": 0.12485333104920665
+        },
+        "velocity_rad_s": {
+          "count": 132,
+          "rms": 0.13700005631470036,
+          "p95": 0.2592703868037255,
+          "maximum": 0.3881069179121699
+        },
+        "acceleration_rad_s2": {
+          "count": 131,
+          "rms": 0.5910150053091477,
+          "p95": 1.361863888198291,
+          "maximum": 1.9358881572200504
+        },
+        "jerk_rad_s3": {
+          "count": 130,
+          "rms": 6.237225958613334,
+          "p95": 13.913331679153071,
+          "maximum": 27.66118485606844
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_119",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_119.jsonl",
+      "output_samples": 192,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 192,
+          "rms": 0.05056263519774058,
+          "p95": 0.11553345437973958,
+          "maximum": 0.177714473842283
+        },
+        "velocity_rad_s": {
+          "count": 191,
+          "rms": 0.12275883669461263,
+          "p95": 0.25320339856852325,
+          "maximum": 0.5768248195502018
+        },
+        "acceleration_rad_s2": {
+          "count": 190,
+          "rms": 0.6178880234797888,
+          "p95": 1.371201947871235,
+          "maximum": 2.7765391908818327
+        },
+        "jerk_rad_s3": {
+          "count": 189,
+          "rms": 6.503490718740807,
+          "p95": 13.123159572593499,
+          "maximum": 30.099062263429065
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_120",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_120.jsonl",
+      "output_samples": 188,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 188,
+          "rms": 0.05995844395858332,
+          "p95": 0.10373223745815974,
+          "maximum": 0.15821976471090715
+        },
+        "velocity_rad_s": {
+          "count": 187,
+          "rms": 0.14716759929910486,
+          "p95": 0.258303497225446,
+          "maximum": 0.7826674821157908
+        },
+        "acceleration_rad_s2": {
+          "count": 186,
+          "rms": 0.9348015040571813,
+          "p95": 1.1735669652021303,
+          "maximum": 7.189634818096646
+        },
+        "jerk_rad_s3": {
+          "count": 185,
+          "rms": 13.896218597460143,
+          "p95": 14.093738018589654,
+          "maximum": 140.6305472823791
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_125",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_125.jsonl",
+      "output_samples": 196,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 196,
+          "rms": 0.08169611021934986,
+          "p95": 0.17133710192548013,
+          "maximum": 0.2943678283369642
+        },
+        "velocity_rad_s": {
+          "count": 195,
+          "rms": 0.1793677615948143,
+          "p95": 0.3764696540803568,
+          "maximum": 0.6856405672821875
+        },
+        "acceleration_rad_s2": {
+          "count": 194,
+          "rms": 0.7044351414217263,
+          "p95": 1.4957569155831252,
+          "maximum": 2.6226815370474137
+        },
+        "jerk_rad_s3": {
+          "count": 193,
+          "rms": 7.233874394006842,
+          "p95": 14.432496556491774,
+          "maximum": 36.02139022016951
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_126",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_126.jsonl",
+      "output_samples": 258,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 258,
+          "rms": 0.08316359156887229,
+          "p95": 0.19870042095876295,
+          "maximum": 0.3333110890600024
+        },
+        "velocity_rad_s": {
+          "count": 257,
+          "rms": 0.19129683741766237,
+          "p95": 0.49307392421068125,
+          "maximum": 0.7696368077167043
+        },
+        "acceleration_rad_s2": {
+          "count": 256,
+          "rms": 0.7851069303968411,
+          "p95": 1.8184260222218631,
+          "maximum": 4.138979365828038
+        },
+        "jerk_rad_s3": {
+          "count": 255,
+          "rms": 7.239812205914312,
+          "p95": 15.06082843979437,
+          "maximum": 39.6936024220631
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_128",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_128.jsonl",
+      "output_samples": 106,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 106,
+          "rms": 0.05858639156493903,
+          "p95": 0.11309158211986217,
+          "maximum": 0.1492816302722273
+        },
+        "velocity_rad_s": {
+          "count": 105,
+          "rms": 0.13848026361085772,
+          "p95": 0.26972196072431615,
+          "maximum": 0.5556258398128
+        },
+        "acceleration_rad_s2": {
+          "count": 104,
+          "rms": 0.7300286887363019,
+          "p95": 1.5484589699084204,
+          "maximum": 2.869598152641195
+        },
+        "jerk_rad_s3": {
+          "count": 103,
+          "rms": 8.399797743751458,
+          "p95": 18.580903860646583,
+          "maximum": 28.625272349039275
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_129",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_129.jsonl",
+      "output_samples": 198,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 198,
+          "rms": 0.0547799547099782,
+          "p95": 0.1309763941227177,
+          "maximum": 0.1676327410136898
+        },
+        "velocity_rad_s": {
+          "count": 197,
+          "rms": 0.1578632752890619,
+          "p95": 0.38436391446586565,
+          "maximum": 0.5805377508018722
+        },
+        "acceleration_rad_s2": {
+          "count": 196,
+          "rms": 0.769218110438217,
+          "p95": 1.519968068907341,
+          "maximum": 3.9422494497607374
+        },
+        "jerk_rad_s3": {
+          "count": 195,
+          "rms": 8.231218004825408,
+          "p95": 14.873125538491346,
+          "maximum": 42.68477493004008
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_130",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_130.jsonl",
+      "output_samples": 152,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 152,
+          "rms": 0.049373918093964575,
+          "p95": 0.1268262677484792,
+          "maximum": 0.15921847448333848
+        },
+        "velocity_rad_s": {
+          "count": 151,
+          "rms": 0.13617723443814891,
+          "p95": 0.3205278377079229,
+          "maximum": 0.47660413247840344
+        },
+        "acceleration_rad_s2": {
+          "count": 150,
+          "rms": 0.5421172725966587,
+          "p95": 1.140534950038285,
+          "maximum": 2.6144446875294682
+        },
+        "jerk_rad_s3": {
+          "count": 149,
+          "rms": 5.81409608524194,
+          "p95": 11.819438459612902,
+          "maximum": 23.0757310593504
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_132",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_132.jsonl",
+      "output_samples": 149,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 149,
+          "rms": 0.09895923927900573,
+          "p95": 0.18800737915868268,
+          "maximum": 0.2687528449472637
+        },
+        "velocity_rad_s": {
+          "count": 148,
+          "rms": 0.23938427074030105,
+          "p95": 0.4323485912998316,
+          "maximum": 0.6882055025090944
+        },
+        "acceleration_rad_s2": {
+          "count": 147,
+          "rms": 0.9489463345606557,
+          "p95": 1.8805027053818406,
+          "maximum": 3.8040264809190814
+        },
+        "jerk_rad_s3": {
+          "count": 146,
+          "rms": 8.700048543404675,
+          "p95": 17.097854960682387,
+          "maximum": 34.824967876109056
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_133",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_133.jsonl",
+      "output_samples": 142,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 142,
+          "rms": 0.0722561931684223,
+          "p95": 0.17393041159294764,
+          "maximum": 0.24613959975374913
+        },
+        "velocity_rad_s": {
+          "count": 141,
+          "rms": 0.17954889008393968,
+          "p95": 0.4044693676281075,
+          "maximum": 0.5956670546290577
+        },
+        "acceleration_rad_s2": {
+          "count": 140,
+          "rms": 0.75432466540322,
+          "p95": 1.6027322956373213,
+          "maximum": 2.3100443099679344
+        },
+        "jerk_rad_s3": {
+          "count": 139,
+          "rms": 8.150914374576457,
+          "p95": 14.61566239388916,
+          "maximum": 26.44140709852616
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    },
+    {
+      "episode_id": "d0_right_hand_134",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_134.jsonl",
+      "output_samples": 119,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 119,
+          "rms": 0.07115331945334238,
+          "p95": 0.17370466154211178,
+          "maximum": 0.2605379577039306
+        },
+        "velocity_rad_s": {
+          "count": 118,
+          "rms": 0.18264557375788906,
+          "p95": 0.4082855412623532,
+          "maximum": 0.8309799306435101
+        },
+        "acceleration_rad_s2": {
+          "count": 117,
+          "rms": 0.9419677407020133,
+          "p95": 1.5581279024481611,
+          "maximum": 6.32215127268359
+        },
+        "jerk_rad_s3": {
+          "count": 116,
+          "rms": 9.308102578411425,
+          "p95": 13.654649609893237,
+          "maximum": 62.34897185857063
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A"
+    }
+  ],
+  "replay_queue": [
+    {
+      "episode_id": "d0_right_hand_109",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_109.jsonl",
+      "output_samples": 1323,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 1323,
+          "rms": 0.20984362521826525,
+          "p95": 0.3361670415726116,
+          "maximum": 1.045724084486602
+        },
+        "velocity_rad_s": {
+          "count": 1322,
+          "rms": 0.35309129860022814,
+          "p95": 0.7325124510370301,
+          "maximum": 3.8385686879042646
+        },
+        "acceleration_rad_s2": {
+          "count": 1321,
+          "rms": 2.083743723367896,
+          "p95": 3.7376208064663934,
+          "maximum": 24.25009058583388
+        },
+        "jerk_rad_s3": {
+          "count": 1320,
+          "rms": 28.393465410427105,
+          "p95": 38.841473196945714,
+          "maximum": 447.15299514910885
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 274,
+      "hard_case_count": 27,
+      "hard_cases": [
+        {
+          "start_sample_index": 0,
+          "end_sample_index": 0,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.212338387966156,
+          "peak_jerk_rad_s3": 0.0
+        },
+        {
+          "start_sample_index": 27,
+          "end_sample_index": 33,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error",
+            "velocity"
+          ],
+          "flagged_sample_count": 7,
+          "peak_tracking_error_rad": 0.429235234700363,
+          "peak_jerk_rad_s3": 155.38746350757796
+        },
+        {
+          "start_sample_index": 49,
+          "end_sample_index": 53,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.34148522519395935,
+          "peak_jerk_rad_s3": 23.14289388081303
+        },
+        {
+          "start_sample_index": 77,
+          "end_sample_index": 77,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.15501397568879643,
+          "peak_jerk_rad_s3": 3.5990067623494215
+        },
+        {
+          "start_sample_index": 85,
+          "end_sample_index": 88,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 4,
+          "peak_tracking_error_rad": 0.2553453735024965,
+          "peak_jerk_rad_s3": 21.13658970303076
+        },
+        {
+          "start_sample_index": 184,
+          "end_sample_index": 201,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 18,
+          "peak_tracking_error_rad": 0.16237581577600538,
+          "peak_jerk_rad_s3": 5.355679841655525
+        },
+        {
+          "start_sample_index": 217,
+          "end_sample_index": 221,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.23619921346149908,
+          "peak_jerk_rad_s3": 13.18806156571398
+        },
+        {
+          "start_sample_index": 231,
+          "end_sample_index": 237,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 7,
+          "peak_tracking_error_rad": 0.36079275601424754,
+          "peak_jerk_rad_s3": 29.70733291341132
+        },
+        {
+          "start_sample_index": 242,
+          "end_sample_index": 251,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error",
+            "velocity"
+          ],
+          "flagged_sample_count": 10,
+          "peak_tracking_error_rad": 1.045724084486602,
+          "peak_jerk_rad_s3": 437.244460698611
+        },
+        {
+          "start_sample_index": 261,
+          "end_sample_index": 264,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 4,
+          "peak_tracking_error_rad": 0.18269870787666465,
+          "peak_jerk_rad_s3": 19.50879242197639
+        },
+        {
+          "start_sample_index": 283,
+          "end_sample_index": 512,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 229,
+          "peak_tracking_error_rad": 0.33837287040846176,
+          "peak_jerk_rad_s3": 48.831891683896785
+        },
+        {
+          "start_sample_index": 522,
+          "end_sample_index": 536,
+          "reasons": [
+            "jerk",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 14,
+          "peak_tracking_error_rad": 0.4413765603863309,
+          "peak_jerk_rad_s3": 85.82121153630972
+        },
+        {
+          "start_sample_index": 545,
+          "end_sample_index": 566,
+          "reasons": [
+            "jerk",
+            "tracking_error",
+            "velocity"
+          ],
+          "flagged_sample_count": 20,
+          "peak_tracking_error_rad": 0.7553020069466589,
+          "peak_jerk_rad_s3": 108.59909791545364
+        },
+        {
+          "start_sample_index": 571,
+          "end_sample_index": 579,
+          "reasons": [
+            "jerk",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 7,
+          "peak_tracking_error_rad": 0.3438305780552412,
+          "peak_jerk_rad_s3": 125.4785597190666
+        },
+        {
+          "start_sample_index": 595,
+          "end_sample_index": 605,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 11,
+          "peak_tracking_error_rad": 0.3264126745353332,
+          "peak_jerk_rad_s3": 29.398882292856364
+        },
+        {
+          "start_sample_index": 613,
+          "end_sample_index": 614,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.15054114604186547,
+          "peak_jerk_rad_s3": 9.06164557697503
+        },
+        {
+          "start_sample_index": 621,
+          "end_sample_index": 641,
+          "reasons": [
+            "jerk",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 19,
+          "peak_tracking_error_rad": 0.4784052531466443,
+          "peak_jerk_rad_s3": 80.5553588780358
+        },
+        {
+          "start_sample_index": 649,
+          "end_sample_index": 651,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 3,
+          "peak_tracking_error_rad": 0.2093725246879209,
+          "peak_jerk_rad_s3": 24.525365051142163
+        },
+        {
+          "start_sample_index": 665,
+          "end_sample_index": 707,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 42,
+          "peak_tracking_error_rad": 0.27432230505356137,
+          "peak_jerk_rad_s3": 56.830958988224545
+        },
+        {
+          "start_sample_index": 887,
+          "end_sample_index": 909,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 22,
+          "peak_tracking_error_rad": 0.2012146994417242,
+          "peak_jerk_rad_s3": 43.40656873325383
+        },
+        {
+          "start_sample_index": 917,
+          "end_sample_index": 1075,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 159,
+          "peak_tracking_error_rad": 0.22870752278494252,
+          "peak_jerk_rad_s3": 29.976168874517438
+        },
+        {
+          "start_sample_index": 1080,
+          "end_sample_index": 1188,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error",
+            "velocity"
+          ],
+          "flagged_sample_count": 108,
+          "peak_tracking_error_rad": 0.672511723782953,
+          "peak_jerk_rad_s3": 447.15299514910885
+        },
+        {
+          "start_sample_index": 1193,
+          "end_sample_index": 1197,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.2512212526243001,
+          "peak_jerk_rad_s3": 16.47227472929
+        },
+        {
+          "start_sample_index": 1203,
+          "end_sample_index": 1207,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.1748307016824014,
+          "peak_jerk_rad_s3": 16.600916417958572
+        },
+        {
+          "start_sample_index": 1276,
+          "end_sample_index": 1297,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 22,
+          "peak_tracking_error_rad": 0.1536003260320276,
+          "peak_jerk_rad_s3": 7.002820715798053
+        },
+        {
+          "start_sample_index": 1309,
+          "end_sample_index": 1314,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 6,
+          "peak_tracking_error_rad": 0.22458283964625528,
+          "peak_jerk_rad_s3": 26.447409685406694
+        },
+        {
+          "start_sample_index": 1318,
+          "end_sample_index": 1322,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.5318534266994376,
+          "peak_jerk_rad_s3": 28.21054693421221
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_106",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_106.jsonl",
+      "output_samples": 1326,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 1326,
+          "rms": 0.28556832908957586,
+          "p95": 0.4603389897733553,
+          "maximum": 0.5975171144429159
+        },
+        "velocity_rad_s": {
+          "count": 1325,
+          "rms": 0.20465818836223904,
+          "p95": 0.4254344233995277,
+          "maximum": 1.735495913158401
+        },
+        "acceleration_rad_s2": {
+          "count": 1324,
+          "rms": 1.0831342241831432,
+          "p95": 2.328718458101545,
+          "maximum": 7.354908487956317
+        },
+        "jerk_rad_s3": {
+          "count": 1323,
+          "rms": 11.407304981497331,
+          "p95": 24.546960947615688,
+          "maximum": 96.34474897109578
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 114,
+      "hard_case_count": 11,
+      "hard_cases": [
+        {
+          "start_sample_index": 174,
+          "end_sample_index": 174,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.15789672972257746,
+          "peak_jerk_rad_s3": 7.228311368390916
+        },
+        {
+          "start_sample_index": 183,
+          "end_sample_index": 187,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.24258117129986045,
+          "peak_jerk_rad_s3": 23.380519221089994
+        },
+        {
+          "start_sample_index": 198,
+          "end_sample_index": 202,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.27155623857022926,
+          "peak_jerk_rad_s3": 18.86820820239543
+        },
+        {
+          "start_sample_index": 209,
+          "end_sample_index": 210,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.1576095037162304,
+          "peak_jerk_rad_s3": 14.93831425825759
+        },
+        {
+          "start_sample_index": 246,
+          "end_sample_index": 248,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 3,
+          "peak_tracking_error_rad": 0.1701725940623035,
+          "peak_jerk_rad_s3": 11.983292855969774
+        },
+        {
+          "start_sample_index": 281,
+          "end_sample_index": 509,
+          "reasons": [
+            "tracking_error",
+            "velocity"
+          ],
+          "flagged_sample_count": 227,
+          "peak_tracking_error_rad": 0.5975171144429159,
+          "peak_jerk_rad_s3": 68.4529612084975
+        },
+        {
+          "start_sample_index": 515,
+          "end_sample_index": 1189,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 675,
+          "peak_tracking_error_rad": 0.4952904352919326,
+          "peak_jerk_rad_s3": 63.16903774279611
+        },
+        {
+          "start_sample_index": 1223,
+          "end_sample_index": 1223,
+          "reasons": [
+            "jerk"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.017825160845978905,
+          "peak_jerk_rad_s3": 96.34474897109578
+        },
+        {
+          "start_sample_index": 1229,
+          "end_sample_index": 1230,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.16473796971490207,
+          "peak_jerk_rad_s3": 11.52735350307965
+        },
+        {
+          "start_sample_index": 1262,
+          "end_sample_index": 1307,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 46,
+          "peak_tracking_error_rad": 0.1882529891818636,
+          "peak_jerk_rad_s3": 11.679600317192783
+        },
+        {
+          "start_sample_index": 1316,
+          "end_sample_index": 1320,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.22644446790218353,
+          "peak_jerk_rad_s3": 19.3367080277733
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_121",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_121.jsonl",
+      "output_samples": 872,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 872,
+          "rms": 0.45559020459691724,
+          "p95": 0.8676599166596715,
+          "maximum": 1.491605181246996
+        },
+        "velocity_rad_s": {
+          "count": 871,
+          "rms": 0.3326801831872282,
+          "p95": 0.5160690078177428,
+          "maximum": 4.559841978376706
+        },
+        "acceleration_rad_s2": {
+          "count": 870,
+          "rms": 2.887659809702947,
+          "p95": 3.155220295995403,
+          "maximum": 44.32489042511669
+        },
+        "jerk_rad_s3": {
+          "count": 869,
+          "rms": 38.02525422007067,
+          "p95": 30.464707631441435,
+          "maximum": 672.4173478488582
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 84,
+      "hard_case_count": 8,
+      "hard_cases": [
+        {
+          "start_sample_index": 0,
+          "end_sample_index": 349,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error",
+            "velocity"
+          ],
+          "flagged_sample_count": 349,
+          "peak_tracking_error_rad": 1.491605181246996,
+          "peak_jerk_rad_s3": 672.4173478488582
+        },
+        {
+          "start_sample_index": 358,
+          "end_sample_index": 358,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.15469607896570525,
+          "peak_jerk_rad_s3": 4.959646976278598
+        },
+        {
+          "start_sample_index": 558,
+          "end_sample_index": 560,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 3,
+          "peak_tracking_error_rad": 0.1772450369104504,
+          "peak_jerk_rad_s3": 10.426976321047887
+        },
+        {
+          "start_sample_index": 582,
+          "end_sample_index": 583,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.16956973600872244,
+          "peak_jerk_rad_s3": 9.697859863088963
+        },
+        {
+          "start_sample_index": 588,
+          "end_sample_index": 589,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.1643122298357138,
+          "peak_jerk_rad_s3": 8.800605852505639
+        },
+        {
+          "start_sample_index": 662,
+          "end_sample_index": 681,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 18,
+          "peak_tracking_error_rad": 0.3273038638796187,
+          "peak_jerk_rad_s3": 39.3280719477338
+        },
+        {
+          "start_sample_index": 741,
+          "end_sample_index": 782,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 42,
+          "peak_tracking_error_rad": 0.1612836867570877,
+          "peak_jerk_rad_s3": 19.106226634997725
+        },
+        {
+          "start_sample_index": 857,
+          "end_sample_index": 871,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 13,
+          "peak_tracking_error_rad": 0.3287821959533783,
+          "peak_jerk_rad_s3": 52.215591229376415
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_127",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_127.jsonl",
+      "output_samples": 237,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 237,
+          "rms": 0.09567314557275419,
+          "p95": 0.2096963713841983,
+          "maximum": 0.3008821217913634
+        },
+        "velocity_rad_s": {
+          "count": 236,
+          "rms": 0.2231112694492773,
+          "p95": 0.5255978418005479,
+          "maximum": 0.7408378835457796
+        },
+        "acceleration_rad_s2": {
+          "count": 235,
+          "rms": 1.1828828142448806,
+          "p95": 2.5182574649512763,
+          "maximum": 6.438986210438535
+        },
+        "jerk_rad_s3": {
+          "count": 234,
+          "rms": 12.965653639160095,
+          "p95": 21.58301622548599,
+          "maximum": 106.57913324243191
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 84,
+      "hard_case_count": 8,
+      "hard_cases": [
+        {
+          "start_sample_index": 11,
+          "end_sample_index": 15,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.26437751406423265,
+          "peak_jerk_rad_s3": 15.343976769928434
+        },
+        {
+          "start_sample_index": 21,
+          "end_sample_index": 24,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 4,
+          "peak_tracking_error_rad": 0.17026821019398922,
+          "peak_jerk_rad_s3": 7.747064385145608
+        },
+        {
+          "start_sample_index": 31,
+          "end_sample_index": 34,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 4,
+          "peak_tracking_error_rad": 0.23157401382923126,
+          "peak_jerk_rad_s3": 17.58326680743688
+        },
+        {
+          "start_sample_index": 47,
+          "end_sample_index": 47,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.1506870336778408,
+          "peak_jerk_rad_s3": 14.35599329278664
+        },
+        {
+          "start_sample_index": 204,
+          "end_sample_index": 204,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.1527045057048177,
+          "peak_jerk_rad_s3": 5.874720405456168
+        },
+        {
+          "start_sample_index": 212,
+          "end_sample_index": 220,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 9,
+          "peak_tracking_error_rad": 0.3008821217913634,
+          "peak_jerk_rad_s3": 36.05403216127978
+        },
+        {
+          "start_sample_index": 227,
+          "end_sample_index": 227,
+          "reasons": [
+            "jerk"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.09194221004516476,
+          "peak_jerk_rad_s3": 106.57913324243191
+        },
+        {
+          "start_sample_index": 234,
+          "end_sample_index": 236,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 3,
+          "peak_tracking_error_rad": 0.194337811165401,
+          "peak_jerk_rad_s3": 3.688937048876267
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_101",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_101.jsonl",
+      "output_samples": 1407,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 1407,
+          "rms": 0.32939485960446946,
+          "p95": 0.5514641926004772,
+          "maximum": 0.5684234321038171
+        },
+        "velocity_rad_s": {
+          "count": 1406,
+          "rms": 0.1475639686397215,
+          "p95": 0.30489596952317566,
+          "maximum": 1.3534606888207572
+        },
+        "acceleration_rad_s2": {
+          "count": 1405,
+          "rms": 0.9124835113752419,
+          "p95": 1.5858169333130037,
+          "maximum": 10.462199301711719
+        },
+        "jerk_rad_s3": {
+          "count": 1404,
+          "rms": 11.134728842586373,
+          "p95": 17.108261823434507,
+          "maximum": 133.91694344843464
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 64,
+      "hard_case_count": 6,
+      "hard_cases": [
+        {
+          "start_sample_index": 154,
+          "end_sample_index": 365,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 212,
+          "peak_tracking_error_rad": 0.2670501130018279,
+          "peak_jerk_rad_s3": 20.11151381328935
+        },
+        {
+          "start_sample_index": 440,
+          "end_sample_index": 622,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 183,
+          "peak_tracking_error_rad": 0.3682471219606459,
+          "peak_jerk_rad_s3": 55.90243376510367
+        },
+        {
+          "start_sample_index": 649,
+          "end_sample_index": 652,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 4,
+          "peak_tracking_error_rad": 0.20059675341938865,
+          "peak_jerk_rad_s3": 9.058115404336874
+        },
+        {
+          "start_sample_index": 670,
+          "end_sample_index": 676,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 7,
+          "peak_tracking_error_rad": 0.38100898472593736,
+          "peak_jerk_rad_s3": 100.41927396350015
+        },
+        {
+          "start_sample_index": 733,
+          "end_sample_index": 733,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.1552328017468948,
+          "peak_jerk_rad_s3": 18.34590840494299
+        },
+        {
+          "start_sample_index": 766,
+          "end_sample_index": 1406,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 641,
+          "peak_tracking_error_rad": 0.5684234321038171,
+          "peak_jerk_rad_s3": 133.91694344843464
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_110",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_110.jsonl",
+      "output_samples": 207,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 207,
+          "rms": 0.16105121631281633,
+          "p95": 0.2373943988631762,
+          "maximum": 0.23918563829501102
+        },
+        "velocity_rad_s": {
+          "count": 206,
+          "rms": 0.20946638859436184,
+          "p95": 0.4540272014232578,
+          "maximum": 0.6946210770804242
+        },
+        "acceleration_rad_s2": {
+          "count": 205,
+          "rms": 1.07532510544907,
+          "p95": 2.2722244963895575,
+          "maximum": 4.930759711734078
+        },
+        "jerk_rad_s3": {
+          "count": 204,
+          "rms": 12.039960723399748,
+          "p95": 23.922554779799825,
+          "maximum": 58.64392873434316
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 64,
+      "hard_case_count": 6,
+      "hard_cases": [
+        {
+          "start_sample_index": 0,
+          "end_sample_index": 33,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 34,
+          "peak_tracking_error_rad": 0.23918563829501102,
+          "peak_jerk_rad_s3": 8.73319169545883
+        },
+        {
+          "start_sample_index": 47,
+          "end_sample_index": 55,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 7,
+          "peak_tracking_error_rad": 0.19096731866367925,
+          "peak_jerk_rad_s3": 52.90872590847336
+        },
+        {
+          "start_sample_index": 62,
+          "end_sample_index": 63,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.15914457358535744,
+          "peak_jerk_rad_s3": 23.125418346087834
+        },
+        {
+          "start_sample_index": 68,
+          "end_sample_index": 70,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 3,
+          "peak_tracking_error_rad": 0.1577337427679748,
+          "peak_jerk_rad_s3": 9.46181469397611
+        },
+        {
+          "start_sample_index": 124,
+          "end_sample_index": 188,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 65,
+          "peak_tracking_error_rad": 0.1712661960463877,
+          "peak_jerk_rad_s3": 9.657831606561972
+        },
+        {
+          "start_sample_index": 198,
+          "end_sample_index": 203,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 6,
+          "peak_tracking_error_rad": 0.2028363828669501,
+          "peak_jerk_rad_s3": 47.30377993835688
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_123",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_123.jsonl",
+      "output_samples": 380,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 380,
+          "rms": 0.09589973021223522,
+          "p95": 0.25801020164761657,
+          "maximum": 0.40636354387489093
+        },
+        "velocity_rad_s": {
+          "count": 379,
+          "rms": 0.21018892987124,
+          "p95": 0.4841160106238106,
+          "maximum": 1.0776802149334763
+        },
+        "acceleration_rad_s2": {
+          "count": 378,
+          "rms": 1.0135238107425675,
+          "p95": 2.132677697181462,
+          "maximum": 5.098377383446839
+        },
+        "jerk_rad_s3": {
+          "count": 377,
+          "rms": 10.244774585424054,
+          "p95": 22.956994837161186,
+          "maximum": 61.84013524142428
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 64,
+      "hard_case_count": 6,
+      "hard_cases": [
+        {
+          "start_sample_index": 8,
+          "end_sample_index": 11,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 4,
+          "peak_tracking_error_rad": 0.20151714229093864,
+          "peak_jerk_rad_s3": 16.13836633818605
+        },
+        {
+          "start_sample_index": 24,
+          "end_sample_index": 25,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.15322914854405734,
+          "peak_jerk_rad_s3": 22.431093644575068
+        },
+        {
+          "start_sample_index": 32,
+          "end_sample_index": 36,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.28824397454062445,
+          "peak_jerk_rad_s3": 37.28587257211274
+        },
+        {
+          "start_sample_index": 123,
+          "end_sample_index": 130,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 8,
+          "peak_tracking_error_rad": 0.3452921347644639,
+          "peak_jerk_rad_s3": 43.89215107588119
+        },
+        {
+          "start_sample_index": 152,
+          "end_sample_index": 152,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.15194638355699436,
+          "peak_jerk_rad_s3": 5.178809850940158
+        },
+        {
+          "start_sample_index": 358,
+          "end_sample_index": 379,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 20,
+          "peak_tracking_error_rad": 0.40636354387489093,
+          "peak_jerk_rad_s3": 61.84013524142428
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_124",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_124.jsonl",
+      "output_samples": 194,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 194,
+          "rms": 0.09403848970786523,
+          "p95": 0.2109637213611842,
+          "maximum": 0.34252273757686436
+        },
+        "velocity_rad_s": {
+          "count": 193,
+          "rms": 0.21132732175885108,
+          "p95": 0.4906820644700348,
+          "maximum": 0.7918033502233746
+        },
+        "acceleration_rad_s2": {
+          "count": 192,
+          "rms": 0.8395158483002856,
+          "p95": 1.9031509914613909,
+          "maximum": 3.6387946545603267
+        },
+        "jerk_rad_s3": {
+          "count": 191,
+          "rms": 7.734442412420669,
+          "p95": 17.381272213523008,
+          "maximum": 39.22081448301324
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 54,
+      "hard_case_count": 5,
+      "hard_cases": [
+        {
+          "start_sample_index": 25,
+          "end_sample_index": 27,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 3,
+          "peak_tracking_error_rad": 0.1792481472743601,
+          "peak_jerk_rad_s3": 7.758184507419524
+        },
+        {
+          "start_sample_index": 39,
+          "end_sample_index": 41,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 3,
+          "peak_tracking_error_rad": 0.18241289245127956,
+          "peak_jerk_rad_s3": 14.651958913969084
+        },
+        {
+          "start_sample_index": 70,
+          "end_sample_index": 71,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.16894996389752165,
+          "peak_jerk_rad_s3": 10.515922490681838
+        },
+        {
+          "start_sample_index": 172,
+          "end_sample_index": 179,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 8,
+          "peak_tracking_error_rad": 0.34252273757686436,
+          "peak_jerk_rad_s3": 12.618848003456261
+        },
+        {
+          "start_sample_index": 185,
+          "end_sample_index": 193,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 9,
+          "peak_tracking_error_rad": 0.2264526712065016,
+          "peak_jerk_rad_s3": 39.22081448301324
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_136",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_136.jsonl",
+      "output_samples": 142,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 142,
+          "rms": 0.1537118936482946,
+          "p95": 0.37519093755282784,
+          "maximum": 0.48680603655791005
+        },
+        "velocity_rad_s": {
+          "count": 141,
+          "rms": 0.4177981168531055,
+          "p95": 1.0376503314693575,
+          "maximum": 1.3916717034452968
+        },
+        "acceleration_rad_s2": {
+          "count": 140,
+          "rms": 2.0024077486260703,
+          "p95": 5.130398097922123,
+          "maximum": 8.495225323380627
+        },
+        "jerk_rad_s3": {
+          "count": 139,
+          "rms": 17.577775870576133,
+          "p95": 36.66620088535459,
+          "maximum": 94.60656083243393
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 54,
+      "hard_case_count": 5,
+      "hard_cases": [
+        {
+          "start_sample_index": 0,
+          "end_sample_index": 26,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 22,
+          "peak_tracking_error_rad": 0.48680603655791005,
+          "peak_jerk_rad_s3": 94.60656083243393
+        },
+        {
+          "start_sample_index": 30,
+          "end_sample_index": 30,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.16213400438298342,
+          "peak_jerk_rad_s3": 11.453246750794065
+        },
+        {
+          "start_sample_index": 34,
+          "end_sample_index": 36,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 3,
+          "peak_tracking_error_rad": 0.20326598774165006,
+          "peak_jerk_rad_s3": 20.764811125901666
+        },
+        {
+          "start_sample_index": 109,
+          "end_sample_index": 113,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.21858801930413022,
+          "peak_jerk_rad_s3": 16.83812913571081
+        },
+        {
+          "start_sample_index": 121,
+          "end_sample_index": 126,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 6,
+          "peak_tracking_error_rad": 0.2136028266525975,
+          "peak_jerk_rad_s3": 28.16784694359092
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_138",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_138.jsonl",
+      "output_samples": 172,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 172,
+          "rms": 0.18614808783993694,
+          "p95": 0.38646665334013036,
+          "maximum": 0.5134878283134642
+        },
+        "velocity_rad_s": {
+          "count": 171,
+          "rms": 0.47187645873761197,
+          "p95": 1.1410714844652672,
+          "maximum": 1.7683032330492499
+        },
+        "acceleration_rad_s2": {
+          "count": 170,
+          "rms": 3.010035721796242,
+          "p95": 6.57983960426249,
+          "maximum": 13.081529056109188
+        },
+        "jerk_rad_s3": {
+          "count": 169,
+          "rms": 36.73563735341837,
+          "p95": 72.30162491501122,
+          "maximum": 259.66635416188535
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 54,
+      "hard_case_count": 5,
+      "hard_cases": [
+        {
+          "start_sample_index": 0,
+          "end_sample_index": 11,
+          "reasons": [
+            "jerk",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 10,
+          "peak_tracking_error_rad": 0.3540953305209815,
+          "peak_jerk_rad_s3": 91.51672248933568
+        },
+        {
+          "start_sample_index": 20,
+          "end_sample_index": 48,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 26,
+          "peak_tracking_error_rad": 0.42238745034026837,
+          "peak_jerk_rad_s3": 259.66635416188535
+        },
+        {
+          "start_sample_index": 58,
+          "end_sample_index": 65,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 7,
+          "peak_tracking_error_rad": 0.22963990689768732,
+          "peak_jerk_rad_s3": 24.418097242017698
+        },
+        {
+          "start_sample_index": 137,
+          "end_sample_index": 150,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 13,
+          "peak_tracking_error_rad": 0.36339684084830615,
+          "peak_jerk_rad_s3": 23.281963539749672
+        },
+        {
+          "start_sample_index": 156,
+          "end_sample_index": 168,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error",
+            "velocity"
+          ],
+          "flagged_sample_count": 13,
+          "peak_tracking_error_rad": 0.5134878283134642,
+          "peak_jerk_rad_s3": 121.98525513989935
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_113",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_113.jsonl",
+      "output_samples": 195,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 195,
+          "rms": 0.13129070736725512,
+          "p95": 0.1792261445227615,
+          "maximum": 0.18502023869217143
+        },
+        "velocity_rad_s": {
+          "count": 194,
+          "rms": 0.16035665919998832,
+          "p95": 0.3472279629265503,
+          "maximum": 0.5505481464536383
+        },
+        "acceleration_rad_s2": {
+          "count": 193,
+          "rms": 0.7436401235572542,
+          "p95": 1.45125192815704,
+          "maximum": 4.4210011641978975
+        },
+        "jerk_rad_s3": {
+          "count": 192,
+          "rms": 8.07193167001514,
+          "p95": 15.35599014449675,
+          "maximum": 40.30127452181949
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 44,
+      "hard_case_count": 4,
+      "hard_cases": [
+        {
+          "start_sample_index": 40,
+          "end_sample_index": 40,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.16102483585871286,
+          "peak_jerk_rad_s3": 7.922446626223239
+        },
+        {
+          "start_sample_index": 84,
+          "end_sample_index": 174,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 91,
+          "peak_tracking_error_rad": 0.18502023869217143,
+          "peak_jerk_rad_s3": 12.313043893060094
+        },
+        {
+          "start_sample_index": 183,
+          "end_sample_index": 184,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.1682130291681426,
+          "peak_jerk_rad_s3": 7.91402962575416
+        },
+        {
+          "start_sample_index": 188,
+          "end_sample_index": 190,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 3,
+          "peak_tracking_error_rad": 0.15978981352430358,
+          "peak_jerk_rad_s3": 13.965023752213465
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_116",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_116.jsonl",
+      "output_samples": 607,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 607,
+          "rms": 0.33882469910195673,
+          "p95": 0.49179879585059133,
+          "maximum": 0.500964879240889
+        },
+        "velocity_rad_s": {
+          "count": 606,
+          "rms": 0.21777511433551766,
+          "p95": 0.446546685942307,
+          "maximum": 0.9716082653299885
+        },
+        "acceleration_rad_s2": {
+          "count": 605,
+          "rms": 1.203770462906622,
+          "p95": 2.609182907719124,
+          "maximum": 7.413886610097092
+        },
+        "jerk_rad_s3": {
+          "count": 604,
+          "rms": 12.243086551953915,
+          "p95": 28.461073465845384,
+          "maximum": 65.24854509245034
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 44,
+      "hard_case_count": 4,
+      "hard_cases": [
+        {
+          "start_sample_index": 79,
+          "end_sample_index": 87,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 9,
+          "peak_tracking_error_rad": 0.28378748496302103,
+          "peak_jerk_rad_s3": 65.24854509245034
+        },
+        {
+          "start_sample_index": 139,
+          "end_sample_index": 167,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 29,
+          "peak_tracking_error_rad": 0.3300748208776251,
+          "peak_jerk_rad_s3": 28.583955627762613
+        },
+        {
+          "start_sample_index": 172,
+          "end_sample_index": 591,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 419,
+          "peak_tracking_error_rad": 0.500964879240889,
+          "peak_jerk_rad_s3": 54.62926273507822
+        },
+        {
+          "start_sample_index": 598,
+          "end_sample_index": 598,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 1,
+          "peak_tracking_error_rad": 0.15407123755579644,
+          "peak_jerk_rad_s3": 12.812845782843322
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_122",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_122.jsonl",
+      "output_samples": 196,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 196,
+          "rms": 0.11599048566284557,
+          "p95": 0.2634670581657097,
+          "maximum": 0.3933602641328957
+        },
+        "velocity_rad_s": {
+          "count": 195,
+          "rms": 0.259717835967236,
+          "p95": 0.578381368116935,
+          "maximum": 1.1245037379653144
+        },
+        "acceleration_rad_s2": {
+          "count": 194,
+          "rms": 1.1566546337413321,
+          "p95": 2.7107130884765347,
+          "maximum": 4.104478957025381
+        },
+        "jerk_rad_s3": {
+          "count": 193,
+          "rms": 11.493566341144573,
+          "p95": 26.35685810696561,
+          "maximum": 47.703654161433185
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 44,
+      "hard_case_count": 4,
+      "hard_cases": [
+        {
+          "start_sample_index": 26,
+          "end_sample_index": 38,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 13,
+          "peak_tracking_error_rad": 0.23895111583276618,
+          "peak_jerk_rad_s3": 29.568526644479064
+        },
+        {
+          "start_sample_index": 42,
+          "end_sample_index": 46,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 5,
+          "peak_tracking_error_rad": 0.3933602641328957,
+          "peak_jerk_rad_s3": 37.84623557799058
+        },
+        {
+          "start_sample_index": 64,
+          "end_sample_index": 65,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.1590326578721783,
+          "peak_jerk_rad_s3": 6.6033518568929805
+        },
+        {
+          "start_sample_index": 180,
+          "end_sample_index": 194,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 15,
+          "peak_tracking_error_rad": 0.33354627864380826,
+          "peak_jerk_rad_s3": 26.608847326797466
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_135",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_135.jsonl",
+      "output_samples": 145,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 145,
+          "rms": 0.10000314774992308,
+          "p95": 0.21486171569289073,
+          "maximum": 0.3313970643655847
+        },
+        "velocity_rad_s": {
+          "count": 144,
+          "rms": 0.25670726220882145,
+          "p95": 0.5244836114353981,
+          "maximum": 1.2511847039213841
+        },
+        "acceleration_rad_s2": {
+          "count": 143,
+          "rms": 1.2385915072248999,
+          "p95": 2.1835137075067075,
+          "maximum": 6.530457002170231
+        },
+        "jerk_rad_s3": {
+          "count": 142,
+          "rms": 13.310636087437318,
+          "p95": 20.842077198089157,
+          "maximum": 92.77257862018617
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 44,
+      "hard_case_count": 4,
+      "hard_cases": [
+        {
+          "start_sample_index": 26,
+          "end_sample_index": 31,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 6,
+          "peak_tracking_error_rad": 0.26144896412236196,
+          "peak_jerk_rad_s3": 16.875081370782443
+        },
+        {
+          "start_sample_index": 107,
+          "end_sample_index": 112,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 6,
+          "peak_tracking_error_rad": 0.2116254702254598,
+          "peak_jerk_rad_s3": 11.363528232784924
+        },
+        {
+          "start_sample_index": 122,
+          "end_sample_index": 128,
+          "reasons": [
+            "jerk",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 6,
+          "peak_tracking_error_rad": 0.3313970643655847,
+          "peak_jerk_rad_s3": 92.77257862018617
+        },
+        {
+          "start_sample_index": 140,
+          "end_sample_index": 141,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 2,
+          "peak_tracking_error_rad": 0.17522041747656347,
+          "peak_jerk_rad_s3": 6.504563890732951
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_139",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_139.jsonl",
+      "output_samples": 134,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 134,
+          "rms": 0.22903528989579267,
+          "p95": 0.46357357790758824,
+          "maximum": 0.6505143757480076
+        },
+        "velocity_rad_s": {
+          "count": 133,
+          "rms": 0.5074726620686576,
+          "p95": 1.226867310242351,
+          "maximum": 1.7707982028034708
+        },
+        "acceleration_rad_s2": {
+          "count": 132,
+          "rms": 2.5742885308461076,
+          "p95": 6.372896426113888,
+          "maximum": 10.191298969653072
+        },
+        "jerk_rad_s3": {
+          "count": 131,
+          "rms": 33.11847762619907,
+          "p95": 67.38381700200401,
+          "maximum": 183.87639940499966
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 34,
+      "hard_case_count": 3,
+      "hard_cases": [
+        {
+          "start_sample_index": 0,
+          "end_sample_index": 18,
+          "reasons": [
+            "acceleration",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 17,
+          "peak_tracking_error_rad": 0.580021196585733,
+          "peak_jerk_rad_s3": 73.02914878858535
+        },
+        {
+          "start_sample_index": 31,
+          "end_sample_index": 36,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 6,
+          "peak_tracking_error_rad": 0.3530216764643547,
+          "peak_jerk_rad_s3": 24.832127353155403
+        },
+        {
+          "start_sample_index": 92,
+          "end_sample_index": 133,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error",
+            "velocity"
+          ],
+          "flagged_sample_count": 42,
+          "peak_tracking_error_rad": 0.6505143757480076,
+          "peak_jerk_rad_s3": 183.87639940499966
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_107",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_107.jsonl",
+      "output_samples": 206,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 206,
+          "rms": 0.09448216863282297,
+          "p95": 0.2141359276567515,
+          "maximum": 0.402602115468062
+        },
+        "velocity_rad_s": {
+          "count": 205,
+          "rms": 0.22884541566337507,
+          "p95": 0.42656253719928783,
+          "maximum": 1.4460944750375009
+        },
+        "acceleration_rad_s2": {
+          "count": 204,
+          "rms": 1.1847412492025486,
+          "p95": 2.004954517582571,
+          "maximum": 9.43095803132282
+        },
+        "jerk_rad_s3": {
+          "count": 203,
+          "rms": 12.72869548528713,
+          "p95": 22.084199229844213,
+          "maximum": 111.53079515742314
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 24,
+      "hard_case_count": 2,
+      "hard_cases": [
+        {
+          "start_sample_index": 17,
+          "end_sample_index": 29,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 13,
+          "peak_tracking_error_rad": 0.25424564645602754,
+          "peak_jerk_rad_s3": 31.88117835213982
+        },
+        {
+          "start_sample_index": 33,
+          "end_sample_index": 38,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error"
+          ],
+          "flagged_sample_count": 6,
+          "peak_tracking_error_rad": 0.402602115468062,
+          "peak_jerk_rad_s3": 111.53079515742314
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_131",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_131.jsonl",
+      "output_samples": 170,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 170,
+          "rms": 0.08615142248315244,
+          "p95": 0.21191448046145903,
+          "maximum": 0.3895151643937781
+        },
+        "velocity_rad_s": {
+          "count": 169,
+          "rms": 0.22989930548521734,
+          "p95": 0.5093450566227838,
+          "maximum": 1.0967006722166894
+        },
+        "acceleration_rad_s2": {
+          "count": 168,
+          "rms": 1.171207214540422,
+          "p95": 2.2483041879005095,
+          "maximum": 7.198537196478255
+        },
+        "jerk_rad_s3": {
+          "count": 167,
+          "rms": 10.160533791035107,
+          "p95": 17.198286522429726,
+          "maximum": 55.318500797901095
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 24,
+      "hard_case_count": 2,
+      "hard_cases": [
+        {
+          "start_sample_index": 23,
+          "end_sample_index": 33,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 10,
+          "peak_tracking_error_rad": 0.3895151643937781,
+          "peak_jerk_rad_s3": 40.799697136653705
+        },
+        {
+          "start_sample_index": 156,
+          "end_sample_index": 159,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 4,
+          "peak_tracking_error_rad": 0.21330470577366434,
+          "peak_jerk_rad_s3": 6.303309484538833
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_137",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_137.jsonl",
+      "output_samples": 235,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 235,
+          "rms": 0.5563680638554029,
+          "p95": 1.0528686567157937,
+          "maximum": 1.103747397661209
+        },
+        "velocity_rad_s": {
+          "count": 234,
+          "rms": 0.7055052140873523,
+          "p95": 1.6844642617348147,
+          "maximum": 3.148933529203848
+        },
+        "acceleration_rad_s2": {
+          "count": 233,
+          "rms": 4.3884832218354495,
+          "p95": 11.345930866497545,
+          "maximum": 18.642135399051092
+        },
+        "jerk_rad_s3": {
+          "count": 232,
+          "rms": 40.55979229575183,
+          "p95": 78.9829786631763,
+          "maximum": 258.72639243829326
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 24,
+      "hard_case_count": 2,
+      "hard_cases": [
+        {
+          "start_sample_index": 22,
+          "end_sample_index": 121,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error",
+            "velocity"
+          ],
+          "flagged_sample_count": 97,
+          "peak_tracking_error_rad": 1.103747397661209,
+          "peak_jerk_rad_s3": 258.72639243829326
+        },
+        {
+          "start_sample_index": 195,
+          "end_sample_index": 234,
+          "reasons": [
+            "acceleration",
+            "jerk",
+            "tracking_error",
+            "velocity"
+          ],
+          "flagged_sample_count": 40,
+          "peak_tracking_error_rad": 0.951108727520388,
+          "peak_jerk_rad_s3": 231.78083290002803
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_100",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_100.jsonl",
+      "output_samples": 695,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 695,
+          "rms": 0.180259693884263,
+          "p95": 0.3091879041181695,
+          "maximum": 0.3140228900602535
+        },
+        "velocity_rad_s": {
+          "count": 694,
+          "rms": 0.08626949872859706,
+          "p95": 0.17231798977378876,
+          "maximum": 0.4543378378824747
+        },
+        "acceleration_rad_s2": {
+          "count": 693,
+          "rms": 0.45836562108971657,
+          "p95": 0.9614477787621271,
+          "maximum": 3.9705107435175857
+        },
+        "jerk_rad_s3": {
+          "count": 692,
+          "rms": 6.114349819951371,
+          "p95": 11.618341257020761,
+          "maximum": 67.91499667550282
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 14,
+      "hard_case_count": 1,
+      "hard_cases": [
+        {
+          "start_sample_index": 279,
+          "end_sample_index": 608,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 330,
+          "peak_tracking_error_rad": 0.3140228900602535,
+          "peak_jerk_rad_s3": 24.18016076526559
+        }
+      ]
+    },
+    {
+      "episode_id": "d0_right_hand_105",
+      "success_label": "success",
+      "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_105.jsonl",
+      "output_samples": 178,
+      "metrics": {
+        "tracking_error_rad": {
+          "count": 178,
+          "rms": 0.15456085626466495,
+          "p95": 0.20782979602348747,
+          "maximum": 0.2094600926946453
+        },
+        "velocity_rad_s": {
+          "count": 177,
+          "rms": 0.09536331157745169,
+          "p95": 0.19577595275359957,
+          "maximum": 0.3302307508364666
+        },
+        "acceleration_rad_s2": {
+          "count": 176,
+          "rms": 0.5128584940889254,
+          "p95": 0.9263563979729467,
+          "maximum": 2.809259163779526
+        },
+        "jerk_rad_s3": {
+          "count": 175,
+          "rms": 5.342767785846179,
+          "p95": 12.309099582250166,
+          "maximum": 28.85186766535913
+        }
+      },
+      "condition_id": "第一条件",
+      "condition_role": "A",
+      "priority": 14,
+      "hard_case_count": 1,
+      "hard_cases": [
+        {
+          "start_sample_index": 60,
+          "end_sample_index": 155,
+          "reasons": [
+            "tracking_error"
+          ],
+          "flagged_sample_count": 96,
+          "peak_tracking_error_rad": 0.2094600926946453,
+          "peak_jerk_rad_s3": 9.710592046003551
+        }
+      ]
+    }
+  ],
+  "next_collection_requirements": [
+    "Record a condition_id for every future episode.",
+    "Use the same 10 Hz canonical export after capture.",
+    "Review top replay segments before defining a new collection target."
+  ],
+  "notes": [
+    "All source bags remain read only.",
+    "A replay queue is an analysis priority, never an autonomous robot command."
+  ]
+}

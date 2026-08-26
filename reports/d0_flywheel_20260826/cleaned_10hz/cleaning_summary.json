@@ -1,0 +1,7 @@
+{
+  "episode_count": 40,
+  "resample_fps": 10,
+  "quality_pass_count": 40,
+  "trajectory_pass_count": 20,
+  "output_root": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz"
+}

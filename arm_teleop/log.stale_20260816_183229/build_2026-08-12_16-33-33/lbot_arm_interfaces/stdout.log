@@ -1,0 +1,740 @@
+-- The C compiler identification is GNU 11.4.0
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+-- Override CMake install command with custom implementation using symlinks instead of copying resources
+-- Found geometry_msgs: 4.9.2 (/opt/ros/humble/share/geometry_msgs/cmake)
+-- Found rosidl_generator_c: 3.1.9 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+-- Found rosidl_adapter: 3.1.9 (/opt/ros/humble/share/rosidl_adapter/cmake)
+-- Found rosidl_generator_cpp: 3.1.9 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found sensor_msgs: 4.9.2 (/opt/ros/humble/share/sensor_msgs/cmake)
+-- Found rosidl_default_generators: 1.2.1 (/opt/ros/humble/share/rosidl_default_generators/cmake)
+-- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") 
+-- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)
+-- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") 
+-- Using PYTHON_EXECUTABLE: /usr/bin/python3
+-- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+-- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+-- Found PythonExtra: .so  
+-- Found ament_lint_auto: 0.12.15 (/opt/ros/humble/share/ament_lint_auto/cmake)
+-- Added test 'copyright' to check source files copyright and LICENSE
+-- Added test 'lint_cmake' to check CMake code style
+-- Added test 'xmllint' to check XML markup files
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces
+[  0%] Generating C code for ROS interfaces
+[  1%] Generating Rust code for ROS interfaces
+[  1%] Generating C++ code for ROS interfaces
+[  1%] Built target ament_cmake_python_symlink_lbot_arm_interfaces
+running egg_info
+creating lbot_arm_interfaces.egg-info
+writing lbot_arm_interfaces.egg-info/PKG-INFO
+writing dependency_links to lbot_arm_interfaces.egg-info/dependency_links.txt
+writing top-level names to lbot_arm_interfaces.egg-info/top_level.txt
+writing manifest file 'lbot_arm_interfaces.egg-info/SOURCES.txt'
+reading manifest file 'lbot_arm_interfaces.egg-info/SOURCES.txt'
+writing manifest file 'lbot_arm_interfaces.egg-info/SOURCES.txt'
+[  1%] Built target ament_cmake_python_build_lbot_arm_interfaces_egg
+[  1%] Built target lbot_arm_interfaces__rs
+[  1%] Built target lbot_arm_interfaces__cpp
+[  2%] Generating C++ introspection for ROS interfaces
+[  3%] Generating C++ type support dispatch for ROS interfaces
+[  4%] Generating C++ type support for eProsima Fast-RTPS
+[  6%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/set_frame__functions.c.o
+[  7%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/move_c__functions.c.o
+[  7%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/move_j__functions.c.o
+[  7%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/move_l__functions.c.o
+[  7%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/forward_kinematics__functions.c.o
+[  8%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/get_current_frame__functions.c.o
+[  8%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/move_jp__functions.c.o
+[  8%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/set_string__functions.c.o
+[  9%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/get_frame__functions.c.o
+[ 10%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/inverse_kinematics__functions.c.o
+[ 10%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/get_all_frames__functions.c.o
+[ 10%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/change_frame__functions.c.o
+[ 10%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/set_emergency__functions.c.o
+[ 11%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/set_enable__functions.c.o
+[ 11%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/msg/detail/arm_state__functions.c.o
+[ 12%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/msg/detail/lbot_pose__functions.c.o
+[ 13%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/delete_frame__functions.c.o
+[ 14%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/srv/detail/set_zero__functions.c.o
+[ 14%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/msg/detail/lbot_frame__functions.c.o
+[ 15%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_c.dir/rosidl_generator_c/lbot_arm_interfaces/msg/detail/follow_joint__functions.c.o
+[ 16%] Linking C shared library liblbot_arm_interfaces__rosidl_generator_c.so
+[ 16%] Built target lbot_arm_interfaces__rosidl_generator_c
+[ 17%] Generating C type support for eProsima Fast-RTPS
+[ 18%] Generating C introspection for ROS interfaces
+[ 19%] Generating C type support dispatch for ROS interfaces
+[ 22%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/set_frame__type_support.cpp.o
+[ 22%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/move_c__type_support.cpp.o
+[ 22%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/move_jp__type_support.cpp.o
+[ 22%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/inverse_kinematics__type_support.cpp.o
+[ 22%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/forward_kinematics__type_support.cpp.o
+[ 23%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/set_string__type_support.cpp.o
+[ 22%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/move_j__type_support.cpp.o
+[ 23%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/get_frame__type_support.cpp.o
+[ 23%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/move_l__type_support.cpp.o
+[ 24%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/delete_frame__type_support.cpp.o
+[ 25%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/get_current_frame__type_support.cpp.o
+[ 26%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/change_frame__type_support.cpp.o
+[ 26%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/get_all_frames__type_support.cpp.o
+[ 26%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/set_zero__type_support.cpp.o
+[ 26%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/set_enable__type_support.cpp.o
+[ 27%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/srv/set_emergency__type_support.cpp.o
+[ 28%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/msg/arm_state__type_support.cpp.o
+[ 29%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/msg/lbot_pose__type_support.cpp.o
+[ 29%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/msg/lbot_frame__type_support.cpp.o
+[ 29%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/lbot_arm_interfaces/msg/follow_joint__type_support.cpp.o
+[ 29%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/move_j__type_support.cpp.o
+[ 30%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/move_l__type_support.cpp.o
+[ 30%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/move_c__type_support.cpp.o
+[ 31%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/move_jp__type_support.cpp.o
+[ 31%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/inverse_kinematics__type_support.cpp.o
+[ 32%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/forward_kinematics__type_support.cpp.o
+[ 32%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/set_frame__type_support.cpp.o
+[ 33%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/set_string__type_support.cpp.o
+[ 33%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/get_frame__type_support.cpp.o
+[ 33%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/change_frame__type_support.cpp.o
+[ 35%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/delete_frame__type_support.cpp.o
+[ 36%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/get_all_frames__type_support.cpp.o
+[ 36%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/get_current_frame__type_support.cpp.o
+[ 36%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/set_zero__type_support.cpp.o
+[ 37%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/set_enable__type_support.cpp.o
+[ 37%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/srv/set_emergency__type_support.cpp.o
+[ 38%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/msg/arm_state__type_support.cpp.o
+[ 38%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/move_j__type_support.cpp.o
+[ 38%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/msg/lbot_pose__type_support.cpp.o
+[ 39%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/move_l__type_support.cpp.o
+[ 40%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/msg/lbot_frame__type_support.cpp.o
+[ 40%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/move_c__type_support.cpp.o
+[ 41%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/move_jp__type_support.cpp.o
+[ 42%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/forward_kinematics__type_support.cpp.o
+[ 42%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/set_frame__type_support.cpp.o
+[ 42%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c.dir/rosidl_typesupport_c/lbot_arm_interfaces/msg/follow_joint__type_support.cpp.o
+[ 42%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/inverse_kinematics__type_support.cpp.o
+[ 43%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/set_string__type_support.cpp.o
+[ 44%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/get_current_frame__type_support.cpp.o
+[ 44%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/get_frame__type_support.cpp.o
+[ 45%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/change_frame__type_support.cpp.o
+[ 45%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/delete_frame__type_support.cpp.o
+[ 46%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/get_all_frames__type_support.cpp.o
+[ 46%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/set_zero__type_support.cpp.o
+[ 47%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/set_emergency__type_support.cpp.o
+[ 47%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/set_enable__type_support.cpp.o
+[ 48%] Linking CXX shared library liblbot_arm_interfaces__rosidl_typesupport_c.so
+[ 49%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/msg/detail/arm_state__type_support.cpp.o
+[ 49%] Built target lbot_arm_interfaces__rosidl_typesupport_c
+[ 49%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/msg/detail/lbot_pose__type_support.cpp.o
+[ 50%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/msg/detail/lbot_frame__type_support.cpp.o
+[ 51%] Linking CXX shared library liblbot_arm_interfaces__rosidl_typesupport_cpp.so
+[ 51%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/msg/detail/follow_joint__type_support.cpp.o
+[ 51%] Built target lbot_arm_interfaces__rosidl_typesupport_cpp
+[ 52%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/move_l__type_support.cpp.o
+[ 52%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/move_j__type_support.cpp.o
+[ 52%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/move_c__type_support.cpp.o
+[ 53%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/move_jp__type_support.cpp.o
+[ 53%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/inverse_kinematics__type_support.cpp.o
+[ 54%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/forward_kinematics__type_support.cpp.o
+[ 54%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/set_frame__type_support.cpp.o
+[ 55%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/set_string__type_support.cpp.o
+[ 55%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/get_frame__type_support.cpp.o
+[ 56%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/get_current_frame__type_support.cpp.o
+[ 57%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/change_frame__type_support.cpp.o
+[ 57%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/delete_frame__type_support.cpp.o
+[ 58%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/get_all_frames__type_support.cpp.o
+[ 58%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/set_zero__type_support.cpp.o
+[ 59%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/set_emergency__type_support.cpp.o
+[ 59%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/srv/detail/dds_fastrtps/set_enable__type_support.cpp.o
+[ 60%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/msg/detail/dds_fastrtps/arm_state__type_support.cpp.o
+[ 60%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/msg/detail/dds_fastrtps/lbot_pose__type_support.cpp.o
+[ 61%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/msg/detail/dds_fastrtps/lbot_frame__type_support.cpp.o
+[ 61%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/lbot_arm_interfaces/msg/detail/dds_fastrtps/follow_joint__type_support.cpp.o
+[ 62%] Linking CXX shared library liblbot_arm_interfaces__rosidl_typesupport_introspection_cpp.so
+[ 62%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/move_j__type_support.c.o
+[ 63%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/move_l__type_support.c.o
+[ 63%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/move_j__type_support_c.cpp.o
+[ 64%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/move_l__type_support_c.cpp.o
+[ 64%] Built target lbot_arm_interfaces__rosidl_typesupport_introspection_cpp
+[ 64%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/move_c__type_support.c.o
+[ 65%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/move_jp__type_support.c.o
+[ 65%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/move_c__type_support_c.cpp.o
+[ 65%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/inverse_kinematics__type_support.c.o
+[ 66%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/move_jp__type_support_c.cpp.o
+[ 67%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/inverse_kinematics__type_support_c.cpp.o
+[ 67%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/forward_kinematics__type_support_c.cpp.o
+[ 68%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/forward_kinematics__type_support.c.o
+[ 68%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/set_frame__type_support_c.cpp.o
+[ 68%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/set_frame__type_support.c.o
+[ 69%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/set_string__type_support_c.cpp.o
+[ 70%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/set_string__type_support.c.o
+[ 70%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/get_frame__type_support_c.cpp.o
+[ 70%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/get_frame__type_support.c.o
+[ 71%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/get_current_frame__type_support.c.o
+[ 71%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/change_frame__type_support.c.o
+[ 72%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/delete_frame__type_support.c.o
+[ 73%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/get_current_frame__type_support_c.cpp.o
+[ 74%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/get_all_frames__type_support.c.o
+[ 75%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/set_emergency__type_support.c.o
+[ 75%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/set_zero__type_support.c.o
+[ 75%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/change_frame__type_support_c.cpp.o
+[ 75%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/srv/detail/set_enable__type_support.c.o
+[ 76%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/delete_frame__type_support_c.cpp.o
+[ 77%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/msg/detail/arm_state__type_support.c.o
+[ 78%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/get_all_frames__type_support_c.cpp.o
+[ 78%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/msg/detail/lbot_pose__type_support.c.o
+[ 78%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/set_zero__type_support_c.cpp.o
+[ 79%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/msg/detail/lbot_frame__type_support.c.o
+[ 79%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/lbot_arm_interfaces/msg/detail/follow_joint__type_support.c.o
+[ 80%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/set_emergency__type_support_c.cpp.o
+[ 80%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/msg/detail/lbot_pose__type_support_c.cpp.o
+[ 81%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/msg/detail/arm_state__type_support_c.cpp.o
+[ 81%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/srv/detail/set_enable__type_support_c.cpp.o
+[ 82%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/msg/detail/lbot_frame__type_support_c.cpp.o
+[ 82%] Building CXX object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/lbot_arm_interfaces/msg/detail/follow_joint__type_support_c.cpp.o
+[ 83%] Linking C shared library liblbot_arm_interfaces__rosidl_typesupport_introspection_c.so
+[ 83%] Built target lbot_arm_interfaces__rosidl_typesupport_introspection_c
+[ 84%] Linking CXX shared library liblbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.so
+[ 84%] Built target lbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp
+[ 85%] Linking CXX shared library liblbot_arm_interfaces__rosidl_typesupport_fastrtps_c.so
+[ 85%] Built target lbot_arm_interfaces__rosidl_typesupport_fastrtps_c
+[ 85%] Built target lbot_arm_interfaces
+[ 86%] Generating Python code for ROS interfaces
+[ 86%] Built target lbot_arm_interfaces__py
+[ 87%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_forward_kinematics_s.c.o
+[ 87%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_inverse_kinematics_s.c.o
+[ 89%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_set_string_s.c.o
+[ 89%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_move_j_s.c.o
+[ 89%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_move_l_s.c.o
+[ 90%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_get_all_frames_s.c.o
+[ 91%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_change_frame_s.c.o
+[ 92%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_get_current_frame_s.c.o
+[ 92%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_move_c_s.c.o
+[ 92%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_set_frame_s.c.o
+[ 92%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_delete_frame_s.c.o
+[ 93%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_move_jp_s.c.o
+[ 93%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_set_zero_s.c.o
+[ 94%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_set_emergency_s.c.o
+[ 94%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_set_enable_s.c.o
+[ 95%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/msg/_arm_state_s.c.o
+[ 95%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/msg/_lbot_pose_s.c.o
+[ 95%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/srv/_get_frame_s.c.o
+[ 96%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/msg/_lbot_frame_s.c.o
+[ 96%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_generator_py.dir/rosidl_generator_py/lbot_arm_interfaces/msg/_follow_joint_s.c.o
+[ 97%] Linking C shared library rosidl_generator_py/lbot_arm_interfaces/liblbot_arm_interfaces__rosidl_generator_py.so
+[ 97%] Built target lbot_arm_interfaces__rosidl_generator_py
+[ 97%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/lbot_arm_interfaces/_lbot_arm_interfaces_s.ep.rosidl_typesupport_introspection_c.c.o
+[ 97%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/lbot_arm_interfaces/_lbot_arm_interfaces_s.ep.rosidl_typesupport_c.c.o
+[ 97%] Building C object CMakeFiles/lbot_arm_interfaces__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/lbot_arm_interfaces/_lbot_arm_interfaces_s.ep.rosidl_typesupport_fastrtps_c.c.o
+[ 98%] Linking C shared library rosidl_generator_py/lbot_arm_interfaces/lbot_arm_interfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[100%] Linking C shared library rosidl_generator_py/lbot_arm_interfaces/lbot_arm_interfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[100%] Linking C shared library rosidl_generator_py/lbot_arm_interfaces/lbot_arm_interfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[100%] Built target lbot_arm_interfaces__rosidl_typesupport_c__pyext
+[100%] Built target lbot_arm_interfaces__rosidl_typesupport_fastrtps_c__pyext
+[100%] Built target lbot_arm_interfaces__rosidl_typesupport_introspection_c__pyext
+-- Install configuration: ""
+-- Execute custom install script
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/ament_index/resource_index/rosidl_interfaces/lbot_arm_interfaces
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/arm_state.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/follow_joint.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/lbot_frame.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/lbot_pose.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/rosidl_generator_c__visibility_control.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/change_frame.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/delete_frame.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__functions.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__struct.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__type_support.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/forward_kinematics.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/get_all_frames.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/get_current_frame.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/get_frame.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/inverse_kinematics.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/move_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/move_j.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/move_jp.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/move_l.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/set_emergency.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/set_enable.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/set_frame.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/set_string.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/set_zero.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/environment/library_path.sh
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/environment/library_path.dsv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__rosidl_typesupport_fastrtps_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/arm_state.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/follow_joint.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/lbot_frame.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/lbot_pose.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/rosidl_generator_cpp__visibility_control.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/change_frame.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/delete_frame.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__builder.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__struct.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__traits.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__type_support.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/forward_kinematics.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/get_all_frames.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/get_current_frame.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/get_frame.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/inverse_kinematics.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/move_c.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/move_j.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/move_jp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/move_l.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/set_emergency.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/set_enable.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/set_frame.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/set_string.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/set_zero.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__rosidl_typesupport_fastrtps_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/rosidl_typesupport_introspection_c__visibility_control.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__rosidl_typesupport_introspection_c.h
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/arm_state__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/follow_joint__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_frame__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/msg/detail/lbot_pose__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/change_frame__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/delete_frame__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/forward_kinematics__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_all_frames__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_current_frame__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/get_frame__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/inverse_kinematics__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_c__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_j__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_jp__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/move_l__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_emergency__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_enable__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_frame__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_string__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/include/lbot_arm_interfaces/lbot_arm_interfaces/srv/detail/set_zero__rosidl_typesupport_introspection_cpp.hpp
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/environment/pythonpath.sh
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/environment/pythonpath.dsv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces-0.0.0-py3.10.egg-info/PKG-INFO
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces-0.0.0-py3.10.egg-info/SOURCES.txt
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces-0.0.0-py3.10.egg-info/dependency_links.txt
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces-0.0.0-py3.10.egg-info/top_level.txt
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/__init__.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/_lbot_arm_interfaces_s.ep.rosidl_typesupport_c.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/_lbot_arm_interfaces_s.ep.rosidl_typesupport_fastrtps_c.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/_lbot_arm_interfaces_s.ep.rosidl_typesupport_introspection_c.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/lbot_arm_interfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/lbot_arm_interfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/lbot_arm_interfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/liblbot_arm_interfaces__rosidl_generator_py.so
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/__init__.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_arm_state.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_arm_state_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_follow_joint.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_follow_joint_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_lbot_frame.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_lbot_frame_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_lbot_pose.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_lbot_pose_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/__init__.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_change_frame.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_change_frame_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_delete_frame.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_delete_frame_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_forward_kinematics.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_forward_kinematics_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_get_all_frames.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_get_all_frames_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_get_current_frame.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_get_current_frame_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_get_frame.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_get_frame_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_inverse_kinematics.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_inverse_kinematics_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_c.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_c_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_j.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_j_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_jp.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_jp_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_l.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_l_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_emergency.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_emergency_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_enable.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_enable_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_frame.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_frame_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_string.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_string_s.c
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_zero.py
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_zero_s.c
+-- Up-to-date symlink: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/lbot_arm_interfaces_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+-- Up-to-date symlink: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/lbot_arm_interfaces_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+-- Up-to-date symlink: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/lbot_arm_interfaces_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/ament_index/resource_index/rust_packages/lbot_arm_interfaces
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/rust/Cargo.toml
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/rust/build.rs
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/rust/src/lib.rs
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/rust/src/msg.rs
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/rust/src/msg/rmw.rs
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/rust/src/srv.rs
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/rust/src/srv/rmw.rs
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveJ.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveL.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveC.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveJP.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/InverseKinematics.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/ForwardKinematics.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetFrame.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetString.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetFrame.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetCurrentFrame.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/ChangeFrame.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/DeleteFrame.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetAllFrames.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetZero.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetEmergency.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetEnable.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/msg/ArmState.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/msg/LbotPose.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/msg/LbotFrame.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/msg/FollowJoint.idl
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveJ.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveJ_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveJ_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveL.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveL_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveL_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveC.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveC_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveC_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveJP.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveJP_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/MoveJP_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/InverseKinematics.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/InverseKinematics_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/InverseKinematics_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/ForwardKinematics.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/ForwardKinematics_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/ForwardKinematics_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetFrame.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetFrame_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetFrame_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetString.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetString_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetString_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetFrame.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetFrame_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetFrame_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetCurrentFrame.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetCurrentFrame_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetCurrentFrame_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/ChangeFrame.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/ChangeFrame_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/ChangeFrame_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/DeleteFrame.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/DeleteFrame_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/DeleteFrame_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetAllFrames.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetAllFrames_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/GetAllFrames_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetZero.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetZero_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetZero_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetEmergency.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetEmergency_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetEmergency_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetEnable.srv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetEnable_Request.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/srv/SetEnable_Response.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/msg/ArmState.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/msg/LbotPose.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/msg/LbotFrame.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/msg/FollowJoint.msg
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/ament_index/resource_index/package_run_dependencies/lbot_arm_interfaces
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/ament_index/resource_index/parent_prefix_path/lbot_arm_interfaces
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/environment/ament_prefix_path.sh
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/environment/ament_prefix_path.dsv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/environment/path.sh
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/environment/path.dsv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/local_setup.bash
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/local_setup.sh
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/local_setup.zsh
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/local_setup.dsv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/package.dsv
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/ament_index/resource_index/packages/lbot_arm_interfaces
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/rosidl_cmake-extras.cmake
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/ament_cmake_export_dependencies-extras.cmake
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/ament_cmake_export_include_directories-extras.cmake
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/ament_cmake_export_libraries-extras.cmake
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/ament_cmake_export_targets-extras.cmake
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/rosidl_cmake_aggregate_target-extras.cmake
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/lbot_arm_interfacesConfig.cmake
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/lbot_arm_interfacesConfig-version.cmake
+-- Symlinking: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/package.xml
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_generator_c.so
+-- Set runtime path of "/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_generator_c.so" to ""
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_fastrtps_c.so
+-- Set runtime path of "/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_fastrtps_c.so" to ""
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.so
+-- Set runtime path of "/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_fastrtps_cpp.so" to ""
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_introspection_c.so
+-- Set runtime path of "/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_introspection_c.so" to ""
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_c.so
+-- Set runtime path of "/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_c.so" to ""
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_introspection_cpp.so
+-- Set runtime path of "/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_introspection_cpp.so" to ""
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_cpp.so
+-- Set runtime path of "/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_typesupport_cpp.so" to ""
+Listing '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/__init__.py'...
+Listing '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/__init__.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_arm_state.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_follow_joint.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_lbot_frame.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/msg/_lbot_pose.py'...
+Listing '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/__init__.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_change_frame.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_delete_frame.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_forward_kinematics.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_get_all_frames.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_get_current_frame.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_get_frame.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_inverse_kinematics.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_c.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_j.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_jp.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_move_l.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_emergency.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_enable.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_frame.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_string.py'...
+Compiling '/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/local/lib/python3.10/dist-packages/lbot_arm_interfaces/srv/_set_zero.py'...
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_generator_py.so
+-- Set runtime path of "/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/lib/liblbot_arm_interfaces__rosidl_generator_py.so" to ""
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/export_lbot_arm_interfaces__rosidl_generator_cExport.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/export_lbot_arm_interfaces__rosidl_generator_cExport-noconfig.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/export_lbot_arm_interfaces__rosidl_typesupport_fastrtps_cExport.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/export_lbot_arm_interfaces__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/export_lbot_arm_interfaces__rosidl_generator_cppExport.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/export_lbot_arm_interfaces__rosidl_typesupport_fastrtps_cppExport.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/export_lbot_arm_interfaces__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/lbot_arm_interfaces__rosidl_typesupport_introspection_cExport.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/lbot_arm_interfaces__rosidl_typesupport_introspection_cExport-noconfig.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/lbot_arm_interfaces__rosidl_typesupport_cExport.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/lbot_arm_interfaces__rosidl_typesupport_cExport-noconfig.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/lbot_arm_interfaces__rosidl_typesupport_introspection_cppExport.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/lbot_arm_interfaces__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/lbot_arm_interfaces__rosidl_typesupport_cppExport.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/lbot_arm_interfaces__rosidl_typesupport_cppExport-noconfig.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/export_lbot_arm_interfaces__rosidl_generator_pyExport.cmake
+-- Installing: /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/install/lbot_arm_interfaces/share/lbot_arm_interfaces/cmake/export_lbot_arm_interfaces__rosidl_generator_pyExport-noconfig.cmake

@@ -1,0 +1,234 @@
+{
+  "schema": "robot_teleop.d0-flywheel-episode-report/v1",
+  "evaluation_mode": "offline_read_only",
+  "hardware_accessed": false,
+  "episode_id": "d0_right_hand_139",
+  "arm": "right",
+  "source_domain": "real",
+  "success_label": "success",
+  "task_id": "D0-RIGHT-HAND-139",
+  "condition_id": "unassigned",
+  "bag": "/media/pao/Seagate Hub/ICRA2027_TELEOP_BAGS/d0_right_hand_139/bag",
+  "topics": {
+    "missing": [],
+    "master_raw_count": 1147,
+    "master_filtered_count": 1147
+  },
+  "data_quality": {
+    "quality_gate": "review",
+    "checks": {
+      "minimum_samples": true,
+      "required_topics": true,
+      "state_coverage": true,
+      "command_coverage": true,
+      "timestamps": false,
+      "maximum_gap": true,
+      "rgb_coverage": true,
+      "depth_coverage": true
+    },
+    "coverage": {
+      "state": 1.0,
+      "command": 1.0,
+      "rgb": 0.9940298507462687,
+      "depth": 0.9985074626865672
+    },
+    "timing": {
+      "strictly_increasing": false,
+      "median_period_ms": 20.000574,
+      "maximum_gap_ms": 76.912445
+    }
+  },
+  "trajectory_quality": {
+    "trajectory_quality_gate": "review",
+    "checks": {
+      "command_coverage": true,
+      "tracking_rms": false,
+      "tracking_p95": false,
+      "velocity_p95": true,
+      "acceleration_p95": false,
+      "jerk_p95": false
+    },
+    "metrics": {
+      "tracking_error_rad": {
+        "count": 670,
+        "rms": 0.22991027707044265,
+        "p95": 0.47116761356592124,
+        "maximum": 0.6669553965330124
+      },
+      "velocity_rad_s": {
+        "count": 656,
+        "rms": 0.5380326507554646,
+        "p95": 1.310070429794321,
+        "maximum": 3.147127960256415
+      },
+      "acceleration_rad_s2": {
+        "count": 655,
+        "rms": 11.957936594114006,
+        "p95": 22.043366562456388,
+        "maximum": 98.96073869706122
+      },
+      "jerk_rad_s3": {
+        "count": 654,
+        "rms": 991.2249845268948,
+        "p95": 2043.0775907151456,
+        "maximum": 9732.573521150323
+      }
+    }
+  },
+  "hard_cases": {
+    "hard_case_count": 14,
+    "segments": [
+      {
+        "start_sample_index": 0,
+        "end_sample_index": 101,
+        "reasons": [
+          "acceleration",
+          "jerk",
+          "tracking_error",
+          "velocity"
+        ],
+        "flagged_sample_count": 100,
+        "peak_tracking_error_rad": 0.5872433632612228,
+        "peak_jerk_rad_s3": 3013.728902305542
+      },
+      {
+        "start_sample_index": 107,
+        "end_sample_index": 110,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 4,
+        "peak_tracking_error_rad": 0.011184871196746826,
+        "peak_jerk_rad_s3": 192.21714168357718
+      },
+      {
+        "start_sample_index": 155,
+        "end_sample_index": 258,
+        "reasons": [
+          "acceleration",
+          "jerk",
+          "tracking_error"
+        ],
+        "flagged_sample_count": 84,
+        "peak_tracking_error_rad": 0.3573291152715683,
+        "peak_jerk_rad_s3": 1628.3587331263152
+      },
+      {
+        "start_sample_index": 263,
+        "end_sample_index": 266,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 4,
+        "peak_tracking_error_rad": 0.04013913869857788,
+        "peak_jerk_rad_s3": 209.55154128156104
+      },
+      {
+        "start_sample_index": 271,
+        "end_sample_index": 274,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 4,
+        "peak_tracking_error_rad": 0.020236611366271973,
+        "peak_jerk_rad_s3": 260.6032366423933
+      },
+      {
+        "start_sample_index": 283,
+        "end_sample_index": 311,
+        "reasons": [
+          "acceleration",
+          "jerk"
+        ],
+        "flagged_sample_count": 25,
+        "peak_tracking_error_rad": 0.022219717502593994,
+        "peak_jerk_rad_s3": 849.8916369324548
+      },
+      {
+        "start_sample_index": 316,
+        "end_sample_index": 316,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.015236437320709229,
+        "peak_jerk_rad_s3": 84.29631528559156
+      },
+      {
+        "start_sample_index": 333,
+        "end_sample_index": 337,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 5,
+        "peak_tracking_error_rad": 0.0250435471534729,
+        "peak_jerk_rad_s3": 229.4199006415156
+      },
+      {
+        "start_sample_index": 342,
+        "end_sample_index": 392,
+        "reasons": [
+          "acceleration",
+          "jerk"
+        ],
+        "flagged_sample_count": 45,
+        "peak_tracking_error_rad": 0.12374687194824219,
+        "peak_jerk_rad_s3": 2024.2903616841854
+      },
+      {
+        "start_sample_index": 396,
+        "end_sample_index": 411,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 14,
+        "peak_tracking_error_rad": 0.01941847801208496,
+        "peak_jerk_rad_s3": 459.53650276828137
+      },
+      {
+        "start_sample_index": 415,
+        "end_sample_index": 415,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.021964550018310547,
+        "peak_jerk_rad_s3": 87.0317303924412
+      },
+      {
+        "start_sample_index": 424,
+        "end_sample_index": 425,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.031133651733398438,
+        "peak_jerk_rad_s3": 104.21543017466581
+      },
+      {
+        "start_sample_index": 431,
+        "end_sample_index": 437,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 7,
+        "peak_tracking_error_rad": 0.04151636362075806,
+        "peak_jerk_rad_s3": 561.6313315042904
+      },
+      {
+        "start_sample_index": 442,
+        "end_sample_index": 669,
+        "reasons": [
+          "acceleration",
+          "jerk",
+          "tracking_error",
+          "velocity"
+        ],
+        "flagged_sample_count": 223,
+        "peak_tracking_error_rad": 0.6669553965330124,
+        "peak_jerk_rad_s3": 9732.573521150323
+      }
+    ]
+  },
+  "sample_count": 670
+}

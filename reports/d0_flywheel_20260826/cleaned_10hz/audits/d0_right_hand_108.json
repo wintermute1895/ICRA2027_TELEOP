@@ -1,0 +1,48 @@
+{
+  "episode_id": "d0_right_hand_108",
+  "success_label": "success",
+  "source_bag": "/media/pao/Seagate Hub/ICRA2027_TELEOP_BAGS/d0_right_hand_108/bag",
+  "cleaned_episode": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/episodes/d0_right_hand_108.jsonl",
+  "resample_fps": 10,
+  "input": {
+    "state_samples": 927,
+    "command_samples": 1580,
+    "rgb_frames": 279,
+    "depth_frames": 279,
+    "duplicate_state_timestamps_removed": 13,
+    "duplicate_command_timestamps_removed": 0,
+    "missing_topics": []
+  },
+  "output_samples": 185,
+  "dropped_samples": {},
+  "data_quality_gate": "pass",
+  "trajectory_quality_gate": "pass",
+  "metrics": {
+    "tracking_error_rad": {
+      "count": 185,
+      "rms": 0.06619053798195948,
+      "p95": 0.1305018142818477,
+      "maximum": 0.1509527064228547
+    },
+    "velocity_rad_s": {
+      "count": 184,
+      "rms": 0.14175547235042832,
+      "p95": 0.2740649262825979,
+      "maximum": 0.376307219880562
+    },
+    "acceleration_rad_s2": {
+      "count": 183,
+      "rms": 0.5881108072204461,
+      "p95": 1.1726763466092274,
+      "maximum": 1.9383874150202984
+    },
+    "jerk_rad_s3": {
+      "count": 182,
+      "rms": 6.643835763876902,
+      "p95": 13.555231166211705,
+      "maximum": 24.82331354248368
+    }
+  },
+  "condition_id": "第一条件",
+  "condition_role": "A"
+}

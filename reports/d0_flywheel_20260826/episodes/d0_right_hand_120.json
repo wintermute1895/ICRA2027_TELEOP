@@ -1,0 +1,598 @@
+{
+  "schema": "robot_teleop.d0-flywheel-episode-report/v1",
+  "evaluation_mode": "offline_read_only",
+  "hardware_accessed": false,
+  "episode_id": "d0_right_hand_120",
+  "arm": "right",
+  "source_domain": "real",
+  "success_label": "success",
+  "task_id": "D0-RIGHT-HAND-120",
+  "condition_id": "unassigned",
+  "bag": "/media/pao/Seagate Hub/ICRA2027_TELEOP_BAGS/d0_right_hand_120/bag",
+  "topics": {
+    "missing": [],
+    "master_raw_count": 1606,
+    "master_filtered_count": 1605
+  },
+  "data_quality": {
+    "quality_gate": "review",
+    "checks": {
+      "minimum_samples": true,
+      "required_topics": true,
+      "state_coverage": true,
+      "command_coverage": true,
+      "timestamps": false,
+      "maximum_gap": true,
+      "rgb_coverage": true,
+      "depth_coverage": true
+    },
+    "coverage": {
+      "state": 1.0,
+      "command": 1.0,
+      "rgb": 0.9873949579831933,
+      "depth": 0.9915966386554622
+    },
+    "timing": {
+      "strictly_increasing": false,
+      "median_period_ms": 20.002315,
+      "maximum_gap_ms": 57.640241
+    }
+  },
+  "trajectory_quality": {
+    "trajectory_quality_gate": "review",
+    "checks": {
+      "command_coverage": true,
+      "tracking_rms": true,
+      "tracking_p95": true,
+      "velocity_p95": true,
+      "acceleration_p95": true,
+      "jerk_p95": false
+    },
+    "metrics": {
+      "tracking_error_rad": {
+        "count": 952,
+        "rms": 0.059832069163354575,
+        "p95": 0.1013645805418491,
+        "maximum": 0.16044357419013977
+      },
+      "velocity_rad_s": {
+        "count": 940,
+        "rms": 0.17930805585223694,
+        "p95": 0.2678480656114295,
+        "maximum": 2.4135775831264663
+      },
+      "acceleration_rad_s2": {
+        "count": 939,
+        "rms": 9.733877305618453,
+        "p95": 2.499696320606491,
+        "maximum": 241.6826332388877
+      },
+      "jerk_rad_s3": {
+        "count": 938,
+        "rms": 887.6081299695309,
+        "p95": 178.44400548436434,
+        "maximum": 18158.620042909082
+      }
+    }
+  },
+  "hard_cases": {
+    "hard_case_count": 51,
+    "segments": [
+      {
+        "start_sample_index": 41,
+        "end_sample_index": 52,
+        "reasons": [
+          "acceleration",
+          "jerk"
+        ],
+        "flagged_sample_count": 11,
+        "peak_tracking_error_rad": 0.0882178544998169,
+        "peak_jerk_rad_s3": 693.1047681770019
+      },
+      {
+        "start_sample_index": 58,
+        "end_sample_index": 82,
+        "reasons": [
+          "jerk",
+          "tracking_error"
+        ],
+        "flagged_sample_count": 21,
+        "peak_tracking_error_rad": 0.16044357419013977,
+        "peak_jerk_rad_s3": 257.40906272477326
+      },
+      {
+        "start_sample_index": 86,
+        "end_sample_index": 93,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 8,
+        "peak_tracking_error_rad": 0.0990896224975586,
+        "peak_jerk_rad_s3": 229.86790438179776
+      },
+      {
+        "start_sample_index": 99,
+        "end_sample_index": 99,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.07420095056295395,
+        "peak_jerk_rad_s3": 87.89276809834222
+      },
+      {
+        "start_sample_index": 103,
+        "end_sample_index": 103,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.09166177362203598,
+        "peak_jerk_rad_s3": 80.5015013247171
+      },
+      {
+        "start_sample_index": 108,
+        "end_sample_index": 112,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 4,
+        "peak_tracking_error_rad": 0.10166186094284058,
+        "peak_jerk_rad_s3": 153.7324324926797
+      },
+      {
+        "start_sample_index": 116,
+        "end_sample_index": 132,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 13,
+        "peak_tracking_error_rad": 0.0827469676733017,
+        "peak_jerk_rad_s3": 181.0358910912214
+      },
+      {
+        "start_sample_index": 137,
+        "end_sample_index": 154,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 10,
+        "peak_tracking_error_rad": 0.07200497388839722,
+        "peak_jerk_rad_s3": 178.66630218543736
+      },
+      {
+        "start_sample_index": 177,
+        "end_sample_index": 177,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.05694687366485596,
+        "peak_jerk_rad_s3": 88.07734957340371
+      },
+      {
+        "start_sample_index": 182,
+        "end_sample_index": 187,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 5,
+        "peak_tracking_error_rad": 0.04110848903656006,
+        "peak_jerk_rad_s3": 588.3962960083444
+      },
+      {
+        "start_sample_index": 206,
+        "end_sample_index": 206,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.05070871114730835,
+        "peak_jerk_rad_s3": 97.85682652444505
+      },
+      {
+        "start_sample_index": 212,
+        "end_sample_index": 217,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 6,
+        "peak_tracking_error_rad": 0.05502384901046753,
+        "peak_jerk_rad_s3": 180.61200661664662
+      },
+      {
+        "start_sample_index": 225,
+        "end_sample_index": 225,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.08774504065513611,
+        "peak_jerk_rad_s3": 98.43950117446734
+      },
+      {
+        "start_sample_index": 241,
+        "end_sample_index": 254,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 12,
+        "peak_tracking_error_rad": 0.13477781414985657,
+        "peak_jerk_rad_s3": 178.40477665476322
+      },
+      {
+        "start_sample_index": 258,
+        "end_sample_index": 258,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.07223233580589294,
+        "peak_jerk_rad_s3": 105.88333702052284
+      },
+      {
+        "start_sample_index": 264,
+        "end_sample_index": 264,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.06266561150550842,
+        "peak_jerk_rad_s3": 98.0123956338199
+      },
+      {
+        "start_sample_index": 270,
+        "end_sample_index": 273,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 4,
+        "peak_tracking_error_rad": 0.04868847131729126,
+        "peak_jerk_rad_s3": 140.035194904675
+      },
+      {
+        "start_sample_index": 285,
+        "end_sample_index": 291,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 5,
+        "peak_tracking_error_rad": 0.05785989761352539,
+        "peak_jerk_rad_s3": 242.83273047106113
+      },
+      {
+        "start_sample_index": 296,
+        "end_sample_index": 304,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 7,
+        "peak_tracking_error_rad": 0.04881352186203003,
+        "peak_jerk_rad_s3": 388.06438587759004
+      },
+      {
+        "start_sample_index": 343,
+        "end_sample_index": 353,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 8,
+        "peak_tracking_error_rad": 0.06635087728500366,
+        "peak_jerk_rad_s3": 213.91883305280479
+      },
+      {
+        "start_sample_index": 361,
+        "end_sample_index": 361,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.045430660247802734,
+        "peak_jerk_rad_s3": 97.9429544659531
+      },
+      {
+        "start_sample_index": 367,
+        "end_sample_index": 367,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.03409817814826965,
+        "peak_jerk_rad_s3": 123.5720580687972
+      },
+      {
+        "start_sample_index": 373,
+        "end_sample_index": 376,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 4,
+        "peak_tracking_error_rad": 0.026146531105041504,
+        "peak_jerk_rad_s3": 329.32865001515705
+      },
+      {
+        "start_sample_index": 411,
+        "end_sample_index": 412,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.03182703256607056,
+        "peak_jerk_rad_s3": 90.59552681308463
+      },
+      {
+        "start_sample_index": 463,
+        "end_sample_index": 467,
+        "reasons": [
+          "acceleration",
+          "jerk",
+          "velocity"
+        ],
+        "flagged_sample_count": 5,
+        "peak_tracking_error_rad": 0.07345426082611084,
+        "peak_jerk_rad_s3": 18158.620042909082
+      },
+      {
+        "start_sample_index": 471,
+        "end_sample_index": 472,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.07598543167114258,
+        "peak_jerk_rad_s3": 123.41327442593821
+      },
+      {
+        "start_sample_index": 476,
+        "end_sample_index": 477,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.07284551858901978,
+        "peak_jerk_rad_s3": 172.8125953860307
+      },
+      {
+        "start_sample_index": 481,
+        "end_sample_index": 482,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.0634821355342865,
+        "peak_jerk_rad_s3": 125.16976497715241
+      },
+      {
+        "start_sample_index": 490,
+        "end_sample_index": 493,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 4,
+        "peak_tracking_error_rad": 0.052231207489967346,
+        "peak_jerk_rad_s3": 134.43136223950287
+      },
+      {
+        "start_sample_index": 498,
+        "end_sample_index": 501,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 4,
+        "peak_tracking_error_rad": 0.023134499788284302,
+        "peak_jerk_rad_s3": 105.65441046547019
+      },
+      {
+        "start_sample_index": 519,
+        "end_sample_index": 522,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.09993943572044373,
+        "peak_jerk_rad_s3": 94.99636129113112
+      },
+      {
+        "start_sample_index": 527,
+        "end_sample_index": 527,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.07296252250671387,
+        "peak_jerk_rad_s3": 139.28441445888146
+      },
+      {
+        "start_sample_index": 534,
+        "end_sample_index": 537,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.06973019242286682,
+        "peak_jerk_rad_s3": 91.4937754200377
+      },
+      {
+        "start_sample_index": 556,
+        "end_sample_index": 558,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 3,
+        "peak_tracking_error_rad": 0.09611713886260986,
+        "peak_jerk_rad_s3": 151.45668871278787
+      },
+      {
+        "start_sample_index": 564,
+        "end_sample_index": 573,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 10,
+        "peak_tracking_error_rad": 0.08209347724914551,
+        "peak_jerk_rad_s3": 204.90836177997699
+      },
+      {
+        "start_sample_index": 601,
+        "end_sample_index": 602,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.058851540088653564,
+        "peak_jerk_rad_s3": 105.17904186238908
+      },
+      {
+        "start_sample_index": 611,
+        "end_sample_index": 619,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 6,
+        "peak_tracking_error_rad": 0.0668950080871582,
+        "peak_jerk_rad_s3": 140.98925974220774
+      },
+      {
+        "start_sample_index": 627,
+        "end_sample_index": 627,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.017914891242980957,
+        "peak_jerk_rad_s3": 90.86986779108501
+      },
+      {
+        "start_sample_index": 654,
+        "end_sample_index": 655,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.034705162048339844,
+        "peak_jerk_rad_s3": 91.52657538054723
+      },
+      {
+        "start_sample_index": 670,
+        "end_sample_index": 671,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.07615423202514648,
+        "peak_jerk_rad_s3": 159.4402473726347
+      },
+      {
+        "start_sample_index": 683,
+        "end_sample_index": 683,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.04398399591445923,
+        "peak_jerk_rad_s3": 91.92512682415014
+      },
+      {
+        "start_sample_index": 688,
+        "end_sample_index": 688,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.032501399517059326,
+        "peak_jerk_rad_s3": 118.87383579003429
+      },
+      {
+        "start_sample_index": 713,
+        "end_sample_index": 715,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 3,
+        "peak_tracking_error_rad": 0.01868194341659546,
+        "peak_jerk_rad_s3": 249.1901261872532
+      },
+      {
+        "start_sample_index": 730,
+        "end_sample_index": 731,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.010021328926086426,
+        "peak_jerk_rad_s3": 100.73724500559902
+      },
+      {
+        "start_sample_index": 762,
+        "end_sample_index": 762,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 1,
+        "peak_tracking_error_rad": 0.062855064868927,
+        "peak_jerk_rad_s3": 93.00459939911477
+      },
+      {
+        "start_sample_index": 766,
+        "end_sample_index": 777,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 7,
+        "peak_tracking_error_rad": 0.05888107419013977,
+        "peak_jerk_rad_s3": 223.39870166471306
+      },
+      {
+        "start_sample_index": 781,
+        "end_sample_index": 789,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 6,
+        "peak_tracking_error_rad": 0.06346476078033447,
+        "peak_jerk_rad_s3": 203.13302109853544
+      },
+      {
+        "start_sample_index": 813,
+        "end_sample_index": 814,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 2,
+        "peak_tracking_error_rad": 0.02613002061843872,
+        "peak_jerk_rad_s3": 108.84480796733473
+      },
+      {
+        "start_sample_index": 855,
+        "end_sample_index": 859,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 4,
+        "peak_tracking_error_rad": 0.06891459226608276,
+        "peak_jerk_rad_s3": 365.1625062836702
+      },
+      {
+        "start_sample_index": 868,
+        "end_sample_index": 870,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 3,
+        "peak_tracking_error_rad": 0.02706897258758545,
+        "peak_jerk_rad_s3": 273.8622450657726
+      },
+      {
+        "start_sample_index": 932,
+        "end_sample_index": 936,
+        "reasons": [
+          "jerk"
+        ],
+        "flagged_sample_count": 4,
+        "peak_tracking_error_rad": 0.0358356237411499,
+        "peak_jerk_rad_s3": 284.8406783132741
+      }
+    ]
+  },
+  "sample_count": 952
+}

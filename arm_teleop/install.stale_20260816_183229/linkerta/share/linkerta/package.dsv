@@ -1,0 +1,8 @@
+source;share/linkerta/hook/cmake_prefix_path.ps1
+source;share/linkerta/hook/cmake_prefix_path.dsv
+source;share/linkerta/hook/cmake_prefix_path.sh
+source;share/linkerta/local_setup.bash
+source;share/linkerta/local_setup.dsv
+source;share/linkerta/local_setup.ps1
+source;share/linkerta/local_setup.sh
+source;share/linkerta/local_setup.zsh

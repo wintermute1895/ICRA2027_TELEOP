@@ -1,0 +1,10 @@
+{
+  "pending_segment_count": 114,
+  "episode_count": 20,
+  "review_decisions": [
+    "accept_for_training",
+    "exclude_from_training",
+    "needs_recollection"
+  ],
+  "manifest": "/home/pao/桌面/ICRA2027_TELEOP/reports/d0_flywheel_20260826/cleaned_10hz/review_package/review_manifest.jsonl"
+}

@@ -1,0 +1,1 @@
+/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces/rosidl_typesupport_introspection_cpp/lbot_arm_interfaces/srv/detail/set_emergency__rosidl_typesupport_introspection_cpp.hpp

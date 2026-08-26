@@ -1,0 +1,104 @@
+{
+  "schema": "robot_teleop.confidence-trajectory-policy-report/v1",
+  "mode": "offline_training_only",
+  "hardware_accessed": false,
+  "condition_id": "第一条件",
+  "condition_role": "A",
+  "model": "confidence_conditioned_gru",
+  "sequence": {
+    "context_frames": 10,
+    "horizon_frames": 5,
+    "fps": 10
+  },
+  "split": {
+    "train_episode_ids": [
+      "d0_right_hand_101",
+      "d0_right_hand_102",
+      "d0_right_hand_103",
+      "d0_right_hand_104",
+      "d0_right_hand_105",
+      "d0_right_hand_106",
+      "d0_right_hand_107",
+      "d0_right_hand_108",
+      "d0_right_hand_109",
+      "d0_right_hand_110",
+      "d0_right_hand_112",
+      "d0_right_hand_113",
+      "d0_right_hand_115",
+      "d0_right_hand_118",
+      "d0_right_hand_119",
+      "d0_right_hand_124",
+      "d0_right_hand_125",
+      "d0_right_hand_126",
+      "d0_right_hand_128",
+      "d0_right_hand_129",
+      "d0_right_hand_130",
+      "d0_right_hand_132",
+      "d0_right_hand_133",
+      "d0_right_hand_134",
+      "d0_right_hand_135",
+      "d0_right_hand_136",
+      "d0_right_hand_137",
+      "d0_right_hand_139"
+    ],
+    "validation_episode_ids": [
+      "d0_right_hand_114",
+      "d0_right_hand_116",
+      "d0_right_hand_117",
+      "d0_right_hand_120",
+      "d0_right_hand_123",
+      "d0_right_hand_131"
+    ],
+    "test_episode_ids": [
+      "d0_right_hand_100",
+      "d0_right_hand_111",
+      "d0_right_hand_121",
+      "d0_right_hand_122",
+      "d0_right_hand_127",
+      "d0_right_hand_138"
+    ],
+    "train_examples": 4189,
+    "validation_examples": 1099,
+    "test_examples": 1216
+  },
+  "best_validation_action_mae_rad": 0.03871810436248779,
+  "test_metrics": {
+    "action_mae_rad": 0.09378167986869812,
+    "tracking_rmse_rad": 0.1408432424068451,
+    "velocity_p95_rad_s": 2.4926673769950876,
+    "acceleration_p95_rad_s2": 36.92358551025388,
+    "jerk_p95_rad_s3": 553.7137908935543
+  },
+  "metric_notes": {
+    "action_mae_rad": "Predicted future command versus recorded mapped command.",
+    "tracking_rmse_rad": "Predicted future command versus recorded robot state at the same future horizon; offline only.",
+    "velocity_p95_rad_s": "Generated command trajectory finite difference.",
+    "acceleration_p95_rad_s2": "Generated command trajectory finite difference.",
+    "jerk_p95_rad_s3": "Generated command trajectory finite difference."
+  },
+  "epochs_completed": 2,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.3414607838660614,
+      "validation": {
+        "action_mae_rad": 0.06899698078632355,
+        "tracking_rmse_rad": 0.09375035017728806,
+        "velocity_p95_rad_s": 2.3912307024002075,
+        "acceleration_p95_rad_s2": 31.678287506103516,
+        "jerk_p95_rad_s3": 399.34382324218734
+      }
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.17364823344386146,
+      "validation": {
+        "action_mae_rad": 0.03871810436248779,
+        "tracking_rmse_rad": 0.04934307932853699,
+        "velocity_p95_rad_s": 1.02572524547577,
+        "acceleration_p95_rad_s2": 15.441329002380371,
+        "jerk_p95_rad_s3": 251.3018798828125
+      }
+    }
+  ]
+}

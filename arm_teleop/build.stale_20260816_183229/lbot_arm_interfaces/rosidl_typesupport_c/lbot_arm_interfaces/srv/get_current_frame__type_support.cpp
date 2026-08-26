@@ -1,0 +1,291 @@
+// generated from rosidl_typesupport_c/resource/idl__type_support.cpp.em
+// with input from lbot_arm_interfaces:srv/GetCurrentFrame.idl
+// generated code does not contain a copyright notice
+
+#include "cstddef"
+#include "rosidl_runtime_c/message_type_support_struct.h"
+#include "lbot_arm_interfaces/srv/detail/get_current_frame__struct.h"
+#include "lbot_arm_interfaces/srv/detail/get_current_frame__type_support.h"
+#include "rosidl_typesupport_c/identifier.h"
+#include "rosidl_typesupport_c/message_type_support_dispatch.h"
+#include "rosidl_typesupport_c/type_support_map.h"
+#include "rosidl_typesupport_c/visibility_control.h"
+#include "rosidl_typesupport_interface/macros.h"
+
+namespace lbot_arm_interfaces
+{
+
+namespace srv
+{
+
+namespace rosidl_typesupport_c
+{
+
+typedef struct _GetCurrentFrame_Request_type_support_ids_t
+{
+  const char * typesupport_identifier[2];
+} _GetCurrentFrame_Request_type_support_ids_t;
+
+static const _GetCurrentFrame_Request_type_support_ids_t _GetCurrentFrame_Request_message_typesupport_ids = {
+  {
+    "rosidl_typesupport_fastrtps_c",  // ::rosidl_typesupport_fastrtps_c::typesupport_identifier,
+    "rosidl_typesupport_introspection_c",  // ::rosidl_typesupport_introspection_c::typesupport_identifier,
+  }
+};
+
+typedef struct _GetCurrentFrame_Request_type_support_symbol_names_t
+{
+  const char * symbol_name[2];
+} _GetCurrentFrame_Request_type_support_symbol_names_t;
+
+#define STRINGIFY_(s) #s
+#define STRINGIFY(s) STRINGIFY_(s)
+
+static const _GetCurrentFrame_Request_type_support_symbol_names_t _GetCurrentFrame_Request_message_typesupport_symbol_names = {
+  {
+    STRINGIFY(ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_fastrtps_c, lbot_arm_interfaces, srv, GetCurrentFrame_Request)),
+    STRINGIFY(ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_introspection_c, lbot_arm_interfaces, srv, GetCurrentFrame_Request)),
+  }
+};
+
+typedef struct _GetCurrentFrame_Request_type_support_data_t
+{
+  void * data[2];
+} _GetCurrentFrame_Request_type_support_data_t;
+
+static _GetCurrentFrame_Request_type_support_data_t _GetCurrentFrame_Request_message_typesupport_data = {
+  {
+    0,  // will store the shared library later
+    0,  // will store the shared library later
+  }
+};
+
+static const type_support_map_t _GetCurrentFrame_Request_message_typesupport_map = {
+  2,
+  "lbot_arm_interfaces",
+  &_GetCurrentFrame_Request_message_typesupport_ids.typesupport_identifier[0],
+  &_GetCurrentFrame_Request_message_typesupport_symbol_names.symbol_name[0],
+  &_GetCurrentFrame_Request_message_typesupport_data.data[0],
+};
+
+static const rosidl_message_type_support_t GetCurrentFrame_Request_message_type_support_handle = {
+  rosidl_typesupport_c__typesupport_identifier,
+  reinterpret_cast<const type_support_map_t *>(&_GetCurrentFrame_Request_message_typesupport_map),
+  rosidl_typesupport_c__get_message_typesupport_handle_function,
+};
+
+}  // namespace rosidl_typesupport_c
+
+}  // namespace srv
+
+}  // namespace lbot_arm_interfaces
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+const rosidl_message_type_support_t *
+ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_c, lbot_arm_interfaces, srv, GetCurrentFrame_Request)() {
+  return &::lbot_arm_interfaces::srv::rosidl_typesupport_c::GetCurrentFrame_Request_message_type_support_handle;
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+// already included above
+// #include "cstddef"
+// already included above
+// #include "rosidl_runtime_c/message_type_support_struct.h"
+// already included above
+// #include "lbot_arm_interfaces/srv/detail/get_current_frame__struct.h"
+// already included above
+// #include "lbot_arm_interfaces/srv/detail/get_current_frame__type_support.h"
+// already included above
+// #include "rosidl_typesupport_c/identifier.h"
+// already included above
+// #include "rosidl_typesupport_c/message_type_support_dispatch.h"
+// already included above
+// #include "rosidl_typesupport_c/type_support_map.h"
+// already included above
+// #include "rosidl_typesupport_c/visibility_control.h"
+// already included above
+// #include "rosidl_typesupport_interface/macros.h"
+
+namespace lbot_arm_interfaces
+{
+
+namespace srv
+{
+
+namespace rosidl_typesupport_c
+{
+
+typedef struct _GetCurrentFrame_Response_type_support_ids_t
+{
+  const char * typesupport_identifier[2];
+} _GetCurrentFrame_Response_type_support_ids_t;
+
+static const _GetCurrentFrame_Response_type_support_ids_t _GetCurrentFrame_Response_message_typesupport_ids = {
+  {
+    "rosidl_typesupport_fastrtps_c",  // ::rosidl_typesupport_fastrtps_c::typesupport_identifier,
+    "rosidl_typesupport_introspection_c",  // ::rosidl_typesupport_introspection_c::typesupport_identifier,
+  }
+};
+
+typedef struct _GetCurrentFrame_Response_type_support_symbol_names_t
+{
+  const char * symbol_name[2];
+} _GetCurrentFrame_Response_type_support_symbol_names_t;
+
+#define STRINGIFY_(s) #s
+#define STRINGIFY(s) STRINGIFY_(s)
+
+static const _GetCurrentFrame_Response_type_support_symbol_names_t _GetCurrentFrame_Response_message_typesupport_symbol_names = {
+  {
+    STRINGIFY(ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_fastrtps_c, lbot_arm_interfaces, srv, GetCurrentFrame_Response)),
+    STRINGIFY(ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_introspection_c, lbot_arm_interfaces, srv, GetCurrentFrame_Response)),
+  }
+};
+
+typedef struct _GetCurrentFrame_Response_type_support_data_t
+{
+  void * data[2];
+} _GetCurrentFrame_Response_type_support_data_t;
+
+static _GetCurrentFrame_Response_type_support_data_t _GetCurrentFrame_Response_message_typesupport_data = {
+  {
+    0,  // will store the shared library later
+    0,  // will store the shared library later
+  }
+};
+
+static const type_support_map_t _GetCurrentFrame_Response_message_typesupport_map = {
+  2,
+  "lbot_arm_interfaces",
+  &_GetCurrentFrame_Response_message_typesupport_ids.typesupport_identifier[0],
+  &_GetCurrentFrame_Response_message_typesupport_symbol_names.symbol_name[0],
+  &_GetCurrentFrame_Response_message_typesupport_data.data[0],
+};
+
+static const rosidl_message_type_support_t GetCurrentFrame_Response_message_type_support_handle = {
+  rosidl_typesupport_c__typesupport_identifier,
+  reinterpret_cast<const type_support_map_t *>(&_GetCurrentFrame_Response_message_typesupport_map),
+  rosidl_typesupport_c__get_message_typesupport_handle_function,
+};
+
+}  // namespace rosidl_typesupport_c
+
+}  // namespace srv
+
+}  // namespace lbot_arm_interfaces
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+const rosidl_message_type_support_t *
+ROSIDL_TYPESUPPORT_INTERFACE__MESSAGE_SYMBOL_NAME(rosidl_typesupport_c, lbot_arm_interfaces, srv, GetCurrentFrame_Response)() {
+  return &::lbot_arm_interfaces::srv::rosidl_typesupport_c::GetCurrentFrame_Response_message_type_support_handle;
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+// already included above
+// #include "cstddef"
+#include "rosidl_runtime_c/service_type_support_struct.h"
+// already included above
+// #include "lbot_arm_interfaces/srv/detail/get_current_frame__type_support.h"
+// already included above
+// #include "rosidl_typesupport_c/identifier.h"
+#include "rosidl_typesupport_c/service_type_support_dispatch.h"
+// already included above
+// #include "rosidl_typesupport_c/type_support_map.h"
+// already included above
+// #include "rosidl_typesupport_interface/macros.h"
+
+namespace lbot_arm_interfaces
+{
+
+namespace srv
+{
+
+namespace rosidl_typesupport_c
+{
+
+typedef struct _GetCurrentFrame_type_support_ids_t
+{
+  const char * typesupport_identifier[2];
+} _GetCurrentFrame_type_support_ids_t;
+
+static const _GetCurrentFrame_type_support_ids_t _GetCurrentFrame_service_typesupport_ids = {
+  {
+    "rosidl_typesupport_fastrtps_c",  // ::rosidl_typesupport_fastrtps_c::typesupport_identifier,
+    "rosidl_typesupport_introspection_c",  // ::rosidl_typesupport_introspection_c::typesupport_identifier,
+  }
+};
+
+typedef struct _GetCurrentFrame_type_support_symbol_names_t
+{
+  const char * symbol_name[2];
+} _GetCurrentFrame_type_support_symbol_names_t;
+
+#define STRINGIFY_(s) #s
+#define STRINGIFY(s) STRINGIFY_(s)
+
+static const _GetCurrentFrame_type_support_symbol_names_t _GetCurrentFrame_service_typesupport_symbol_names = {
+  {
+    STRINGIFY(ROSIDL_TYPESUPPORT_INTERFACE__SERVICE_SYMBOL_NAME(rosidl_typesupport_fastrtps_c, lbot_arm_interfaces, srv, GetCurrentFrame)),
+    STRINGIFY(ROSIDL_TYPESUPPORT_INTERFACE__SERVICE_SYMBOL_NAME(rosidl_typesupport_introspection_c, lbot_arm_interfaces, srv, GetCurrentFrame)),
+  }
+};
+
+typedef struct _GetCurrentFrame_type_support_data_t
+{
+  void * data[2];
+} _GetCurrentFrame_type_support_data_t;
+
+static _GetCurrentFrame_type_support_data_t _GetCurrentFrame_service_typesupport_data = {
+  {
+    0,  // will store the shared library later
+    0,  // will store the shared library later
+  }
+};
+
+static const type_support_map_t _GetCurrentFrame_service_typesupport_map = {
+  2,
+  "lbot_arm_interfaces",
+  &_GetCurrentFrame_service_typesupport_ids.typesupport_identifier[0],
+  &_GetCurrentFrame_service_typesupport_symbol_names.symbol_name[0],
+  &_GetCurrentFrame_service_typesupport_data.data[0],
+};
+
+static const rosidl_service_type_support_t GetCurrentFrame_service_type_support_handle = {
+  rosidl_typesupport_c__typesupport_identifier,
+  reinterpret_cast<const type_support_map_t *>(&_GetCurrentFrame_service_typesupport_map),
+  rosidl_typesupport_c__get_service_typesupport_handle_function,
+};
+
+}  // namespace rosidl_typesupport_c
+
+}  // namespace srv
+
+}  // namespace lbot_arm_interfaces
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+const rosidl_service_type_support_t *
+ROSIDL_TYPESUPPORT_INTERFACE__SERVICE_SYMBOL_NAME(rosidl_typesupport_c, lbot_arm_interfaces, srv, GetCurrentFrame)() {
+  return &::lbot_arm_interfaces::srv::rosidl_typesupport_c::GetCurrentFrame_service_type_support_handle;
+}
+
+#ifdef __cplusplus
+}
+#endif
