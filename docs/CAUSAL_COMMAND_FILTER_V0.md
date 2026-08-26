@@ -62,3 +62,20 @@ real MuJoCo task sites; real acquisition must provide the same ordering with
 estimator confidence and calibration metadata in the canonical stream. Train
 with `--context-size N` only when every accepted row has exactly N context
 values; missing context is rejected, never zero-filled.
+
+## Flywheel Round Training
+
+`tools/train_flywheel_round.py` trains one immutable simulation-only filter
+round from a JSON config. It projects only canonical `A_action` episodes using
+the strict adapter, preserves episode-level train/validation splits, and writes
+a model plus a report containing round lineage, input episode IDs, config/code
+hashes, rejected episodes, and offline prediction metrics.
+
+```bash
+python3 tools/train_flywheel_round.py \
+  --round-config config/filters/flywheel_round.example.json \
+  --output-dir runs/filter/F_static_d0_v1
+```
+
+Use a new config for `F_flywheel`, set `parent_round_id` to the accepted prior
+round, and do not reuse its validation episodes as training input.
