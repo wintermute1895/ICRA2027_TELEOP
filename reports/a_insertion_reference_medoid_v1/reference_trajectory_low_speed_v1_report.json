@@ -1,0 +1,28 @@
+{
+  "schema": "robot_teleop.conservative-reference-trajectory-report/v1",
+  "mode": "offline_only_not_hardware_authorization",
+  "input": "/home/pao/桌面/ICRA2027_TELEOP/reports/a_insertion_reference_medoid_v1/reference_trajectory.csv",
+  "output": "/home/pao/桌面/ICRA2027_TELEOP/reports/a_insertion_reference_medoid_v1/reference_trajectory_low_speed_v1.csv",
+  "fps": 10.0,
+  "time_scale_factor": 28.235969002276722,
+  "original_duration_s": 25.2,
+  "scaled_duration_s": 711.5464188573734,
+  "original_samples": 253,
+  "scaled_samples": 7117,
+  "software_motion_targets": {
+    "velocity_max_rad_s": 0.05,
+    "acceleration_max_rad_s2": 0.1,
+    "jerk_max_rad_s3": 0.5
+  },
+  "original_metrics": {
+    "velocity_max_rad_s": 0.34541904999999856,
+    "acceleration_max_rad_s2": 1.8365174000000113,
+    "jerk_max_rad_s3": 28.89800000000016
+  },
+  "scaled_metrics": {
+    "velocity_max_rad_s": 0.012233298951850465,
+    "acceleration_max_rad_s2": 0.04977465840004912,
+    "jerk_max_rad_s3": 0.4977465840006959
+  },
+  "note": "This software time scaling does not validate controller limits, collision clearance, or hardware safety."
+}
