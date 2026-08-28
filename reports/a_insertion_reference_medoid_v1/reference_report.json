@@ -1,0 +1,142 @@
+{
+  "schema": "robot_teleop.fixed-reference-trajectory-report/v1",
+  "mode": "offline_reference_only",
+  "hardware_accessed": false,
+  "execution_authorization": false,
+  "condition_id": "第一条件",
+  "condition_role": "A",
+  "method": "phase_normalized_successful_trajectory_medoid",
+  "why_medoid_not_mean": "The reference is one recorded successful path, not an unvalidated pointwise average.",
+  "candidate_selection": {
+    "quality_gated_successful_episode_count": 20,
+    "phase_samples": 400,
+    "selected_reference_episode_id": "d0_right_hand_103",
+    "selected_medoid_rms_rad": 0.12411480087123798,
+    "candidate_medoid_rms_rad": {
+      "d0_right_hand_102": 0.16202597173031585,
+      "d0_right_hand_103": 0.12411480087123798,
+      "d0_right_hand_104": 0.16656578254139548,
+      "d0_right_hand_108": 0.13721676548842368,
+      "d0_right_hand_111": 0.15538724226743447,
+      "d0_right_hand_112": 0.1443647867476543,
+      "d0_right_hand_114": 0.1336995204473226,
+      "d0_right_hand_115": 0.1827602838951162,
+      "d0_right_hand_117": 0.14859946425291112,
+      "d0_right_hand_118": 0.1542315174875854,
+      "d0_right_hand_119": 0.1585404102594699,
+      "d0_right_hand_120": 0.1704588222295473,
+      "d0_right_hand_125": 0.14512715455586467,
+      "d0_right_hand_126": 0.16517057137800056,
+      "d0_right_hand_128": 0.14398145353297614,
+      "d0_right_hand_129": 0.15823689820383613,
+      "d0_right_hand_130": 0.14019130474226635,
+      "d0_right_hand_132": 0.17480716409807773,
+      "d0_right_hand_133": 0.17007792838590072,
+      "d0_right_hand_134": 0.15654698975716425
+    }
+  },
+  "reference": {
+    "fps": 10,
+    "sample_count": 253,
+    "duration_s": 25.2,
+    "joint_names": [
+      "Right_Shoulder_Pitch_Joint",
+      "Right_Shoulder_Roll_Joint",
+      "Right_Shoulder_Yaw_Joint",
+      "Right_Elbow_Pitch_Joint",
+      "Right_Wrist_Yaw_Joint",
+      "Right_Wrist_Roll_Joint",
+      "Right_Wrist_Pitch_Joint"
+    ],
+    "start_joint_command_rad": [
+      0.6963863968849182,
+      -0.05349336564540863,
+      0.038212716579437256,
+      0.5005598664283752,
+      0.9366158843040466,
+      0.08606386184692383,
+      0.42197829484939575
+    ],
+    "end_joint_command_rad": [
+      0.7714352011680603,
+      -0.053359583020210266,
+      0.13905027508735657,
+      0.3568861484527588,
+      0.8726624846458435,
+      0.20462550222873688,
+      0.4939088523387909
+    ],
+    "dynamics": {
+      "velocity_p95_rad_s": 0.19993209093809128,
+      "acceleration_p95_rad_s2": 1.039530336856842,
+      "jerk_p95_rad_s3": 10.24710033088921
+    },
+    "source_quality_metrics": {
+      "tracking_error_rad": {
+        "count": 253,
+        "rms": 0.039674910569230816,
+        "p95": 0.08737325380033983,
+        "maximum": 0.12840632576668976
+      },
+      "velocity_rad_s": {
+        "count": 252,
+        "rms": 0.09150625756320858,
+        "p95": 0.19963347178266996,
+        "maximum": 0.3102542888758614
+      },
+      "acceleration_rad_s2": {
+        "count": 251,
+        "rms": 0.3791344513188214,
+        "p95": 0.8102821987438974,
+        "maximum": 1.239756413508697
+      },
+      "jerk_rad_s3": {
+        "count": 250,
+        "rms": 4.108163115354473,
+        "p95": 6.977169140434822,
+        "maximum": 18.029660449774163
+      }
+    }
+  },
+  "start_precondition_from_quality_gated_demos": {
+    "expected_joint_state_rad": [
+      0.6963793635368347,
+      -0.04882373288273811,
+      0.028122982010245323,
+      0.4891375005245209,
+      0.9333422183990479,
+      0.09096293151378632,
+      0.42081117630004883
+    ],
+    "joint_absolute_error_p95_rad": [
+      0.1294433724525517,
+      0.11370992008596664,
+      0.2683733785299054,
+      0.22972913686607846,
+      0.211617049574852,
+      0.38141199677210064,
+      0.22255125423482966
+    ],
+    "joint_absolute_error_max_rad": [
+      0.16750224757779697,
+      0.18482071533799171,
+      0.28036694787442684,
+      0.2954404056072235,
+      0.2302781343460083,
+      0.5966559874866052,
+      0.3105234663112768
+    ],
+    "joint_l2_error_p95_rad": 0.5352250726055177,
+    "meaning": "Measure the current state against expected_joint_state_rad before replay; this descriptive envelope is not a validated safety limit."
+  },
+  "required_before_any_robot_replay": [
+    "Verify current joint state is within an approved start tolerance.",
+    "Verify the object, insertion target, gripper state, and fixture match condition A.",
+    "Validate joint limits, collision clearance, velocity, acceleration, and jerk on the target controller.",
+    "Run in simulation and then supervised reduced-speed trials with an emergency stop."
+  ],
+  "artifacts": {
+    "trajectory_jsonl": "/home/pao/桌面/ICRA2027_TELEOP/reports/a_insertion_reference_medoid_v1/reference_trajectory.jsonl",
+    "trajectory_csv": "/home/pao/桌面/ICRA2027_TELEOP/reports/a_insertion_reference_medoid_v1/reference_trajectory.csv"
+  }
+}

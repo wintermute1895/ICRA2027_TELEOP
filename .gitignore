@@ -1,23 +1,81 @@
 SemanticTeleop_MPC/
 cyberdog_sim_project/
 sim-web-visualizer-main/
-
-# ROS2 colcon 构建产物
+arm_teleop/build/
+arm_teleop/install/
+arm_teleop/log/
 arm_teleop/build*/
 arm_teleop/install*/
-arm_teleop/log*/
 __pycache__/
-*.pyc
+reports/*.json
 
-# 本地采集数据、训练产物与运行日志
-d0_data/
-d0_act_data/
-log/
+# Generated binary artifacts: models, datasets, compiled objects, archives, and media.
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.engine
+*.tflite
+*.npy
+*.npz
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+*.mcap
+*.bin
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.gz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
 
-# Bootstrapper source checkouts; pinned patches are tracked separately.
-.bootstrap-third-party/
+# Experiment recordings and generated evidence stay outside Git.
+evidence/
+*.db3
+*.db3.zstd
+*.bag
+
+# Container and local runtime artifacts.
+.docker-build/
+.ros/
 
 # VS Code browsing database (large binary files)
 .vscode/browse.vc.db
 .vscode/browse.vc.db-shm
 .vscode/browse.vc.db-wal
+.vscode/*.lock
+MJDATA.TXT
+MJMODEL.TXT
+MUJOCO_LOG.TXT
+nohup.out
+screenshot.png
+.legacy_build/
+.venv/
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
