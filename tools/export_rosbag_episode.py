@@ -37,6 +37,8 @@ def args() -> argparse.Namespace:
     parser.add_argument("--source-domain", choices=("real", "sim"), required=True)
     parser.add_argument("--robot-namespace", default=None)
     parser.add_argument("--camera-namespace", default=None)
+    parser.add_argument("--extra-camera-namespace", action="append", default=[], help="additional camera namespace; repeatable")
+    parser.add_argument("--camera-id", action="append", default=[], help="camera id(s), in namespace order")
     parser.add_argument(
         "--teleop-namespace",
         default="/teleop",
@@ -81,6 +83,10 @@ def main() -> int:
     opt = args()
     robot_ns = (opt.robot_namespace or ("/sim/robot1" if opt.source_domain == "sim" else "/robot1")).rstrip("/")
     camera_ns = (opt.camera_namespace or ("/sim/camera/camera" if opt.source_domain == "sim" else "/camera/camera")).rstrip("/")
+    camera_namespaces = [camera_ns] + [item.rstrip("/") for item in opt.extra_camera_namespace]
+    camera_ids = list(opt.camera_id) or ["external_rgb"] + [f"camera_{index}" for index in range(1, len(camera_namespaces))]
+    if len(camera_ids) != len(camera_namespaces):
+        raise SystemExit("--camera-id count must match camera namespaces")
     teleop_ns = opt.teleop_namespace.rstrip("/")
     state_topic = f"{robot_ns}/{opt.arm}_arm/joint_states"
     master_raw_topic = f"{teleop_ns}/{opt.arm}/master_joint_raw"
@@ -90,6 +96,7 @@ def main() -> int:
     tcp_pose_topic = f"{robot_ns}/{opt.arm}_arm/pose_states"
     rgb_topic = f"{camera_ns}/color/image_raw"
     depth_topic = f"{camera_ns}/aligned_depth_to_color/image_raw"
+    camera_topics = [(camera_id, namespace, f"{namespace}/color/image_raw", f"{namespace}/aligned_depth_to_color/image_raw") for camera_id, namespace in zip(camera_ids, camera_namespaces)]
     tactile_force_topic = f"/cb_{opt.arm}_hand_force"
     tactile_matrix_topic = f"/cb_{opt.arm}_hand_matrix_touch"
     tactile_mass_topic = f"/cb_{opt.arm}_hand_matrix_touch_mass"
@@ -106,8 +113,8 @@ def main() -> int:
     commands: list[tuple[int, Any]] = []
     vendor_commands: list[tuple[int, Any]] = []
     tcp_poses: list[tuple[int, Any]] = []
-    rgb_stamps: list[int] = []
-    depth_stamps: list[int] = []
+    rgb_stamps: dict[str, list[int]] = {camera_id: [] for camera_id in camera_ids}
+    depth_stamps: dict[str, list[int]] = {camera_id: [] for camera_id in camera_ids}
     tactile_force: list[tuple[int, Any]] = []
     tactile_matrix: list[tuple[int, Any]] = []
     tactile_mass: list[tuple[int, Any]] = []
@@ -117,7 +124,8 @@ def main() -> int:
     max_command_age_ns = int(opt.max_command_age_ms * 1e6)
     while reader.has_next():
         topic, raw, bag_time_ns = reader.read_next()
-        if topic not in {state_topic, master_raw_topic, master_filtered_topic, command_topic, vendor_command_topic, tcp_pose_topic, rgb_topic, depth_topic, tactile_force_topic, tactile_matrix_topic, tactile_mass_topic, task_context_topic, sim_context_topic}:
+        camera_topic_names = {value for _, _, value, _ in camera_topics} | {value for _, _, _, value in camera_topics}
+        if topic not in {state_topic, master_raw_topic, master_filtered_topic, command_topic, vendor_command_topic, tcp_pose_topic, tactile_force_topic, tactile_matrix_topic, tactile_mass_topic, task_context_topic, sim_context_topic} | camera_topic_names:
             continue
         message = deserialize_message(raw, types[topic])
         message_stamp_ns = stamp_ns(message, bag_time_ns)
@@ -136,11 +144,10 @@ def main() -> int:
         if topic == tcp_pose_topic:
             tcp_poses.append((message_stamp_ns, message))
             continue
-        if topic == rgb_topic:
-            rgb_stamps.append(message_stamp_ns)
-            continue
-        if topic == depth_topic:
-            depth_stamps.append(message_stamp_ns)
+        camera_match = next((item for item in camera_topics if topic in {item[2], item[3]}), None)
+        if camera_match is not None:
+            camera_id = camera_match[0]
+            (rgb_stamps if topic == camera_match[2] else depth_stamps)[camera_id].append(message_stamp_ns)
             continue
         if topic == tactile_force_topic:
             tactile_force.append((message_stamp_ns, message))
@@ -156,8 +163,8 @@ def main() -> int:
             continue
         state_samples.append((message_stamp_ns, int(bag_time_ns), message))
 
-    rgb_stamps.sort()
-    depth_stamps.sort()
+    for stamps in (*rgb_stamps.values(), *depth_stamps.values()):
+        stamps.sort()
     state_samples.sort(key=lambda item: item[0])
 
     def tactile_ref(samples: list[tuple[int, Any]], topic_name: str, state_stamp_ns: int) -> dict[str, Any] | None:
@@ -271,8 +278,9 @@ def main() -> int:
             "tcp_pose_base": tcp_pose,
             "tcp_pose_frame": tcp_frame,
             "task_context": context_value(context),
-            "rgb": camera_ref(rgb_stamps, rgb_topic, message_stamp_ns),
-            "depth": camera_ref(depth_stamps, depth_topic, message_stamp_ns),
+            "rgb": camera_ref(rgb_stamps[camera_ids[0]], rgb_topic, message_stamp_ns),
+            "depth": camera_ref(depth_stamps[camera_ids[0]], depth_topic, message_stamp_ns),
+            "cameras": {camera_id: {"rgb": camera_ref(rgb_stamps[camera_id], rgb_topic_name, message_stamp_ns), "depth": camera_ref(depth_stamps[camera_id], depth_topic_name, message_stamp_ns)} for camera_id, _, rgb_topic_name, depth_topic_name in camera_topics},
             "tactile_force": tactile_ref(tactile_force, tactile_force_topic, message_stamp_ns),
             "tactile_matrix": tactile_ref(tactile_matrix, tactile_matrix_topic, message_stamp_ns),
             "tactile_mass": tactile_ref(tactile_mass, tactile_mass_topic, message_stamp_ns),
@@ -305,6 +313,7 @@ def main() -> int:
             "tactile_matrix": tactile_matrix_topic,
             "tactile_mass": tactile_mass_topic,
             "task_context": task_context_topic if task_context_topic in types else sim_context_topic,
+            "cameras": {camera_id: {"rgb": rgb_topic_name, "depth": depth_topic_name} for camera_id, _, rgb_topic_name, depth_topic_name in camera_topics},
         },
         "missing_topics": missing,
         "camera_alignment": {"policy": "nearest_header_stamp", "maximum_age_ms": opt.max_camera_age_ms},

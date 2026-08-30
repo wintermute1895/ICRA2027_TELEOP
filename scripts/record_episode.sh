@@ -14,10 +14,14 @@ COMPRESSION_FORMAT="${RUNEVIDENCE_BAG_COMPRESSION_FORMAT:-zstd}"
 # camera_name=camera, producing /camera/camera/<stream>. Keep it configurable
 # for custom launch files.
 CAMERA_NAMESPACE="${REALSENSE_NAMESPACE:-/camera/camera}"
+CAMERA_NAMESPACES="${CAMERA_NAMESPACES:-$CAMERA_NAMESPACE}"
 ROBOT_STATE_NAMESPACE="${ROBOT_STATE_NAMESPACE:-/robot1}"
 TELEOP_NAMESPACE="${TELEOP_NAMESPACE:-/teleop}"
 SOURCE_DOMAIN="${SOURCE_DOMAIN:-real}"
 SIM_CAMERA_NAMESPACES="${SIM_CAMERA_NAMESPACES:-}"
+if [[ -n "$SIM_CAMERA_NAMESPACES" && "$CAMERA_NAMESPACES" != *"$SIM_CAMERA_NAMESPACES"* ]]; then
+  CAMERA_NAMESPACES+=",$SIM_CAMERA_NAMESPACES"
+fi
 
 # ROS 2 may otherwise try to write under ~/.ros/log.  That is fragile on
 # remote/managed machines and can make ros2 bag abort before recording starts.
@@ -61,20 +65,17 @@ TOPICS=(
   "${ROBOT_STATE_NAMESPACE}/right_hand/control_cmd"
   "${ROBOT_STATE_NAMESPACE}/left_hand/joint_states"
   "${ROBOT_STATE_NAMESPACE}/right_hand/joint_states"
-  "${CAMERA_NAMESPACE}/color/image_raw"
-  "${CAMERA_NAMESPACE}/color/camera_info"
-  "${CAMERA_NAMESPACE}/aligned_depth_to_color/image_raw"
-  "${CAMERA_NAMESPACE}/depth/camera_info"
   "${TELEOP_NAMESPACE}/left/task_context"
   "${TELEOP_NAMESPACE}/right/task_context"
   "${TELEOP_NAMESPACE}/events"
   "${TELEOP_NAMESPACE}/terminal_audit"
 )
 
-if [[ -n "$SIM_CAMERA_NAMESPACES" ]]; then
-  IFS=',' read -r -a SIM_CAMERAS <<< "$SIM_CAMERA_NAMESPACES"
-  for camera in "${SIM_CAMERAS[@]}"; do
+if [[ -n "$CAMERA_NAMESPACES" ]]; then
+  IFS=',' read -r -a CAPTURE_CAMERAS <<< "$CAMERA_NAMESPACES"
+  for camera in "${CAPTURE_CAMERAS[@]}"; do
     camera="${camera%/}"
+    [[ -n "$camera" ]] || continue
     TOPICS+=(
       "${camera}/color/image_raw"
       "${camera}/aligned_depth_to_color/image_raw"
@@ -148,10 +149,7 @@ def experiment_value(name, fallback, default):
         raise SystemExit(f"{name} conflicts with immutable experiment manifest")
     return manifest_value
 
-camera_namespaces = [camera_namespace]
-extra_cameras = os.environ.get("SIM_CAMERA_NAMESPACES", "")
-if extra_cameras:
-    camera_namespaces.extend(item.rstrip("/") for item in extra_cameras.split(",") if item)
+camera_namespaces = [item.rstrip("/") for item in os.environ.get("CAMERA_NAMESPACES", camera_namespace).split(",") if item]
 payload = {
     "schema": "robot_teleop.teleop-capture/v1",
     "episode_schema": "robot_teleop.episode/v1",
@@ -210,9 +208,9 @@ payload = {
         "tactile_force": "/cb_left_hand_force,/cb_right_hand_force",
         "tactile_matrix": "/cb_left_hand_matrix_touch,/cb_right_hand_matrix_touch",
         "tactile_mass": "/cb_left_hand_matrix_touch_mass,/cb_right_hand_matrix_touch_mass",
-        "camera_rgb": "<camera_namespace>/color/image_raw",
-        "camera_depth": "<camera_namespace>/aligned_depth_to_color/image_raw",
-        "camera_info": "<camera_namespace>/color/camera_info,<camera_namespace>/depth/camera_info",
+        "camera_rgb": ",".join(f"{namespace}/color/image_raw" for namespace in camera_namespaces),
+        "camera_depth": ",".join(f"{namespace}/aligned_depth_to_color/image_raw" for namespace in camera_namespaces),
+        "camera_info": ",".join(f"{namespace}/color/camera_info,{namespace}/depth/camera_info" for namespace in camera_namespaces),
         "tf": "/tf,/tf_static",
     },
 }

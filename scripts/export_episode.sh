@@ -9,6 +9,8 @@ OUTPUT_DIR=""
 SOURCE_DOMAIN=""
 ROBOT_NAMESPACE=""
 CAMERA_NAMESPACE=""
+EXTRA_CAMERA_NAMESPACES=()
+CAMERA_IDS=()
 TELEOP_NAMESPACE="/teleop"
 
 usage() {
@@ -18,6 +20,8 @@ Usage: scripts/export_episode.sh --bag BAG_DIR --source-domain real|sim --output
 Options:
   --robot-namespace NS   override /robot1 or /sim/robot1
   --camera-namespace NS  override /camera/camera or /sim/camera/camera
+  --extra-camera-namespace NS  add another camera namespace (repeatable)
+  --camera-id ID         camera id in namespace order (repeatable)
   --teleop-namespace NS  mapped-command namespace (default: /teleop; historical bags: /vist)
 EOF
 }
@@ -29,6 +33,8 @@ while (($#)); do
     --output-dir) OUTPUT_DIR="${2:-}"; shift 2 ;;
     --robot-namespace) ROBOT_NAMESPACE="${2:-}"; shift 2 ;;
     --camera-namespace) CAMERA_NAMESPACE="${2:-}"; shift 2 ;;
+    --extra-camera-namespace) EXTRA_CAMERA_NAMESPACES+=("${2:-}"); shift 2 ;;
+    --camera-id) CAMERA_IDS+=("${2:-}"); shift 2 ;;
     --teleop-namespace) TELEOP_NAMESPACE="${2:-}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) usage; echo "unknown option: $1" >&2; exit 2 ;;
@@ -48,6 +54,8 @@ mkdir -p "$OUTPUT_DIR"
 COMMON=(--bag "$BAG" --source-domain "$SOURCE_DOMAIN" --teleop-namespace "$TELEOP_NAMESPACE")
 [[ -z "$ROBOT_NAMESPACE" ]] || COMMON+=(--robot-namespace "$ROBOT_NAMESPACE")
 [[ -z "$CAMERA_NAMESPACE" ]] || COMMON+=(--camera-namespace "$CAMERA_NAMESPACE")
+for namespace in "${EXTRA_CAMERA_NAMESPACES[@]}"; do COMMON+=(--extra-camera-namespace "$namespace"); done
+for camera_id in "${CAMERA_IDS[@]}"; do COMMON+=(--camera-id "$camera_id"); done
 
 for arm in left right; do
   episode="$OUTPUT_DIR/${arm}_episode.jsonl"

@@ -100,6 +100,24 @@ keeping hand actuation disarmed:
 bash scripts/start_capture_session.sh --hand-sdk --left-touch --right-touch
 ```
 
+To start and record a second RealSense, provide its physical serial. The
+launcher verifies both devices, waits for both RGB-D topic pairs, and passes
+their namespaces to the recorder:
+
+```bash
+bash scripts/start_capture_session.sh \
+  --second-camera-serial <serial> \
+  --second-camera-namespace /camera2/camera
+```
+
+For an already-running camera node, pass all camera roots directly to the
+recorder, comma separated:
+
+```bash
+CAMERA_NAMESPACES=/camera/camera,/camera2/camera \
+bash scripts/record_episode.sh
+```
+
 The recorder captures the driver-accepted `vendor_command`, measured TCP pose,
 task-context/event topics, and tactile streams. `vendor_command` is evidence of
 the command accepted for SDK transmission; it is not an observed robot action.

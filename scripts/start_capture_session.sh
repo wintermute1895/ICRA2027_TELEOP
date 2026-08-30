@@ -12,6 +12,8 @@ ESTOP_READY=0
 CONFIRM=""
 CAMERA_SERIAL="261722075670"
 CAMERA_NAMESPACE="/camera/camera"
+SECOND_CAMERA_SERIAL=""
+SECOND_CAMERA_NAMESPACE="/camera2/camera"
 WIDTH=640
 HEIGHT=480
 FPS=15
@@ -42,6 +44,8 @@ Options:
   --session NAME                 tmux session name (default: teleop_capture)
   --no-preview                   do not open rqt_image_view
   --camera-serial SERIAL         RealSense serial (default: 261722075670)
+  --second-camera-serial SERIAL  optional second RealSense serial
+  --second-camera-namespace NS   second RGB-D namespace (default: /camera2/camera)
   --experiment-profile PATH      experiment profile YAML
   --condition=ID                 legacy condition metadata; formal runs use --experiment-manifest
   --operator-id=ID               de-identified operator ID
@@ -68,6 +72,8 @@ for arg in "$@"; do
     --session=*) SESSION="${arg#*=}" ;;
     --no-preview) PREVIEW=0 ;;
     --camera-serial=*) CAMERA_SERIAL="${arg#*=}" ;;
+    --second-camera-serial=*) SECOND_CAMERA_SERIAL="${arg#*=}" ;;
+    --second-camera-namespace=*) SECOND_CAMERA_NAMESPACE="${arg#*=}" ;;
     --experiment-profile=*) EXPERIMENT_PROFILE="${arg#*=}" ;;
     --condition=*) CONDITION_ID="${arg#*=}" ;;
     --operator-id=*) OPERATOR_ID="${arg#*=}" ;;
@@ -90,6 +96,7 @@ done
 [[ "$CONDITION_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--condition contains unsupported characters"
 [[ "$OPERATOR_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--operator-id contains unsupported characters"
 [[ "$TASK_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--task-id contains unsupported characters"
+[[ "$SECOND_CAMERA_NAMESPACE" =~ ^/[A-Za-z0-9_/-]+$ ]] || die "--second-camera-namespace contains unsupported characters"
 [[ "$LEFT_HAND_CAN" =~ ^[A-Za-z0-9._-]+$ ]] || die "--left-hand-can contains unsupported characters"
 [[ "$RIGHT_HAND_CAN" =~ ^[A-Za-z0-9._-]+$ ]] || die "--right-hand-can contains unsupported characters"
 [[ -z "$EXPERIMENT_MANIFEST" || -f "$EXPERIMENT_MANIFEST" ]] || die "experiment manifest not found: $EXPERIMENT_MANIFEST"
@@ -182,6 +189,7 @@ python3 "$ROOT_DIR/scripts/preflight.py" --mode ros2
 if command -v rs-enumerate-devices >/dev/null 2>&1; then
   CAMERA_INFO="$(rs-enumerate-devices 2>&1)" || die "RealSense enumeration failed:\n$CAMERA_INFO"
   grep -Fq "$CAMERA_SERIAL" <<<"$CAMERA_INFO" || die "RealSense serial not detected: $CAMERA_SERIAL"
+  [[ -z "$SECOND_CAMERA_SERIAL" ]] || grep -Fq "$SECOND_CAMERA_SERIAL" <<<"$CAMERA_INFO" || die "second RealSense serial not detected: $SECOND_CAMERA_SERIAL"
 elif command -v lsusb >/dev/null 2>&1; then
   USB_INFO="$(lsusb 2>&1)" || die "lsusb failed:\n$USB_INFO"
   grep -Eqi 'Intel.*RealSense|8086:0b3a|8086:0b07' <<<"$USB_INFO" || die "RealSense USB device not detected"
@@ -239,6 +247,17 @@ wait_for_topic /robot1/right_arm/joint_states 20
 launch_cmd camera "ros2 launch realsense2_camera rs_launch.py camera_namespace:=camera camera_name:=camera serial_no:=_$CAMERA_SERIAL enable_sync:=true align_depth.enable:=true rgb_camera.color_profile:=${WIDTH},${HEIGHT},${FPS} depth_module.depth_profile:=${WIDTH},${HEIGHT},${FPS}"
 wait_for_topic /camera/camera/color/image_raw 30
 wait_for_topic /camera/camera/aligned_depth_to_color/image_raw 30
+CAMERA_NAMESPACES="$CAMERA_NAMESPACE"
+if [[ -n "$SECOND_CAMERA_SERIAL" ]]; then
+  SECOND_CAMERA_ROOT="${SECOND_CAMERA_NAMESPACE%/*}"
+  SECOND_CAMERA_NAME="${SECOND_CAMERA_NAMESPACE##*/}"
+  [[ -n "$SECOND_CAMERA_ROOT" && "$SECOND_CAMERA_ROOT" != "/" ]] || die "second camera namespace must include a namespace and camera name"
+  launch_cmd camera2 "ros2 launch realsense2_camera rs_launch.py camera_namespace:=${SECOND_CAMERA_ROOT#/} camera_name:=$SECOND_CAMERA_NAME serial_no:=_$SECOND_CAMERA_SERIAL enable_sync:=true align_depth.enable:=true rgb_camera.color_profile:=${WIDTH},${HEIGHT},${FPS} depth_module.depth_profile:=${WIDTH},${HEIGHT},${FPS}"
+  wait_for_topic "$SECOND_CAMERA_NAMESPACE/color/image_raw" 30
+  wait_for_topic "$SECOND_CAMERA_NAMESPACE/aligned_depth_to_color/image_raw" 30
+  CAMERA_NAMESPACES+=",$SECOND_CAMERA_NAMESPACE"
+fi
+export CAMERA_NAMESPACES
 launch_cmd teleop "ros2 launch teleop_control_bridge hardware_teleop.launch.py launch_driver:=false armed:=$ARMED_ARG"
 wait_for_topic /left_arm_joint_control 20
 wait_for_topic /right_arm_joint_control 20
