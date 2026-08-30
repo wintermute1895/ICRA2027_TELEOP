@@ -44,10 +44,16 @@ done
 [[ -d "$BAG" ]] || { echo "bag directory not found: $BAG" >&2; exit 2; }
 [[ "$SOURCE_DOMAIN" =~ ^(real|sim)$ ]] || { echo "--source-domain must be real or sim" >&2; exit 2; }
 [[ -n "$OUTPUT_DIR" ]] || { echo "--output-dir is required" >&2; exit 2; }
-[[ -f /opt/ros/humble/setup.bash ]] || { echo "ROS2 Humble is not installed" >&2; exit 2; }
+ROS_SETUP=""
+for distro in "${ROS_DISTRO:-}" jazzy humble; do
+  [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
+  ROS_SETUP="/opt/ros/$distro/setup.bash"
+  break
+done
+[[ -n "$ROS_SETUP" ]] || { echo "no supported ROS2 setup found under /opt/ros" >&2; exit 2; }
 
 set +u
-source /opt/ros/humble/setup.bash
+source "$ROS_SETUP"
 set -u
 
 mkdir -p "$OUTPUT_DIR"

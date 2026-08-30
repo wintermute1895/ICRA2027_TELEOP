@@ -138,13 +138,21 @@ else
 fi
 
 command -v tmux >/dev/null || die "tmux is not installed"
-command -v ros2 >/dev/null || die "ros2 is not on PATH; source /opt/ros/humble/setup.bash first"
-[[ -f /opt/ros/humble/setup.bash ]] || die "ROS2 Humble setup not found"
+ROS_SETUP=""
+for distro in "${ROS_DISTRO:-}" jazzy humble; do
+  [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
+  ROS_SETUP="/opt/ros/$distro/setup.bash"
+  break
+done
+[[ -n "$ROS_SETUP" ]] || die "no supported ROS2 setup found under /opt/ros"
+set +u
+source "$ROS_SETUP"
+set -u
+command -v ros2 >/dev/null || die "ros2 is unavailable after sourcing $ROS_SETUP"
 [[ -f "$ROOT_DIR/ros2_ws/install/setup.bash" ]] || die "ROS2 workspace is not built"
 [[ -f "$ROOT_DIR/scripts/record_episode.sh" ]] || die "recorder script is missing"
 
 set +u
-source /opt/ros/humble/setup.bash
 source "$ROOT_DIR/ros2_ws/install/setup.bash"
 set -u
 
@@ -211,10 +219,10 @@ grep -Eq 'enable_joint_limits:[[:space:]]*true' "$CONFIG" || die "joint limits a
 grep -Eq 'enable_one_euro_filter:[[:space:]]*true' "$CONFIG" || die "One-Euro filter is not enabled in hardware_teleop.yaml"
 
 RUN_ROOT="${RUNEVIDENCE_ROOT:-$ROOT_DIR/evidence/teleop}"
-RUNEVIDENCE_BIN="${RUNEVIDENCE_BIN:-/home/ilex/miniforge3/envs/mpc_env/bin/runevidence}"
-[[ -x "$RUNEVIDENCE_BIN" ]] || die "RunEvidence not found: $RUNEVIDENCE_BIN"
+RUNEVIDENCE_BIN="${RUNEVIDENCE_BIN:-$(command -v runevidence || true)}"
+[[ -n "$RUNEVIDENCE_BIN" && -x "$RUNEVIDENCE_BIN" ]] || die "RunEvidence not found; install it or set RUNEVIDENCE_BIN to its executable"
 if (( PREVIEW )); then
-  ros2 pkg prefix rqt_image_view >/dev/null 2>&1 || die "ROS package rqt_image_view is missing; install ros-humble-rqt-image-view or use --no-preview"
+  ros2 pkg prefix rqt_image_view >/dev/null 2>&1 || die "ROS package rqt_image_view is missing; install the matching ROS package or use --no-preview"
 fi
 mkdir -p "$RUN_ROOT"
 export ROS_LOG_DIR="$RUN_ROOT/system/ros_logs"
@@ -224,7 +232,7 @@ if (( REAL )); then ARMED_ARG="true"; fi
 
 launch_cmd() {
   local title="$1"; shift
-  tmux new-window -t "$SESSION" -n "$title" "bash -lc 'set +u; source /opt/ros/humble/setup.bash; source \"$ROOT_DIR/ros2_ws/install/setup.bash\"; set -u; export ROS_LOG_DIR=\"$ROS_LOG_DIR\"; $*; exec bash'"
+  tmux new-window -t "$SESSION" -n "$title" "bash -lc 'set +u; source \"$ROS_SETUP\"; source \"$ROOT_DIR/ros2_ws/install/setup.bash\"; set -u; export ROS_LOG_DIR=\"$ROS_LOG_DIR\"; $*; exec bash'"
 }
 
 wait_for_topic() {
