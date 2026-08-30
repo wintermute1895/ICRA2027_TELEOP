@@ -53,7 +53,7 @@ def make_windows(rows: list[dict[str, Any]], history_length: int, context_size: 
         raise ValueError("projected rows lack joint_names")
     commands = [finite_vector(row.get("mapped_joint_command_rad"), joint_count) for row in rows]
     states = [finite_vector(row.get("robot_joint_state_rad"), joint_count) for row in rows]
-    targets = [finite_vector(row.get("executed_joint_command_rad"), joint_count) for row in rows]
+    targets = [finite_vector(row.get("controller_command_rad"), joint_count) for row in rows]
     contexts = [finite_vector(row.get("filter_context"), context_size) if context_size else None for row in rows]
     features, accepted = [], []
     for index in range(history_length - 1, len(rows)):

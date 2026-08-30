@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-"""Train the simulation-only causal command filter from audited JSONL episodes.
+"""Train a causal command prior from outcome-admitted JSONL episodes.
 
-Accepted episodes must contain causal raw/mapped commands, executed joint state,
-and an explicit ``success: true`` record.  The tool never creates ROS nodes or
-contacts hardware.
+The supervised target is the driver-accepted controller command. Measured state
+is retained as an input; a separately derived observed action is optional.
 """
 from __future__ import annotations
 
@@ -41,7 +40,7 @@ def main() -> int:
         joint_count = count
         commands = [finite_vector(record.get("mapped_joint_command_rad"), count) for record in records]
         states = [finite_vector(record.get("robot_joint_state_rad"), count) for record in records]
-        targets_for_episode = [finite_vector(record.get("executed_joint_command_rad"), count) for record in records]
+        targets_for_episode = [finite_vector(record.get("controller_command_rad"), count) for record in records]
         contexts = [finite_vector(record.get("filter_context"), args.context_size) if args.context_size else None for record in records]
         for index in range(args.history_length - 1, len(records)):
             history = commands[index - args.history_length + 1:index + 1]

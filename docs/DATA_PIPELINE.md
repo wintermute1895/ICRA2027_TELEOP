@@ -130,14 +130,16 @@ Materialize each derived arm JSONL into the source-agnostic canonical record:
   --export-jsonl <derived>/right_episode.jsonl \
   --output-dir <derived>/canonical-right \
   --source real --task-id usb_c_insertion \
-  --configuration-id fixture_a --calibration-version tcp_handeye_v1
+  --configuration-id changing_layout
 ```
 
-This writes control, commands, task-context, events, tactile, and
+This writes control, commands, optional task-context, events, tactile, and
 camera-reference streams plus `episode.manifest.json`. It defaults to
-`audit_only/A_audit`. `A_action/filter_training` is allowed only when recorded
-task context, observed action, all causal stages, synchronization, and explicit
-terminal audit are complete. No command is promoted to observed state.
+`audit_only/A_audit`. `A_action/filter_training` is allowed when raw/filter/
+projected/controller commands, measured state, synchronization, and explicit
+terminal audit are complete. Geometry context, TCP, external-camera calibration,
+insertion depth, tactile, and derived observed action are optional. No command
+is promoted to observed state.
 
 The ACT adapter is a documented projection rather than a second source of
 truth. It requires `policy_training` admission and actual extracted image files

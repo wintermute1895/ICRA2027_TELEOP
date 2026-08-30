@@ -18,9 +18,9 @@ The contract supports three data uses:
 
 ## 2. Core invariants
 
-- Every episode has an immutable `episode_id`, `schema_version`, source, task configuration, calibration version, and terminal audit.
+- Every episode has an immutable `episode_id`, `schema_version`, source, task configuration, and terminal audit. Geometry and calibration metadata are optional extensions.
 - Every time-indexed stream uses signed 64-bit integer `timestamp_ns` in one declared monotonic clock domain. Array index is never treated as time.
-- Frames, units, action semantics, controller frequency, and camera calibration are explicit metadata, never inferred from a task name.
+- Units, action semantics, and controller frequency are explicit metadata. Frames and calibration are declared only when geometric streams are present.
 - Missing causal fields are represented by `availability: unavailable` plus a reason. They must not be filled with zeroes, copied from another action field, or silently dropped.
 - A physical episode records observed execution separately from desired/commanded actions. The causal order is `raw teleop -> filter output -> safety projection -> controller command -> observed robot state`.
 - An `A_action` decision is a transparent gate. It is not a learned scalar data-quality score.
@@ -38,8 +38,8 @@ intended_uses                  [filter_training, policy_training, audit_only]
 task                            task_id, task_family, success_spec_version
 configuration                  configuration_id, declared parameter values, split
 clock                           clock_domain, control_hz, timestamp origin
-frames                          named SE(3) frame conventions
-calibration                     calibration_version and transform references
+frames                          optional named SE(3) frame conventions
+calibration                     optional calibration and transform references
 streams                         time-indexed observations, commands, execution, sensors
 terminal_audit                 success, termination, safety, admission decision
 data_integrity                 validator results and content hashes
@@ -60,7 +60,7 @@ R   receptacle / target frame
 C_i camera optical frame for camera i
 ```
 
-The task metadata declares the insertion convention, including the receptacle entrance origin and insertion axis. For a grasp-conditioned insertion task, the relative task state is:
+When a geometric estimator is available, task metadata may declare insertion convention and publish relative task state:
 
 ```text
 T_RP = inverse(T_BR) * T_BE(q) * T_EP
@@ -88,8 +88,6 @@ task.success_spec_version
 configuration.configuration_id
 configuration.parameters
 clock.control_hz
-frames
-calibration.calibration_version
 action_spec
 provenance.code_revision
 ```
@@ -111,7 +109,7 @@ execution.observed_action       optional estimate of achieved action
 
 `robot.q_rad` is ordered using `robot.joint_names`. A simulator writes its ground-truth state here; real hardware writes measured state. `observed_action` is optional because it may require differentiated measurements, but its availability must be explicit.
 
-### 5.3 Required context table: `streams/task_context`
+### 5.3 Optional geometry/task-context table: `streams/task_context`
 
 ```text
 timestamp_ns
@@ -123,7 +121,7 @@ reference.valid
 reference.collision_free
 ```
 
-A target pose requires `target.pose_source` and its calibration reference. `target.visibility_valid` means the declared target coordinate system is observable by the declared sensing protocol; it does not require the aperture pixels themselves to be unoccluded by the plug.
+A target pose requires `target.pose_source` and its calibration reference. A moving camera or changing fixture does not invalidate an episode; omit this stream unless a valid estimator is available.
 
 Simulation may provide ground truth poses but must label `pose_source=sim_ground_truth`. Physical records should retain estimator confidence and raw estimator diagnostics in `streams/estimator`.
 
@@ -193,7 +191,7 @@ AND no_safety_violation
 AND no_unlogged_external_override
 ```
 
-`complete_causal_record` means that each required control interval can align raw teleoperation input, filter output, safety-projected/controller command, observed robot state, and declared task context under the synchronization tolerance in `clock`. Successful safety recovery, failed episodes, sensor loss, manual recovery, and invalid configurations remain in `A_audit`; they are not discarded.
+`complete_causal_record` means that each required control interval can align raw teleoperation input, filter output, safety-projected command, controller command, and measured robot state under the synchronization tolerance in `clock`. Task context, TCP pose, insertion depth, tactile, and derived observed action are optional extensions. Successful safety recovery, failed episodes, sensor loss, manual recovery, and invalid configurations remain in `A_audit`; they are not discarded.
 
 For `policy_training` only, a source dataset may be usable despite unavailable teleoperation fields. It must never be relabelled as `A_action` for `filter_training` merely because its terminal state is successful.
 
@@ -231,19 +229,19 @@ The adapter must not claim physical calibration, real safety events, or `A_actio
 
 ### 8.2 Physical teleoperation recorder
 
-The W3 recorder must write each causal command stage before transmission, measured robot state after transmission, target estimator output, sensor timestamps, calibration version, and all operator/safety events. The recorder is responsible for clock alignment and for recording failures to align.
+The W3 recorder must write each causal command stage before transmission, measured robot state after transmission, sensor timestamps, and all operator/safety events. Target estimators, calibration, tactile, and geometry are recorded when available, but are not prerequisites for collection or `A_action`.
 
 ## 9. Validation gates
 
 A dataset validator must reject or quarantine an episode when any of these fail:
 
-1. required metadata, declared frames, action specification, or calibration version is missing;
+1. required core metadata or action specification is missing; declared geometry is validated only when present;
 2. timestamps are non-monotonic, duplicated beyond policy, or outside the declared alignment tolerance;
 3. state/action dimensions, units, joint order, or action range contradict `action_spec`;
 4. image references are missing, unreadable, or cannot be aligned to their timestamp;
 5. terminal audit contradicts the event log;
 6. a record claims `filter_training` or `A_action` without a complete causal command chain;
-7. a physical episode lacks a target-pose source or calibration version;
+7. a present geometric stream lacks its declared pose source or calibration reference;
 8. a train/test split mixes frames from the same episode or violates a declared configuration holdout.
 
 The validator produces a machine-readable report attached to `data_integrity.validator_report_ref`. Validation failure does not delete the source record; it routes the episode to `A_audit` or quarantine with the failure reasons.
@@ -261,5 +259,5 @@ The validator produces a machine-readable report attached to `data_integrity.val
 1. Implement the JSON Schema in `schemas/teleop_episode_v0_1.schema.json`.
 2. Implement a narrow DexMimicGen Can Sorting adapter and validator fixture for W0.
 3. Implement a LeRobot projection manifest; do not make the projection the sole record.
-4. Wire the real teleoperation logger to `streams/commands`, `streams/control`, `streams/task_context`, and `streams/events` before collecting D0.
+4. Wire the real teleoperation logger to `streams/commands`, `streams/control`, and `streams/events` before collecting D0. Add `streams/task_context` only after an estimator is trustworthy.
 5. Freeze the filter-specific action representation in W2 before training `F_static`.

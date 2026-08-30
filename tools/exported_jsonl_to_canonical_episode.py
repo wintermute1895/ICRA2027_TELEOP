@@ -37,7 +37,7 @@ def git_revision(root: Path) -> str:
 
 def causal_row_complete(row: dict[str, Any]) -> bool:
     return all(isinstance(row.get(key), list) and row[key] for key in (
-        "raw_teleop", "filter_output", "safety_projected", "controller_command", "observed_action",
+        "raw_teleop", "filter_output", "safety_projected", "controller_command", "robot_state",
     ))
 
 
@@ -116,15 +116,14 @@ def main() -> int:
     causal_complete = all(causal_row_complete({
         "raw_teleop": row.get("master_joint_raw"), "filter_output": row.get("master_joint_filtered_rad"),
         "safety_projected": row.get("mapped_joint_command_rad"), "controller_command": row.get("controller_command_rad"),
-        "observed_action": row.get("executed_joint_command_rad"),
+        "robot_state": row.get("robot_joint_state_rad"),
     }) for row in rows)
-    # Context is required for A_action.  It is not invented from TCP data.
+    # Geometry context and observed action are optional extensions.  The core
+    # flywheel records command stages, measured state, outcome, and safety.
     context_complete = len(context_rows) == len(rows)
     failed_gates = []
     if not causal_complete:
         failed_gates.append("incomplete_causal_record")
-    if not context_complete:
-        failed_gates.append("task_context_unavailable")
     if audit.get("success") is not True:
         failed_gates.append("terminal_not_success")
     if audit.get("safety_violation") is not False:
@@ -139,12 +138,12 @@ def main() -> int:
         "task": {"task_id": args.task_id, "task_family": args.task_family, "success_spec_version": args.success_spec_version},
         "configuration": {"configuration_id": args.configuration_id, "parameters": {"arm": arm}, "split": "unspecified"},
         "clock": {"clock_domain": "ros2_header", "control_hz": args.control_hz, "timestamp_unit": "ns", "alignment_tolerance_ns": 100_000_000},
-        "frames": {"base_frame": "B", "end_effector_frame": "E", "transform_convention": "T_AB maps coordinates in B into A"},
-        "calibration": {"calibration_version": args.calibration_version},
-        "action_spec": {"representation": "joint_position", "frame": "B", "dimension": len(joint_names), "units": ["rad"] * len(joint_names), "controller_interface": "vendor_joint_follow", "joint_names": joint_names},
+        "frames": {"base_frame": "B", "end_effector_frame": "E", "transform_convention": "T_AB maps coordinates in B into A"} if args.calibration_version != "unrecorded" else {},
+        "calibration": {"calibration_version": args.calibration_version} if args.calibration_version != "unrecorded" else {},
+        "action_spec": {"representation": "joint_position", "frame": "joint_space", "dimension": len(joint_names), "units": ["rad"] * len(joint_names), "controller_interface": "vendor_joint_follow", "joint_names": joint_names},
         "streams": {"control": stream_ref(control_path), "commands": stream_ref(commands_path), "task_context": stream_ref(context_path, context_complete, "no_task_context_publisher_recorded"), "events": stream_ref(events_path), "tactile": stream_ref(tactile_path, bool(tactile_rows), "not_recorded_or_no_tactile_messages"), "cameras": {"recorded_frames": stream_ref(cameras_path, bool(camera_rows), "no_camera_messages_aligned")}},
         "terminal_audit": audit,
-        "data_integrity": {"synchronization_valid": causal_complete, "complete_causal_record": causal_complete and context_complete, "validator_report_ref": "validator_report.json"},
+        "data_integrity": {"synchronization_valid": causal_complete, "complete_causal_record": causal_complete, "validator_report_ref": "validator_report.json"},
         "provenance": {"code_revision": git_revision(Path(__file__).resolve().parents[1]), "adapter_version": ADAPTER_VERSION, "source_dataset_or_run": str(args.export_jsonl.resolve()), "content_sha256": hashlib.sha256(args.export_jsonl.read_bytes()).hexdigest()},
     }
     manifest_path = output / "episode.manifest.json"

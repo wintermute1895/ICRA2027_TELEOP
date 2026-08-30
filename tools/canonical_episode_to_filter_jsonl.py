@@ -93,10 +93,10 @@ def main() -> int:
         filtered = get(command, "filter_output.value")
         projected = get(command, "safety_projected.value", "execution.controller_command")
         state = get(control, "robot.q_rad")
-        observed = get(control, "execution.observed_action")
+        controller = get(control, "execution.controller_command")
         if not all(isinstance(item, list) for item in (raw, filtered, projected, state)):
             continue
-        if not isinstance(observed, list):
+        if not isinstance(controller, list):
             continue
         row: dict[str, Any] = {
             "schema": "robot_teleop.episode/v1", "episode_id": manifest["episode_id"],
@@ -104,7 +104,8 @@ def main() -> int:
             "arm": manifest.get("configuration", {}).get("arm", "unknown"), "joint_names": joint_names,
             "master_joint_raw": raw, "filter_output_action": filtered,
             "mapped_joint_command_rad": projected,
-            "executed_joint_command_rad": observed,
+            "controller_command_rad": controller,
+            "executed_joint_command_rad": get(control, "execution.observed_action"),
             "robot_joint_state_rad": state, "success": True,
         }
         if context is not None:

@@ -23,10 +23,8 @@ class CanonicalValidatorTest(unittest.TestCase):
 
     def test_filter_gate_and_observed_action(self):
         self.assertEqual(validate_manifest(self.manifest()), [])
-        rows = [{"header_stamp_ns": 1, "master_joint_raw": [0.0], "filter_output_action": [0.0], "mapped_joint_command_rad": [0.0], "robot_joint_state_rad": [0.0]}]
-        self.assertEqual(validate_rows(rows, require_executed=True), ["row[0].executed_joint_command_rad_missing"])
-        rows[0]["executed_joint_command_rad"] = [0.0]
-        self.assertEqual(validate_rows(rows, require_executed=True), [])
+        rows = [{"header_stamp_ns": 1, "master_joint_raw": [0.0], "filter_output_action": [0.0], "mapped_joint_command_rad": [0.0], "controller_command_rad": [0.0], "robot_joint_state_rad": [0.0]}]
+        self.assertEqual(validate_rows(rows, require_causal=True), [])
 
 
 if __name__ == "__main__":

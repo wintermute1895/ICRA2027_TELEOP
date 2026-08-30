@@ -28,8 +28,8 @@ class FlywheelRoundTest(unittest.TestCase):
         controls, commands = [], []
         for index in range(5):
             stamp, value = index * 10, float(index)
-            controls.append({"timestamp_ns": stamp, "robot": {"q_rad": [value]}, "execution": {"observed_action": [value * 0.5]}})
-            commands.append({"timestamp_ns": stamp, "raw_teleop": {"value": [value]}, "filter_output": {"value": [value]}, "safety_projected": {"value": [value]}})
+            controls.append({"timestamp_ns": stamp, "robot": {"q_rad": [value]}, "execution": {"controller_command": [value * 0.5]}})
+            commands.append({"timestamp_ns": stamp, "raw_teleop": {"value": [value]}, "filter_output": {"value": [value]}, "safety_projected": {"value": [value]}, "controller_command": [value * 0.5]})
         paths = {"manifest": root / f"{episode_id}.manifest.json", "control_jsonl": root / f"{episode_id}.control.jsonl", "commands_jsonl": root / f"{episode_id}.commands.jsonl"}
         paths["manifest"].write_text(json.dumps(manifest), encoding="utf-8")
         for key, rows in (("control_jsonl", controls), ("commands_jsonl", commands)):

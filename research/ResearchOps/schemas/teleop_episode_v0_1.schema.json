@@ -13,8 +13,6 @@
     "task",
     "configuration",
     "clock",
-    "frames",
-    "calibration",
     "action_spec",
     "streams",
     "terminal_audit",
@@ -65,7 +63,6 @@
     },
     "frames": {
       "type": "object",
-      "required": ["base_frame", "end_effector_frame"],
       "properties": {
         "base_frame": { "type": "string", "minLength": 1 },
         "end_effector_frame": { "type": "string", "minLength": 1 },
@@ -78,7 +75,6 @@
     },
     "calibration": {
       "type": "object",
-      "required": ["calibration_version"],
       "properties": {
         "calibration_version": { "type": "string", "minLength": 1 },
         "transform_refs": { "type": "object" }
@@ -103,7 +99,7 @@
     },
     "streams": {
       "type": "object",
-      "required": ["control", "task_context", "events"],
+      "required": ["control", "events"],
       "properties": {
         "control": { "$ref": "#/$defs/streamReference" },
         "task_context": { "$ref": "#/$defs/streamReference" },

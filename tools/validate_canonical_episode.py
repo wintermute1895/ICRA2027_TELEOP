@@ -19,12 +19,12 @@ def finite_vector(value: Any) -> bool:
 
 def validate_manifest(manifest: dict[str, Any], *, require_filter_training: bool = False) -> list[str]:
     failures: list[str] = []
-    required = ("schema_version", "episode_id", "source", "collection_mode", "intended_uses", "task", "configuration", "clock", "frames", "calibration", "action_spec", "streams", "terminal_audit", "data_integrity", "provenance")
+    required = ("schema_version", "episode_id", "source", "collection_mode", "intended_uses", "task", "configuration", "clock", "action_spec", "streams", "terminal_audit", "data_integrity", "provenance")
     failures.extend(f"missing:{key}" for key in required if key not in manifest)
     if manifest.get("schema_version") != "teleop_episode/v0.1":
         failures.append("schema_version")
     streams = manifest.get("streams", {})
-    for name in ("control", "task_context", "events"):
+    for name in ("control", "events"):
         if name not in streams:
             failures.append(f"streams.{name}.missing")
     action = manifest.get("action_spec", {})
@@ -48,7 +48,7 @@ def validate_manifest(manifest: dict[str, Any], *, require_filter_training: bool
     return failures
 
 
-def validate_rows(rows: list[dict[str, Any]], *, require_executed: bool = False) -> list[str]:
+def validate_rows(rows: list[dict[str, Any]], *, require_causal: bool = False) -> list[str]:
     failures: list[str] = []
     previous = None
     for index, row in enumerate(rows):
@@ -63,13 +63,11 @@ def validate_rows(rows: list[dict[str, Any]], *, require_executed: bool = False)
             present = next((field for field in alternatives if field in row), None)
             if present is not None and not finite_vector(row[present]):
                 failures.append(f"row[{index}].{canonical_name}")
-        if require_executed:
-            required_causal_fields = {"raw_teleop": ("raw_teleop", "master_joint_raw"), "filter_output": ("filter_output", "filter_output_action"), "safety_projected": ("safety_projected", "mapped_joint_command_rad"), "robot_joint_state_rad": ("robot_joint_state_rad",)}
+        if require_causal:
+            required_causal_fields = {"raw_teleop": ("raw_teleop", "master_joint_raw"), "filter_output": ("filter_output", "filter_output_action"), "safety_projected": ("safety_projected", "mapped_joint_command_rad"), "controller_command": ("controller_command_rad",), "robot_joint_state_rad": ("robot_joint_state_rad",)}
             for canonical_name, alternatives in required_causal_fields.items():
                 if not any(field in row and finite_vector(row[field]) for field in alternatives):
                     failures.append(f"row[{index}].{canonical_name}_missing")
-            if not finite_vector(row.get("executed_joint_command_rad")):
-                failures.append(f"row[{index}].executed_joint_command_rad_missing")
     return failures
 
 
@@ -84,7 +82,7 @@ def main() -> int:
     failures = validate_manifest(manifest, require_filter_training=args.require_filter_training)
     if args.rows:
         rows = [json.loads(line) for line in args.rows.read_text(encoding="utf-8").splitlines() if line.strip()]
-        failures.extend(validate_rows(rows, require_executed=args.require_filter_training or "filter_training" in manifest.get("intended_uses", [])))
+        failures.extend(validate_rows(rows, require_causal=args.require_filter_training or "filter_training" in manifest.get("intended_uses", [])))
     report = {
         "schema": "robot_teleop.canonical-validator/v0.1",
         "episode_id": manifest.get("episode_id"),
