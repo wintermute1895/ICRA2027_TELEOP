@@ -57,12 +57,6 @@ TOPICS=(
   "${ROBOT_STATE_NAMESPACE}/right_hand/control_cmd"
   "${ROBOT_STATE_NAMESPACE}/left_hand/joint_states"
   "${ROBOT_STATE_NAMESPACE}/right_hand/joint_states"
-  /cb_left_hand_force
-  /cb_right_hand_force
-  /cb_left_hand_matrix_touch
-  /cb_right_hand_matrix_touch
-  /cb_left_hand_matrix_touch_mass
-  /cb_right_hand_matrix_touch_mass
   "${CAMERA_NAMESPACE}/color/image_raw"
   "${CAMERA_NAMESPACE}/color/camera_info"
   "${CAMERA_NAMESPACE}/aligned_depth_to_color/image_raw"
@@ -80,6 +74,17 @@ if [[ -n "$SIM_CAMERA_NAMESPACES" ]]; then
       "${camera}/depth/camera_info"
     )
   done
+fi
+
+if [[ "$SOURCE_DOMAIN" == "real" ]]; then
+  TOPICS+=(
+    /cb_left_hand_force
+    /cb_right_hand_force
+    /cb_left_hand_matrix_touch
+    /cb_right_hand_matrix_touch
+    /cb_left_hand_matrix_touch_mass
+    /cb_right_hand_matrix_touch_mass
+  )
 fi
 
 TOPICS+=(
@@ -170,7 +175,12 @@ payload = {
     },
     "hardware_commands_enabled": hardware_commands_enabled,
     "motion_commands_published": hardware_commands_enabled,
-    "canonical_fields": {
+    "tactile": {
+        "availability": "available" if source_domain == "real" else "unavailable",
+        "unavailable_reason": None if source_domain == "real" else "not_integrated_in_simulation",
+        "topics_recorded": [topic for topic in topics if topic.startswith("/cb_")],
+    },
+    "recorded_fields": {
         "master_joint_source": "/left_arm_joint_control,/right_arm_joint_control",
         "master_joint_raw": f"{teleop_namespace}/left/master_joint_raw,{teleop_namespace}/right/master_joint_raw",
         "master_joint_filtered": f"{teleop_namespace}/left/master_joint_filtered,{teleop_namespace}/right/master_joint_filtered",

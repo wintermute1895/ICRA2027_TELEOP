@@ -10,7 +10,7 @@ from pathlib import Path
 
 from interactive_mujoco_calibration import wrap_robot_root
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MODEL = ROOT / "assets/robots/linker_platform/sensorized/a7_dual_arm_l10_hands_cameras.mjcf.xml"
 DEFAULT_CALIBRATION = ROOT / "config/sim/mujoco_sensor_calibration.json"
 DEFAULT_LAYOUT = ROOT / "config/sim/a7_task_scene_layout.json"

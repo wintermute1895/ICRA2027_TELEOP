@@ -1,14 +1,14 @@
 # Data Pipeline
 
-This pipeline keeps simulation and hardware data semantically identical. Both
-paths record ROS2 messages, export per-arm canonical JSONL, run the same data
-quality gate, and then enter the same offline kinematic/collision evaluator.
+This pipeline keeps simulation and hardware capture semantically aligned. Both
+paths record ROS2 messages, export derived per-arm `robot_teleop.episode/v1`
+JSONL, run the same data-quality gate, and then enter the same offline evaluator.
 DexCatch is only that offline evaluator; it is never inserted in the realtime
 teleoperation control path.
 
 ```text
 shared teleop command topics -> simulation MuJoCo mirror or real driver
-ROS2 bag -> canonical left/right JSONL -> data-quality gate -> offline evaluator -> A/B aggregation
+ROS2 bag -> derived episode/v1 JSONL -> data-quality gate -> offline evaluator -> A/B aggregation
 ```
 
 The final actuator endpoint is the only intended distinction:
@@ -21,10 +21,18 @@ The final actuator endpoint is the only intended distinction:
 | Actuator endpoint | `sim_robot_driver` / MuJoCo | `lbot_driver` / official SDK and CAN |
 | Export and scoring | identical tools | identical tools |
 
-Hand topics can be recorded as additional canonical fields after the recorder
-and exporter are extended together. They must not change the existing arm field
-units: arm joint commands and states remain radians; LinkerHand command values
-use the SDK's documented `[0,255]` scale.
+For real capture, the recorder additionally records LinkerHand force, matrix
+pressure, and matrix-mass topics. Simulation intentionally records none of
+these topics yet; its capture manifest declares `not_integrated_in_simulation`.
+Arm joint commands and states remain radians; LinkerHand command values use the
+SDK's documented `[0,255]` scale.
+
+The export is not the `teleop_episode/v0.1` canonical record. It is an
+immutable, read-only source for the canonical adapter. It may support
+`audit_only` or an ACT/LeRobot projection after its adapter validates the
+available fields; it must not be called `A_action` or used for `filter_training`
+until it has a v0.1 manifest, task context, terminal audit, and complete
+`raw -> filter -> projected -> executed` causal chain.
 
 ## Record
 
@@ -98,8 +106,9 @@ right_data_quality.json
 
 Each state-aligned JSONL record includes raw master input, One-Euro filtered
 master input, mapped arm command, measured arm state, and nearest RGB/depth
-frame references when their source topics exist. A missing source topic is
-listed in the export manifest; no absent signal is synthesized.
+frame references when their source topics exist. Real records also include the
+latest force/matrix/mass tactile sample when it is fresh enough. A missing
+source topic is listed in the export manifest; no absent signal is synthesized.
 
 `quality_gate=pass` means the episode is complete enough for analysis. A
 `review` result is retained with exact reasons and does not mean task failure.

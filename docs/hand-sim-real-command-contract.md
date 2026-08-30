@@ -45,7 +45,7 @@ Start simulation with the installed hand pair. For L10:
 
 ```bash
 ros2 launch sim_robot_driver sim_teleop.launch.py \
-  model_path:=/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/sensorized/a7_l10_task_scene.mjcf.xml \
+  model_path:=$PWD/assets/robots/linker_platform/sensorized/a7_l10_usb_c_insertion.mjcf.xml \
   left_hand_model:=L10 right_hand_model:=L10
 ```
 

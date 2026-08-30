@@ -35,7 +35,7 @@ primitives as a mandatory physics baseline; optional visual meshes are
 visual-only and must carry a source/license manifest.
 
 ```bash
-cd /mnt/F/ICRA2027_TELEOP
+cd "$(git rev-parse --show-toplevel)"
 /home/ilex/miniforge3/envs/mpc_env/bin/python -B \
   tools/build_connector_insertion_scene.py \
   --task usb_c_laptop_insertion \

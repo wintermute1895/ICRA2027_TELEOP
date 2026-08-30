@@ -27,7 +27,7 @@ still required before any real command. The launch deliberately separates
 Build and safe interface-only launch:
 
 ```bash
-cd /mnt/F/ICRA2027_TELEOP
+cd "$(git rev-parse --show-toplevel)"
 git submodule update --init --recursive
 source /opt/ros/humble/setup.bash
 ./scripts/build_ros2_workspace.sh

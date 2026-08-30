@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Convert one completed ROS2 bag into canonical left/right JSONL and quality reports.
+# Convert one completed ROS2 bag into derived episode/v1 left/right JSONL and quality reports.
 # Offline only: no ROS node is created and no robot, hand, or SDK API is called.
 set -Eeuo pipefail
 

@@ -12,7 +12,7 @@ import mujoco
 import mujoco.viewer
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MODEL = ROOT / "assets/robots/linker_platform/sensorized/a7_l10_task_scene.mjcf.xml"
 DEFAULT_LAYOUT = ROOT / "config/sim/a7_task_scene_layout.json"
 GROUPS = {

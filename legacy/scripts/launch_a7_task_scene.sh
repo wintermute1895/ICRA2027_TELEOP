@@ -2,7 +2,7 @@
 # Launch the calibrated MuJoCo task scene without touching lbot_driver.
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 MODEL="$ROOT/assets/robots/linker_platform/sensorized/a7_l10_task_scene.mjcf.xml"
 ROS_LOG_DIR="${ROS_LOG_DIR:-/tmp/ilex_ros_logs}"
 MPC_PYTHON="${MPC_PYTHON:-/home/ilex/miniforge3/envs/mpc_env/bin/python}"

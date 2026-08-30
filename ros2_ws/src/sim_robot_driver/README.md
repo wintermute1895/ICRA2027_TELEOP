@@ -43,7 +43,7 @@ Example, simulation only:
 
 ```bash
 ros2 launch sim_robot_driver sim_teleop.launch.py \
-  model_path:=/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/sensorized/a7_l10_task_scene.mjcf.xml \
+  model_path:=$PWD/assets/robots/linker_platform/sensorized/a7_l10_usb_c_insertion.mjcf.xml \
   render:=true keyboard:=false left_hand_model:=L10 right_hand_model:=L10
 ros2 topic pub --once /robot1/left_hand/control_cmd sensor_msgs/msg/JointState \
   "{position: [255.0, 128.0, 200.0, 180.0, 160.0, 140.0, 120.0, 100.0, 80.0, 60.0]}"
@@ -70,7 +70,7 @@ only with another Python 3.10 ROS2-compatible environment.
 ## Simulation-only keyboard test
 
 ```bash
-cd /mnt/F/ICRA2027_TELEOP
+cd "$(git rev-parse --show-toplevel)"
 source /opt/ros/humble/setup.bash
 source ros2_ws/install/setup.bash
 
@@ -116,20 +116,23 @@ blend on `/filter_v0/<arm>_arm/joint_follow`. Missing state, model mismatch,
 or an out-of-distribution feature vector falls back to the mapped command.
 It never starts a hardware driver and is not part of the hardware launch.
 
-Train only from explicitly audited canonical JSONL records:
+Train only from an explicitly admitted `teleop_episode/v0.1` projection.
+The rosbag exporter produces derived `episode/v1` rows and is not sufficient for
+this claim. A legacy derived row may be used only for an engineering smoke test,
+never for `A_action` or a reported flywheel result:
 
 ```bash
-python3 tools/train_causal_command_filter.py \
-  --episode evidence/sim/<episode>/derived/left_episode.jsonl \
-  --output models/causal_filter_left_v0.json
+python3 tools/canonical_episode_to_filter_jsonl.py \
+  --manifest evidence/sim/<episode>/episode.manifest.json \
+  --control-jsonl evidence/sim/<episode>/streams/control.jsonl \
+  --commands-jsonl evidence/sim/<episode>/streams/commands.jsonl \
+  --task-context-jsonl evidence/sim/<episode>/streams/task_context.jsonl \
+  --output derived/filter_training.jsonl
 ```
 
-Each accepted record must have `success: true`, complete mapped-command and
-robot-state fields, and should provide `executed_joint_command_rad` when the
-executed action differs from the mapped command. `success` is an admission
-label, never an online model input.
-
-For canonical v0.1 data, use `tools/canonical_episode_to_filter_jsonl.py` first; it enforces the episode-level `A_action` audit gate.
+The adapter enforces successful `A_action` admission, synchronization validity,
+and the complete `raw -> filter -> projected -> executed` causal chain before
+training can consume the output.
 
 Launch it in the simulation path only:
 

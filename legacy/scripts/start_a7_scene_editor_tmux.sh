@@ -2,7 +2,7 @@
 # Open the local MuJoCo scene editor and a live SSH-visible status window.
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PYTHON_BIN="${MPC_PYTHON:-/home/ilex/miniforge3/envs/mpc_env/bin/python}"
 SESSION="${A7_SCENE_EDITOR_SESSION:-a7_scene_editor}"
 LOG_FILE="${A7_SCENE_EDITOR_LOG:-/tmp/a7_scene_editor.log}"

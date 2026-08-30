@@ -54,7 +54,7 @@ or changing an episode. It intentionally calls the result `data_quality_score`
 rather than `A`, because condition `A` already denotes the baseline.
 
 `tools/export_rosbag_episode.py` and `scripts/export_episode.sh` turn either a
-real or simulation rosbag into the same canonical per-arm JSONL before this
+real or simulation rosbag into the same derived per-arm `episode/v1` JSONL before this
 gate. Their namespace choices are explicit rather than inferred from the bag;
 the full record/export/evaluation procedure is in `docs/DATA_PIPELINE.md`.
 
