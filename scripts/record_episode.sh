@@ -244,4 +244,44 @@ if [[ ! -s "${BAG_DIR}/metadata.yaml" ]] || \
   exit 3
 fi
 
+# Terminal outcome is deliberately collected after rosbag shutdown.  Ctrl-C
+# stops recording, then this prompt is the only path that can create a terminal
+# audit for the episode.  No geometric success is inferred here.
+AUDIT_PATH="${ARTIFACT_DIR}/terminal_audit.json"
+EPISODE_ID="${TELEOP_EPISODE_ID:-$(basename "$RUN_DIR")}"
+AUDIT_TOOL="${ROOT_DIR}/tools/finalize_episode_audit.py"
+if [[ "${TELEOP_INTERACTIVE_AUDIT:-true}" == "true" ]]; then
+  if [[ ! -t 0 || ! -t 1 ]]; then
+    echo "interactive terminal audit requires a TTY; writing failure audit" >&2
+    /usr/bin/python3 "$AUDIT_TOOL" --output "$AUDIT_PATH" --episode-id "$EPISODE_ID" \
+      --failure --termination-reason audit_unavailable --operator-id "${TELEOP_OPERATOR_ID:-anonymous}" \
+      --evidence-ref "$BAG_DIR"
+  else
+    while true; do
+      read -r -p "本次任务是否成功？[y/N]: " OUTCOME
+      case "${OUTCOME,,}" in
+        y|yes) SUCCESS_ARGS=(--success); break ;;
+        n|no|"") SUCCESS_ARGS=(--failure); break ;;
+        *) echo "请输入 y 或 n" >&2 ;;
+      esac
+    done
+    read -r -p "终止原因（必填）: " TERMINATION_REASON
+    [[ -n "$TERMINATION_REASON" ]] || TERMINATION_REASON="operator_unspecified"
+    read -r -p "是否发生安全事件？[y/N]: " SAFETY
+    read -r -p "是否有未记录的外部接管？[y/N]: " OVERRIDE
+    SAFETY_ARGS=(); OVERRIDE_ARGS=()
+    [[ "${SAFETY,,}" == "y" || "${SAFETY,,}" == "yes" ]] && SAFETY_ARGS=(--safety-violation)
+    [[ "${OVERRIDE,,}" == "y" || "${OVERRIDE,,}" == "yes" ]] && OVERRIDE_ARGS=(--unlogged-external-override)
+    /usr/bin/python3 "$AUDIT_TOOL" --output "$AUDIT_PATH" --episode-id "$EPISODE_ID" \
+      "${SUCCESS_ARGS[@]}" --termination-reason "$TERMINATION_REASON" \
+      --operator-id "${TELEOP_OPERATOR_ID:-anonymous}" "${SAFETY_ARGS[@]}" "${OVERRIDE_ARGS[@]}" \
+      --evidence-ref "$BAG_DIR"
+  fi
+else
+  echo "TELEOP_INTERACTIVE_AUDIT=false: writing failure audit" >&2
+  /usr/bin/python3 "$AUDIT_TOOL" --output "$AUDIT_PATH" --episode-id "$EPISODE_ID" \
+    --failure --termination-reason audit_disabled --operator-id "${TELEOP_OPERATOR_ID:-anonymous}" \
+    --evidence-ref "$BAG_DIR"
+fi
+
 echo "Capture complete: ${RUN_DIR}"
