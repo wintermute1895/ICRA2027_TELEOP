@@ -88,6 +88,9 @@ def main() -> int:
     command_topic = f"{teleop_ns}/{opt.arm}/mapped_joint_command"
     rgb_topic = f"{camera_ns}/color/image_raw"
     depth_topic = f"{camera_ns}/aligned_depth_to_color/image_raw"
+    tactile_force_topic = f"/cb_{opt.arm}_hand_force"
+    tactile_matrix_topic = f"/cb_{opt.arm}_hand_matrix_touch"
+    tactile_mass_topic = f"/cb_{opt.arm}_hand_matrix_touch_mass"
     reader, temporary, compression_mode = open_reader(opt.bag)
     types = {item.name: get_message(item.type) for item in reader.get_all_topics_and_types()}
     required = (state_topic, master_raw_topic, master_filtered_topic, command_topic, rgb_topic, depth_topic)
@@ -99,12 +102,15 @@ def main() -> int:
     commands: list[tuple[int, Any]] = []
     rgb_stamps: list[int] = []
     depth_stamps: list[int] = []
+    tactile_force: list[tuple[int, Any]] = []
+    tactile_matrix: list[tuple[int, Any]] = []
+    tactile_mass: list[tuple[int, Any]] = []
     state_samples: list[tuple[int, int, Any]] = []
     max_age_ns = int(opt.max_camera_age_ms * 1e6)
     max_command_age_ns = int(opt.max_command_age_ms * 1e6)
     while reader.has_next():
         topic, raw, bag_time_ns = reader.read_next()
-        if topic not in {state_topic, master_raw_topic, master_filtered_topic, command_topic, rgb_topic, depth_topic}:
+        if topic not in {state_topic, master_raw_topic, master_filtered_topic, command_topic, rgb_topic, depth_topic, tactile_force_topic, tactile_matrix_topic, tactile_mass_topic}:
             continue
         message = deserialize_message(raw, types[topic])
         message_stamp_ns = stamp_ns(message, bag_time_ns)
@@ -123,11 +129,38 @@ def main() -> int:
         if topic == depth_topic:
             depth_stamps.append(message_stamp_ns)
             continue
+        if topic == tactile_force_topic:
+            tactile_force.append((message_stamp_ns, message))
+            continue
+        if topic == tactile_matrix_topic:
+            tactile_matrix.append((message_stamp_ns, message))
+            continue
+        if topic == tactile_mass_topic:
+            tactile_mass.append((message_stamp_ns, message))
+            continue
         state_samples.append((message_stamp_ns, int(bag_time_ns), message))
 
     rgb_stamps.sort()
     depth_stamps.sort()
     state_samples.sort(key=lambda item: item[0])
+
+    def tactile_ref(samples: list[tuple[int, Any]], topic_name: str, state_stamp_ns: int) -> dict[str, Any] | None:
+        if not samples:
+            return None
+        stamps = [item[0] for item in samples]
+        index = bisect.bisect_right(stamps, state_stamp_ns) - 1
+        if index < 0 or state_stamp_ns - stamps[index] > max_command_age_ns:
+            return None
+        message = samples[index][1]
+        value: Any = getattr(message, "data", None)
+        if isinstance(value, (tuple, list)):
+            value = [float(item) for item in value]
+        elif isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                value = None
+        return {"topic": topic_name, "header_stamp_ns": stamps[index], "age_ms": (state_stamp_ns - stamps[index]) / 1e6, "alignment": "latest_header_or_bag_stamp_not_after_state", "value": value}
 
     def camera_ref(stamps: list[int], topic_name: str, state_stamp_ns: int) -> dict[str, Any] | None:
         if not stamps:
@@ -182,6 +215,9 @@ def main() -> int:
             "tcp_pose_base": None,
             "rgb": camera_ref(rgb_stamps, rgb_topic, message_stamp_ns),
             "depth": camera_ref(depth_stamps, depth_topic, message_stamp_ns),
+            "tactile_force": tactile_ref(tactile_force, tactile_force_topic, message_stamp_ns),
+            "tactile_matrix": tactile_ref(tactile_matrix, tactile_matrix_topic, message_stamp_ns),
+            "tactile_mass": tactile_ref(tactile_mass, tactile_mass_topic, message_stamp_ns),
             "camera_info": None,
             "tf": None,
             "data_quality_score": None,
@@ -205,11 +241,16 @@ def main() -> int:
             "command": command_topic,
             "rgb": rgb_topic,
             "depth": depth_topic,
+            "tactile_force": tactile_force_topic,
+            "tactile_matrix": tactile_matrix_topic,
+            "tactile_mass": tactile_mass_topic,
         },
         "missing_topics": missing,
         "camera_alignment": {"policy": "nearest_header_stamp", "maximum_age_ms": opt.max_camera_age_ms},
         "command_alignment": {"policy": "latest_header_stamp_not_after_state", "maximum_age_ms": opt.max_command_age_ms},
         "compression_handling": compression_mode,
+        "tactile_alignment": {"policy": "latest_header_or_bag_stamp_not_after_state", "maximum_age_ms": opt.max_command_age_ms},
+        "tactile_topics_available": {"force": tactile_force_topic in types, "matrix": tactile_matrix_topic in types, "mass": tactile_mass_topic in types},
         "sample_count": len(records),
         "hardware_accessed": False,
     }

@@ -57,6 +57,12 @@ TOPICS=(
   "${ROBOT_STATE_NAMESPACE}/right_hand/control_cmd"
   "${ROBOT_STATE_NAMESPACE}/left_hand/joint_states"
   "${ROBOT_STATE_NAMESPACE}/right_hand/joint_states"
+  /cb_left_hand_force
+  /cb_right_hand_force
+  /cb_left_hand_matrix_touch
+  /cb_right_hand_matrix_touch
+  /cb_left_hand_matrix_touch_mass
+  /cb_right_hand_matrix_touch_mass
   "${CAMERA_NAMESPACE}/color/image_raw"
   "${CAMERA_NAMESPACE}/color/camera_info"
   "${CAMERA_NAMESPACE}/aligned_depth_to_color/image_raw"
@@ -172,6 +178,9 @@ payload = {
         "robot_joint_state": f"{robot_state_namespace}/left_arm/joint_states,{robot_state_namespace}/right_arm/joint_states",
         "hand_command": f"{robot_state_namespace}/left_hand/control_cmd,{robot_state_namespace}/right_hand/control_cmd",
         "hand_state": f"{robot_state_namespace}/left_hand/joint_states,{robot_state_namespace}/right_hand/joint_states",
+        "tactile_force": "/cb_left_hand_force,/cb_right_hand_force",
+        "tactile_matrix": "/cb_left_hand_matrix_touch,/cb_right_hand_matrix_touch",
+        "tactile_mass": "/cb_left_hand_matrix_touch_mass,/cb_right_hand_matrix_touch_mass",
         "camera_rgb": "<camera_namespace>/color/image_raw",
         "camera_depth": "<camera_namespace>/aligned_depth_to_color/image_raw",
         "camera_info": "<camera_namespace>/color/camera_info,<camera_namespace>/depth/camera_info",
