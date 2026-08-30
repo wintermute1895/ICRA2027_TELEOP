@@ -21,6 +21,11 @@ CONDITION_ID="unassigned"
 OPERATOR_ID="anonymous"
 TASK_ID="unspecified"
 EXPERIMENT_MANIFEST=""
+HAND_SDK=0
+LEFT_HAND_CAN="can0"
+RIGHT_HAND_CAN="can1"
+LEFT_TOUCH="false"
+RIGHT_TOUCH="false"
 
 usage() {
   cat >&2 <<'EOF'
@@ -42,6 +47,11 @@ Options:
   --operator-id=ID               de-identified operator ID
   --task-id=ID                   task/fixture identifier
   --experiment-manifest PATH     immutable manifest from tools/resolve_experiment_manifest.py
+  --hand-sdk                     start LinkerHand SDK for state/tactile recording (hands remain disarmed)
+  --left-hand-can=CAN            left hand CAN interface (default: can0)
+  --right-hand-can=CAN           right hand CAN interface (default: can1)
+  --left-touch                   enable left tactile sensor SDK stream
+  --right-touch                  enable right tactile sensor SDK stream
 EOF
 }
 
@@ -63,6 +73,11 @@ for arg in "$@"; do
     --operator-id=*) OPERATOR_ID="${arg#*=}" ;;
     --task-id=*) TASK_ID="${arg#*=}" ;;
     --experiment-manifest=*) EXPERIMENT_MANIFEST="${arg#*=}" ;;
+    --hand-sdk) HAND_SDK=1 ;;
+    --left-hand-can=*) LEFT_HAND_CAN="${arg#*=}" ;;
+    --right-hand-can=*) RIGHT_HAND_CAN="${arg#*=}" ;;
+    --left-touch) LEFT_TOUCH="true" ;;
+    --right-touch) RIGHT_TOUCH="true" ;;
     -h|--help) usage; exit 0 ;;
     *) usage; die "unknown option: $arg" ;;
   esac
@@ -75,6 +90,8 @@ done
 [[ "$CONDITION_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--condition contains unsupported characters"
 [[ "$OPERATOR_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--operator-id contains unsupported characters"
 [[ "$TASK_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--task-id contains unsupported characters"
+[[ "$LEFT_HAND_CAN" =~ ^[A-Za-z0-9._-]+$ ]] || die "--left-hand-can contains unsupported characters"
+[[ "$RIGHT_HAND_CAN" =~ ^[A-Za-z0-9._-]+$ ]] || die "--right-hand-can contains unsupported characters"
 [[ -z "$EXPERIMENT_MANIFEST" || -f "$EXPERIMENT_MANIFEST" ]] || die "experiment manifest not found: $EXPERIMENT_MANIFEST"
 if [[ -n "$EXPERIMENT_MANIFEST" ]]; then
   [[ "$CONDITION_ID" == "unassigned" ]] || die "--condition cannot override an immutable experiment manifest"
@@ -227,6 +244,14 @@ wait_for_topic /left_arm_joint_control 20
 wait_for_topic /right_arm_joint_control 20
 wait_for_topic /teleop/left/mapped_joint_command 20
 wait_for_topic /teleop/right/mapped_joint_command 20
+if (( HAND_SDK )); then
+  # Explicit, disarmed SDK startup: tactile/state recording never enables hand motion.
+  launch_cmd hands "ros2 launch hand_adapter hand_interface.launch.py launch_sdk:=true armed:=false left_can:=$LEFT_HAND_CAN right_can:=$RIGHT_HAND_CAN left_touch:=$LEFT_TOUCH right_touch:=$RIGHT_TOUCH"
+  wait_for_topic /cb_left_hand_state 20
+  wait_for_topic /cb_right_hand_state 20
+  if [[ "$LEFT_TOUCH" == "true" ]]; then wait_for_topic /cb_left_hand_force 20; fi
+  if [[ "$RIGHT_TOUCH" == "true" ]]; then wait_for_topic /cb_right_hand_force 20; fi
+fi
 if (( PREVIEW )); then
   if [[ -n "${DISPLAY:-}" ]]; then
     launch_cmd preview "ros2 run rqt_image_view rqt_image_view /camera/camera/color/image_raw"

@@ -86,31 +86,38 @@ def main() -> int:
     master_raw_topic = f"{teleop_ns}/{opt.arm}/master_joint_raw"
     master_filtered_topic = f"{teleop_ns}/{opt.arm}/master_joint_filtered"
     command_topic = f"{teleop_ns}/{opt.arm}/mapped_joint_command"
+    vendor_command_topic = f"{robot_ns}/{opt.arm}_arm/vendor_command"
+    tcp_pose_topic = f"{robot_ns}/{opt.arm}_arm/pose_states"
     rgb_topic = f"{camera_ns}/color/image_raw"
     depth_topic = f"{camera_ns}/aligned_depth_to_color/image_raw"
     tactile_force_topic = f"/cb_{opt.arm}_hand_force"
     tactile_matrix_topic = f"/cb_{opt.arm}_hand_matrix_touch"
     tactile_mass_topic = f"/cb_{opt.arm}_hand_matrix_touch_mass"
+    task_context_topic = f"{teleop_ns}/{opt.arm}/task_context"
+    sim_context_topic = f"{robot_ns}/{opt.arm}_arm/filter_context"
     reader, temporary, compression_mode = open_reader(opt.bag)
     types = {item.name: get_message(item.type) for item in reader.get_all_topics_and_types()}
-    required = (state_topic, master_raw_topic, master_filtered_topic, command_topic, rgb_topic, depth_topic)
+    required = (state_topic, master_raw_topic, master_filtered_topic, command_topic, vendor_command_topic, tcp_pose_topic, rgb_topic, depth_topic)
     missing = [topic for topic in required if topic not in types]
     if state_topic not in types:
         raise SystemExit(f"required state topic missing: {state_topic}")
     master_raw: list[tuple[int, Any]] = []
     master_filtered: list[tuple[int, Any]] = []
     commands: list[tuple[int, Any]] = []
+    vendor_commands: list[tuple[int, Any]] = []
+    tcp_poses: list[tuple[int, Any]] = []
     rgb_stamps: list[int] = []
     depth_stamps: list[int] = []
     tactile_force: list[tuple[int, Any]] = []
     tactile_matrix: list[tuple[int, Any]] = []
     tactile_mass: list[tuple[int, Any]] = []
+    task_context: list[tuple[int, Any]] = []
     state_samples: list[tuple[int, int, Any]] = []
     max_age_ns = int(opt.max_camera_age_ms * 1e6)
     max_command_age_ns = int(opt.max_command_age_ms * 1e6)
     while reader.has_next():
         topic, raw, bag_time_ns = reader.read_next()
-        if topic not in {state_topic, master_raw_topic, master_filtered_topic, command_topic, rgb_topic, depth_topic, tactile_force_topic, tactile_matrix_topic, tactile_mass_topic}:
+        if topic not in {state_topic, master_raw_topic, master_filtered_topic, command_topic, vendor_command_topic, tcp_pose_topic, rgb_topic, depth_topic, tactile_force_topic, tactile_matrix_topic, tactile_mass_topic, task_context_topic, sim_context_topic}:
             continue
         message = deserialize_message(raw, types[topic])
         message_stamp_ns = stamp_ns(message, bag_time_ns)
@@ -122,6 +129,12 @@ def main() -> int:
             continue
         if topic == command_topic:
             commands.append((message_stamp_ns, message))
+            continue
+        if topic == vendor_command_topic:
+            vendor_commands.append((message_stamp_ns, message))
+            continue
+        if topic == tcp_pose_topic:
+            tcp_poses.append((message_stamp_ns, message))
             continue
         if topic == rgb_topic:
             rgb_stamps.append(message_stamp_ns)
@@ -137,6 +150,9 @@ def main() -> int:
             continue
         if topic == tactile_mass_topic:
             tactile_mass.append((message_stamp_ns, message))
+            continue
+        if topic in {task_context_topic, sim_context_topic}:
+            task_context.append((message_stamp_ns, message))
             continue
         state_samples.append((message_stamp_ns, int(bag_time_ns), message))
 
@@ -192,12 +208,50 @@ def main() -> int:
     raw_for = make_command_lookup(master_raw)
     filtered_for = make_command_lookup(master_filtered)
     command_for = make_command_lookup(commands)
+    vendor_for = make_command_lookup(vendor_commands)
+    pose_for = make_command_lookup(tcp_poses)
+    context_for = make_command_lookup(task_context)
+
+    def context_value(message: Any) -> dict[str, Any] | None:
+        if message is None:
+            return None
+        data = getattr(message, "data", None)
+        if isinstance(data, str):
+            try:
+                value = json.loads(data)
+            except json.JSONDecodeError:
+                return None
+            return value if isinstance(value, dict) else None
+        names = getattr(message, "name", None)
+        positions = getattr(message, "position", None)
+        if isinstance(names, (list, tuple)) and isinstance(positions, (list, tuple)):
+            return {str(name): float(value) for name, value in zip(names, positions)}
+        return None
 
     records: list[dict[str, Any]] = []
     for message_stamp_ns, bag_time_ns, message in state_samples:
         command = command_for(message_stamp_ns)
         raw = raw_for(message_stamp_ns)
         filtered = filtered_for(message_stamp_ns)
+        vendor = vendor_for(message_stamp_ns)
+        pose = pose_for(message_stamp_ns)
+        context = context_for(message_stamp_ns)
+        tcp_pose = None
+        tcp_frame = None
+        if pose is not None:
+            tcp_frame = getattr(getattr(pose, "header", None), "frame_id", None)
+            pose_value = getattr(pose, "pose", None)
+            if pose_value is not None:
+                tcp_pose = [
+                    float(pose_value.position.x), float(pose_value.position.y), float(pose_value.position.z),
+                    float(pose_value.orientation.x), float(pose_value.orientation.y),
+                    float(pose_value.orientation.z), float(pose_value.orientation.w),
+                ]
+        controller_command = None
+        controller_source = None
+        if vendor is not None:
+            controller_command = [float(value) for value in getattr(vendor, "joints_rad", [])]
+            controller_source = getattr(vendor, "source", None)
         records.append({
             "schema": "robot_teleop.episode/v1",
             "episode_id": opt.episode_id or (opt.bag.parent.parent.name if opt.bag.name == "rosbag2" else opt.bag.name),
@@ -212,7 +266,11 @@ def main() -> int:
             "master_joint_filtered_rad": None if filtered is None else [float(value) for value in filtered.position],
             "robot_joint_state_rad": [float(value) for value in message.position],
             "mapped_joint_command_rad": None if command is None else [float(value) for value in command.position],
-            "tcp_pose_base": None,
+            "controller_command_rad": controller_command,
+            "controller_command_source": controller_source,
+            "tcp_pose_base": tcp_pose,
+            "tcp_pose_frame": tcp_frame,
+            "task_context": context_value(context),
             "rgb": camera_ref(rgb_stamps, rgb_topic, message_stamp_ns),
             "depth": camera_ref(depth_stamps, depth_topic, message_stamp_ns),
             "tactile_force": tactile_ref(tactile_force, tactile_force_topic, message_stamp_ns),
@@ -239,11 +297,14 @@ def main() -> int:
             "master_raw": master_raw_topic,
             "master_filtered": master_filtered_topic,
             "command": command_topic,
+            "vendor_command": vendor_command_topic,
+            "tcp_pose": tcp_pose_topic,
             "rgb": rgb_topic,
             "depth": depth_topic,
             "tactile_force": tactile_force_topic,
             "tactile_matrix": tactile_matrix_topic,
             "tactile_mass": tactile_mass_topic,
+            "task_context": task_context_topic if task_context_topic in types else sim_context_topic,
         },
         "missing_topics": missing,
         "camera_alignment": {"policy": "nearest_header_stamp", "maximum_age_ms": opt.max_camera_age_ms},
@@ -251,6 +312,7 @@ def main() -> int:
         "compression_handling": compression_mode,
         "tactile_alignment": {"policy": "latest_header_or_bag_stamp_not_after_state", "maximum_age_ms": opt.max_command_age_ms},
         "tactile_topics_available": {"force": tactile_force_topic in types, "matrix": tactile_matrix_topic in types, "mass": tactile_mass_topic in types},
+        "task_context_topic_available": task_context_topic in types or sim_context_topic in types,
         "sample_count": len(records),
         "hardware_accessed": False,
     }

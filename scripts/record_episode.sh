@@ -53,6 +53,10 @@ TOPICS=(
   "${TELEOP_NAMESPACE}/right/mapped_joint_command"
   "${ROBOT_STATE_NAMESPACE}/left_arm/joint_states"
   "${ROBOT_STATE_NAMESPACE}/right_arm/joint_states"
+  "${ROBOT_STATE_NAMESPACE}/left_arm/vendor_command"
+  "${ROBOT_STATE_NAMESPACE}/right_arm/vendor_command"
+  "${ROBOT_STATE_NAMESPACE}/left_arm/pose_states"
+  "${ROBOT_STATE_NAMESPACE}/right_arm/pose_states"
   "${ROBOT_STATE_NAMESPACE}/left_hand/control_cmd"
   "${ROBOT_STATE_NAMESPACE}/right_hand/control_cmd"
   "${ROBOT_STATE_NAMESPACE}/left_hand/joint_states"
@@ -61,6 +65,10 @@ TOPICS=(
   "${CAMERA_NAMESPACE}/color/camera_info"
   "${CAMERA_NAMESPACE}/aligned_depth_to_color/image_raw"
   "${CAMERA_NAMESPACE}/depth/camera_info"
+  "${TELEOP_NAMESPACE}/left/task_context"
+  "${TELEOP_NAMESPACE}/right/task_context"
+  "${TELEOP_NAMESPACE}/events"
+  "${TELEOP_NAMESPACE}/terminal_audit"
 )
 
 if [[ -n "$SIM_CAMERA_NAMESPACES" ]]; then
@@ -74,6 +82,13 @@ if [[ -n "$SIM_CAMERA_NAMESPACES" ]]; then
       "${camera}/depth/camera_info"
     )
   done
+fi
+
+if [[ "$SOURCE_DOMAIN" == "sim" ]]; then
+  TOPICS+=(
+    "${ROBOT_STATE_NAMESPACE}/left_arm/filter_context"
+    "${ROBOT_STATE_NAMESPACE}/right_arm/filter_context"
+  )
 fi
 
 if [[ "$SOURCE_DOMAIN" == "real" ]]; then
@@ -186,6 +201,10 @@ payload = {
         "master_joint_filtered": f"{teleop_namespace}/left/master_joint_filtered,{teleop_namespace}/right/master_joint_filtered",
         "mapped_joint_command": f"{teleop_namespace}/left/mapped_joint_command,{teleop_namespace}/right/mapped_joint_command",
         "robot_joint_state": f"{robot_state_namespace}/left_arm/joint_states,{robot_state_namespace}/right_arm/joint_states",
+        "controller_command": f"{robot_state_namespace}/left_arm/vendor_command,{robot_state_namespace}/right_arm/vendor_command",
+        "tcp_pose": f"{robot_state_namespace}/left_arm/pose_states,{robot_state_namespace}/right_arm/pose_states",
+        "task_context": f"{teleop_namespace}/left/task_context,{teleop_namespace}/right/task_context",
+        "events": f"{teleop_namespace}/events,{teleop_namespace}/terminal_audit",
         "hand_command": f"{robot_state_namespace}/left_hand/control_cmd,{robot_state_namespace}/right_hand/control_cmd",
         "hand_state": f"{robot_state_namespace}/left_hand/joint_states,{robot_state_namespace}/right_hand/joint_states",
         "tactile_force": "/cb_left_hand_force,/cb_right_hand_force",

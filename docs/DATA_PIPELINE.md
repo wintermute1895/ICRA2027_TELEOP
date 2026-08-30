@@ -93,6 +93,17 @@ The exporter is read-only. File-level zstd rosbag files are expanded to a
 temporary directory under `/tmp` and removed after parsing; image pixels remain
 in the source rosbag and JSONL keeps timestamped references only.
 
+For tactile-enabled hardware capture, opt in to the LinkerHand SDK while
+keeping hand actuation disarmed:
+
+```bash
+bash scripts/start_capture_session.sh --hand-sdk --left-touch --right-touch
+```
+
+The recorder captures the driver-accepted `vendor_command`, measured TCP pose,
+task-context/event topics, and tactile streams. `vendor_command` is evidence of
+the command accepted for SDK transmission; it is not an observed robot action.
+
 Each output directory contains:
 
 ```text
@@ -109,6 +120,38 @@ master input, mapped arm command, measured arm state, and nearest RGB/depth
 frame references when their source topics exist. Real records also include the
 latest force/matrix/mass tactile sample when it is fresh enough. A missing
 source topic is listed in the export manifest; no absent signal is synthesized.
+
+## Canonical v0.1 And ACT Projection
+
+Materialize each derived arm JSONL into the source-agnostic canonical record:
+
+```bash
+/usr/bin/python3 tools/exported_jsonl_to_canonical_episode.py \
+  --export-jsonl <derived>/right_episode.jsonl \
+  --output-dir <derived>/canonical-right \
+  --source real --task-id usb_c_insertion \
+  --configuration-id fixture_a --calibration-version tcp_handeye_v1
+```
+
+This writes control, commands, task-context, events, tactile, and
+camera-reference streams plus `episode.manifest.json`. It defaults to
+`audit_only/A_audit`. `A_action/filter_training` is allowed only when recorded
+task context, observed action, all causal stages, synchronization, and explicit
+terminal audit are complete. No command is promoted to observed state.
+
+The ACT adapter is a documented projection rather than a second source of
+truth. It requires `policy_training` admission and actual extracted image files
+referenced by the canonical camera stream:
+
+```bash
+python3 tools/canonical_episode_to_act_dataset.py \
+  --manifest <derived>/canonical-right/episode.manifest.json \
+  --output-dir <dataset>/episode_000000 --camera-id rgb --image-root <frames>
+```
+
+It emits `observation.images.*`, `observation.state`, `action`, boundaries and
+split metadata. Image normalization and the exact installed LeRobot schema are
+recorded at training time, rather than silently inferred by the capture adapter.
 
 `quality_gate=pass` means the episode is complete enough for analysis. A
 `review` result is retained with exact reasons and does not mean task failure.
