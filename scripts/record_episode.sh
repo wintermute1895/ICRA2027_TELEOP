@@ -233,7 +233,7 @@ timeout --signal=INT --kill-after="${FINALIZE_TIMEOUT}s" "${DURATION}s" \
     "${TOPICS[@]}"
 STATUS=$?
 set -e
-if [[ "$STATUS" != "0" && "$STATUS" != "124" ]]; then
+if [[ "$STATUS" != "0" && "$STATUS" != "124" && "$STATUS" != "130" ]]; then
   echo "ros2 bag record failed with status ${STATUS}" >&2
   exit "$STATUS"
 fi
