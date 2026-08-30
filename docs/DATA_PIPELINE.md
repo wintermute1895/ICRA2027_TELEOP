@@ -144,9 +144,14 @@ truth. It requires `policy_training` admission and actual extracted image files
 referenced by the canonical camera stream:
 
 ```bash
+/usr/bin/python3 tools/extract_rosbag_images.py \
+  --bag <run>/artifacts/rosbag2 --topic /camera/camera/color/image_raw \
+  --output-dir <derived>/frames --camera-id rgb
+
 python3 tools/canonical_episode_to_act_dataset.py \
   --manifest <derived>/canonical-right/episode.manifest.json \
-  --output-dir <dataset>/episode_000000 --camera-id rgb --image-root <frames>
+  --output-dir <dataset>/episode_000000 --camera-id rgb \
+  --camera-index <derived>/frames/rgb_frames.jsonl
 ```
 
 It emits `observation.images.*`, `observation.state`, `action`, boundaries and

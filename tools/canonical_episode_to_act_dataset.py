@@ -38,6 +38,7 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--camera-id", default="rgb", help="camera_id value in streams/cameras JSONL")
+    parser.add_argument("--camera-index", type=Path, help="Decoded-image JSONL from extract_rosbag_images.py")
     parser.add_argument("--image-root", type=Path, help="Root used to resolve relative frame_reference values")
     parser.add_argument("--copy-images", action="store_true")
     args = parser.parse_args()
@@ -51,7 +52,7 @@ def main() -> int:
     camera_stream = streams.get("cameras", {}).get("recorded_frames")
     if not camera_stream or camera_stream.get("availability") != "available":
         raise SystemExit("no available camera frame stream for ACT projection")
-    camera_ref = Path(camera_stream["storage_ref"])
+    camera_ref = args.camera_index or Path(camera_stream["storage_ref"])
     controls = read_jsonl(control_ref)
     cameras = sorted((row for row in read_jsonl(camera_ref) if row.get("camera_id") == args.camera_id), key=lambda row: int(row["timestamp_ns"]))
     if not controls or not cameras:
