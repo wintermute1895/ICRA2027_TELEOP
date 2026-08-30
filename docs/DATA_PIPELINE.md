@@ -104,6 +104,18 @@ The recorder captures the driver-accepted `vendor_command`, measured TCP pose,
 task-context/event topics, and tactile streams. `vendor_command` is evidence of
 the command accepted for SDK transmission; it is not an observed robot action.
 
+Before a real armed capture, `start_capture_session.sh` runs the strict
+read-only sample preflight. It requires a message from raw/filter/projected
+commands, driver command, and measured joint state for both arms. Run it
+directly for diagnosis:
+
+```bash
+python3 scripts/preflight.py --mode capture --source real --sample-timeout-s 5
+```
+
+Add `--require-tactile` only when both tactile SDK streams were explicitly
+enabled. The check never publishes a command or invokes hardware SDK APIs.
+
 Each output directory contains:
 
 ```text
@@ -140,6 +152,19 @@ projected/controller commands, measured state, synchronization, and explicit
 terminal audit are complete. Geometry context, TCP, external-camera calibration,
 insertion depth, tactile, and derived observed action are optional. No command
 is promoted to observed state.
+
+Create the required explicit terminal audit immediately after each episode:
+
+```bash
+python3 tools/finalize_episode_audit.py \
+  --output <derived>/terminal_audit.json --episode-id <episode_id> \
+  --success --termination-reason operator_verified \
+  --operator-id operator_01 --evidence-ref <run>/artifacts/rosbag2
+```
+
+Use `--failure` for unsuccessful trials and add `--safety-violation` or
+`--unlogged-external-override` whenever applicable. The tool refuses to
+overwrite an existing audit.
 
 The ACT adapter is a documented projection rather than a second source of
 truth. It requires `policy_training` admission and actual extracted image files

@@ -23,7 +23,34 @@ def command(args: list[str]) -> tuple[bool, str]:
     return result.returncode == 0, (result.stdout or result.stderr).strip()
 
 
-def check(mode: str) -> dict:
+def ros_topic_has_sample(topic: str, timeout_s: float) -> tuple[bool, str]:
+    """Read one ROS message without publishing or changing the graph."""
+    try:
+        result = subprocess.run(
+            ["ros2", "topic", "echo", "--once", topic], text=True,
+            capture_output=True, timeout=timeout_s,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return False, f"no sample within {timeout_s:g}s: {exc}"
+    return result.returncode == 0 and bool(result.stdout.strip()), (result.stdout or result.stderr).strip()[:240]
+
+
+def capture_topics(source: str, arms: tuple[str, ...], require_tactile: bool) -> tuple[str, ...]:
+    robot = "/sim/robot1" if source == "sim" else "/robot1"
+    topics: list[str] = []
+    for arm in arms:
+        topics.extend((
+            f"/teleop/{arm}/master_joint_raw", f"/teleop/{arm}/master_joint_filtered",
+            f"/teleop/{arm}/mapped_joint_command", f"{robot}/{arm}_arm/joint_states",
+        ))
+        if source == "real":
+            topics.append(f"{robot}/{arm}_arm/vendor_command")
+        if require_tactile:
+            topics.extend((f"/cb_{arm}_hand_force", f"/cb_{arm}_hand_matrix_touch", f"/cb_{arm}_hand_matrix_touch_mass"))
+    return tuple(topics)
+
+
+def check(mode: str, *, source: str = "real", arms: tuple[str, ...] = ("left", "right"), require_tactile: bool = False, sample_timeout_s: float = 3.0) -> dict:
     result: dict = {"root": str(ROOT), "python": sys.executable, "platform": platform.platform(), "checks": []}
 
     def add(name: str, ok: bool, detail: str, required: bool = True) -> None:
@@ -42,6 +69,18 @@ def check(mode: str) -> dict:
             add(f"hand:{interface}", ok, detail.splitlines()[0] if detail else "not present", required=False)
         for profile in (ROOT / "config/hands/l20lite.yaml", ROOT / "config/hands/o6.yaml"):
             add(f"hand:profile:{profile.stem}", profile.is_file(), str(profile))
+    if mode == "capture":
+        if not shutil.which("ros2"):
+            add("capture:ros2", False, "ros2 not found")
+        else:
+            listed, detail = command(["ros2", "topic", "list"])
+            visible = set(detail.splitlines()) if listed else set()
+            for topic in capture_topics(source, arms, require_tactile):
+                exists = topic in visible
+                add(f"capture:visible:{topic}", exists, "visible" if exists else "topic not present")
+                if exists:
+                    ok, sample_detail = ros_topic_has_sample(topic, sample_timeout_s)
+                    add(f"capture:sample:{topic}", ok, sample_detail or "sample received")
     add("urdf:robot_model", False, "no default model: the obsolete O2 z=0 splice was removed; pass an explicitly validated model to simulation tools", required=False)
 
     interface_source = ROOT / "ros2_ws/src/lbot_arm_interfaces/package.xml"
@@ -62,9 +101,18 @@ def check(mode: str) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Read-only teleoperation environment preflight")
     parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
-    parser.add_argument("--mode", choices=("all", "ros2", "hand"), default="all")
+    parser.add_argument("--mode", choices=("all", "ros2", "hand", "capture"), default="all")
+    parser.add_argument("--source", choices=("real", "sim"), default="real", help="capture graph source domain")
+    parser.add_argument("--arms", default="left,right", help="comma-separated arms for --mode capture")
+    parser.add_argument("--require-tactile", action="store_true", help="require force/matrix/mass samples for --mode capture")
+    parser.add_argument("--sample-timeout-s", type=float, default=3.0, help="per-topic sample timeout for --mode capture")
     args = parser.parse_args()
-    result = check(args.mode)
+    arms = tuple(item.strip() for item in args.arms.split(",") if item.strip())
+    if not arms or any(item not in {"left", "right"} for item in arms):
+        parser.error("--arms must contain left and/or right")
+    if args.sample_timeout_s <= 0:
+        parser.error("--sample-timeout-s must be positive")
+    result = check(args.mode, source=args.source, arms=arms, require_tactile=args.require_tactile, sample_timeout_s=args.sample_timeout_s)
     if args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:

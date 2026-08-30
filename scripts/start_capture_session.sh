@@ -252,6 +252,15 @@ if (( HAND_SDK )); then
   if [[ "$LEFT_TOUCH" == "true" ]]; then wait_for_topic /cb_left_hand_force 20; fi
   if [[ "$RIGHT_TOUCH" == "true" ]]; then wait_for_topic /cb_right_hand_force 20; fi
 fi
+if (( REAL )); then
+  CAPTURE_PREFLIGHT=(python3 "$ROOT_DIR/scripts/preflight.py" --mode capture --source real --sample-timeout-s 5)
+  if [[ "$LEFT_TOUCH" == "true" || "$RIGHT_TOUCH" == "true" ]]; then
+    CAPTURE_PREFLIGHT+=(--require-tactile)
+  fi
+  "${CAPTURE_PREFLIGHT[@]}"
+else
+  log "Capture-topic sample preflight is skipped in safe observation mode; run scripts/preflight.py --mode capture after teleop inputs are active."
+fi
 if (( PREVIEW )); then
   if [[ -n "${DISPLAY:-}" ]]; then
     launch_cmd preview "ros2 run rqt_image_view rqt_image_view /camera/camera/color/image_raw"
