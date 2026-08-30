@@ -1,6 +1,7 @@
 """Project-level O6 hand controller.
 
-The vendor ``linkerbot`` package is kept under ``thrid_party/``.  This module
+The vendor ``linkerbot`` package (when installed) is discovered relative to
+the repository's ``third_party/`` directory.  This module
 is the stable DexCatch-facing seam: gesture definitions and application code
 do not need to know where the SDK is installed or how its managers are
 organized.
@@ -122,16 +123,27 @@ class O6SDKTransport:
         if self.hand is not None:
             return
         try:
-            # Make the repository-vendored SDK usable without an editable
-            # install when DexCatch is launched from its project root.
-            vendor_src = Path(__file__).resolve().parents[2] / "thrid_party" / "linkerbot-python-sdk-main" / "src"
-            if vendor_src.is_dir() and str(vendor_src) not in sys.path:
-                sys.path.insert(0, str(vendor_src))
+            # Make a repository-vendored SDK usable without an editable
+            # install when DexCatch is launched from its project root.  The
+            # pure-Python hand SDK is vendored in this checkout under
+            # ``third_party/linkerbot-python-sdk-main/src``.  Keep the older
+            # C/ctypes bundle as a fallback path for installations that still
+            # provide a compatible ``linkerbot`` package there.
+            repo_root = Path(__file__).resolve().parents[2]
+            vendor_roots = (
+                repo_root / "third_party" / "linkerbot-python-sdk-main" / "src",
+                repo_root / "third_party" / "linkerbot_sdk" / "python",
+            )
+            for vendor_root in vendor_roots:
+                if vendor_root.is_dir() and str(vendor_root) not in sys.path:
+                    sys.path.insert(0, str(vendor_root))
             O6 = importlib.import_module("linkerbot.hand.o6").O6
         except ImportError as exc:
             raise O6HandError(
-                "linkerbot O6 SDK is unavailable; install it or add "
-                "thrid_party/linkerbot-python-sdk-main/src to PYTHONPATH"
+                "linkerbot O6 Python SDK is unavailable. Expected the "
+                "repository SDK at third_party/linkerbot-python-sdk-main/src "
+                "(or an installed linkerbot-py package); install its Python "
+                "dependencies, including python-can, if the import fails"
             ) from exc
         self.hand = O6(
             side=self.side,
@@ -214,12 +226,14 @@ class O6Hand:
         self.gestures[key] = pose
 
     def set_angles(self, angles: Sequence[float]) -> tuple[float, ...]:
+        """Set six O6 angles directly in the SDK's native 0..100 range."""
         pose = O6HandPose("runtime", tuple(angles))
         self._require_connection()
         self.transport.set_angles(pose.angles)
         return pose.angles
 
     def execute_gesture(self, name: str) -> tuple[float, ...]:
+        """Execute a registered gesture using the SDK's native 0..100 range."""
         self._require_connection()
         key = name.strip().lower()
         try:
@@ -228,6 +242,16 @@ class O6Hand:
             raise KeyError(f"unknown O6 gesture: {name!r}") from exc
         self.transport.set_angles(pose.angles)
         return pose.angles
+
+    def execute_gesture_number(self, number: int) -> tuple[float, ...]:
+        """Execute a numeric gesture such as the recorded ``0``/``1``/``2``/``3``.
+
+        Numeric gesture files are loaded with :meth:`from_gesture_file`; this
+        helper keeps the caller in the same 0..100 domain as the O6 SDK.
+        """
+        if isinstance(number, bool) or not isinstance(number, int):
+            raise TypeError("gesture number must be an integer")
+        return self.execute_gesture(str(number))
 
     def set_speed(self, speeds: Sequence[float]) -> tuple[float, ...]:
         pose = O6HandPose("speed", tuple(speeds))
