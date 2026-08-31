@@ -23,8 +23,15 @@ def read_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-def stream_ref(path: Path, available: bool = True, reason: str | None = None) -> dict[str, Any]:
-    result: dict[str, Any] = {"storage_ref": str(path), "timestamp_field": "timestamp_ns", "availability": "available" if available else "unavailable"}
+def stream_ref(
+    path: Path,
+    available: bool = True,
+    reason: str | None = None,
+    *,
+    relative_to: Path | None = None,
+) -> dict[str, Any]:
+    storage_ref = path.relative_to(relative_to) if relative_to is not None else path
+    result: dict[str, Any] = {"storage_ref": str(storage_ref), "timestamp_field": "timestamp_ns", "availability": "available" if available else "unavailable"}
     if not available:
         result["unavailable_reason"] = reason or "not_recorded_by_source"
     return result
@@ -41,6 +48,12 @@ def causal_row_complete(row: dict[str, Any]) -> bool:
     ))
 
 
+def policy_row_complete(row: dict[str, Any]) -> bool:
+    return all(isinstance(row.get(key), list) and row[key] for key in (
+        "controller_command_rad", "robot_joint_state_rad",
+    )) and isinstance(row.get("rgb"), dict)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--export-jsonl", type=Path, required=True)
@@ -53,8 +66,12 @@ def main() -> int:
     parser.add_argument("--calibration-version", default="unrecorded")
     parser.add_argument("--collection-mode", choices=("generated", "teleop_rule", "teleop_learned", "replay"), default="teleop_rule")
     parser.add_argument("--terminal-audit", type=Path, help="Explicit structured terminal audit JSON")
+    parser.add_argument("--events-jsonl", type=Path, help="Auditor events sidecar exported from /teleop/events")
     parser.add_argument("--control-hz", type=float, default=100.0)
+    parser.add_argument("--min-policy-complete-ratio", type=float, default=0.95)
     args = parser.parse_args()
+    if not 0.0 < args.min_policy_complete_ratio <= 1.0:
+        raise SystemExit("--min-policy-complete-ratio must be in (0, 1]")
 
     rows = read_jsonl(args.export_jsonl)
     if not rows:
@@ -81,6 +98,8 @@ def main() -> int:
             "timestamp_ns": timestamp,
             "robot": {"joint_names": joint_names, "q_rad": row.get("robot_joint_state_rad"), "ee_pose_B": row.get("tcp_pose_base"), "ee_pose_frame": row.get("tcp_pose_frame")},
             "execution": {"controller_command": controller, "controller_command_source": row.get("controller_command_source"), "observed_action": observed},
+            "gripper_state": row.get("gripper_state"),
+            "gripper_state_semantics": {"0": "open", "1": "closed"},
         })
         command_rows.append({
             "timestamp_ns": timestamp,
@@ -89,15 +108,42 @@ def main() -> int:
             "safety_projected": {"value": row.get("mapped_joint_command_rad"), "availability": "available" if row.get("mapped_joint_command_rad") else "unavailable", "unavailable_reason": None if row.get("mapped_joint_command_rad") else "missing_from_bag"},
             "controller_command_ref": timestamp,
             "controller_command": controller,
+            "gripper_state": row.get("gripper_state"),
         })
         if isinstance(row.get("task_context"), dict):
             context_rows.append({"timestamp_ns": timestamp, **row["task_context"]})
         tactile = {name: row.get(name) for name in ("tactile_force", "tactile_matrix", "tactile_mass") if row.get(name) is not None}
         if tactile:
             tactile_rows.append({"timestamp_ns": timestamp, "samples": tactile})
-        for name in ("rgb", "depth"):
-            if row.get(name) is not None:
-                camera_rows.append({"timestamp_ns": timestamp, "camera_id": name, "reference": row[name]})
+        cameras = row.get("cameras")
+        if isinstance(cameras, dict):
+            for camera_id, modalities in cameras.items():
+                if not isinstance(modalities, dict):
+                    continue
+                if modalities.get("rgb") is not None:
+                    camera_rows.append({
+                        "timestamp_ns": timestamp,
+                        "camera_id": str(camera_id),
+                        "modality": "rgb",
+                        "reference": modalities["rgb"],
+                    })
+                if modalities.get("depth") is not None:
+                    camera_rows.append({
+                        "timestamp_ns": timestamp,
+                        "camera_id": str(camera_id),
+                        "modality": "depth",
+                        "reference": modalities["depth"],
+                    })
+        else:
+            # Backward compatibility for exports produced before named cameras.
+            for name in ("rgb", "depth"):
+                if row.get(name) is not None:
+                    camera_rows.append({
+                        "timestamp_ns": timestamp,
+                        "camera_id": name,
+                        "modality": name,
+                        "reference": row[name],
+                    })
 
     def write(name: str, payload: list[dict[str, Any]]) -> Path:
         path = streams / name
@@ -107,20 +153,38 @@ def main() -> int:
     control_path = write("control.jsonl", control_rows)
     commands_path = write("commands.jsonl", command_rows)
     context_path = write("task_context.jsonl", context_rows)
-    events_path = write("events.jsonl", [])
+    events_source = args.events_jsonl
+    if events_source is None:
+        export_manifest = args.export_jsonl.with_suffix(args.export_jsonl.suffix + ".manifest.json")
+        if export_manifest.is_file():
+            manifest_value = json.loads(export_manifest.read_text(encoding="utf-8")).get("audit_events_sidecar")
+            if manifest_value:
+                candidate = Path(manifest_value)
+                events_source = candidate if candidate.is_absolute() else export_manifest.parent / candidate
+    events = read_jsonl(events_source) if events_source and events_source.is_file() else []
+    events_path = write("events.jsonl", events)
     tactile_path = write("tactile.jsonl", tactile_rows)
     cameras_path = write("cameras.jsonl", camera_rows)
     audit: dict[str, Any] = {"success": False, "termination_reason": "not_audited", "safety_violation": False, "unlogged_external_override": True}
     if args.terminal_audit:
         audit.update(json.loads(args.terminal_audit.read_text(encoding="utf-8")))
-    causal_complete = all(causal_row_complete({
+    causal_rows = sum(causal_row_complete({
         "raw_teleop": row.get("master_joint_raw"), "filter_output": row.get("master_joint_filtered_rad"),
         "safety_projected": row.get("mapped_joint_command_rad"), "controller_command": row.get("controller_command_rad"),
         "robot_state": row.get("robot_joint_state_rad"),
     }) for row in rows)
+    causal_complete = causal_rows == len(rows)
+    policy_rows = sum(policy_row_complete(row) for row in rows)
+    policy_complete_ratio = policy_rows / len(rows)
     # Geometry context and observed action are optional extensions.  The core
     # flywheel records command stages, measured state, outcome, and safety.
     context_complete = len(context_rows) == len(rows)
+    outcome_admitted = (
+        audit.get("success") is True
+        and audit.get("safety_violation") is False
+        and audit.get("unlogged_external_override") is False
+    )
+    policy_admitted = outcome_admitted and policy_complete_ratio >= args.min_policy_complete_ratio
     failed_gates = []
     if not causal_complete:
         failed_gates.append("incomplete_causal_record")
@@ -130,20 +194,44 @@ def main() -> int:
         failed_gates.append("safety_violation")
     if audit.get("unlogged_external_override") is not False:
         failed_gates.append("unlogged_external_override")
-    admitted = not failed_gates
-    audit.update({"buffer": "A_action" if admitted else "A_audit", "admission_rule_version": "A_action/v0.1", "failed_gates": failed_gates})
+    filter_admitted = not failed_gates
+    intended_uses = []
+    if filter_admitted:
+        intended_uses.append("filter_training")
+    if policy_admitted:
+        intended_uses.append("policy_training")
+    if not intended_uses:
+        intended_uses.append("audit_only")
+    audit.update({"buffer": "A_action" if filter_admitted else "A_audit", "admission_rule_version": "A_action/v0.1", "failed_gates": failed_gates})
     manifest = {
         "schema_version": "teleop_episode/v0.1", "episode_id": episode_id, "source": args.source,
-        "collection_mode": args.collection_mode, "intended_uses": ["filter_training", "policy_training"] if admitted else ["audit_only"],
+        "collection_mode": args.collection_mode, "intended_uses": intended_uses,
         "task": {"task_id": args.task_id, "task_family": args.task_family, "success_spec_version": args.success_spec_version},
         "configuration": {"configuration_id": args.configuration_id, "parameters": {"arm": arm}, "split": "unspecified"},
         "clock": {"clock_domain": "ros2_header", "control_hz": args.control_hz, "timestamp_unit": "ns", "alignment_tolerance_ns": 100_000_000},
         "frames": {"base_frame": "B", "end_effector_frame": "E", "transform_convention": "T_AB maps coordinates in B into A"} if args.calibration_version != "unrecorded" else {},
         "calibration": {"calibration_version": args.calibration_version} if args.calibration_version != "unrecorded" else {},
         "action_spec": {"representation": "joint_position", "frame": "joint_space", "dimension": len(joint_names), "units": ["rad"] * len(joint_names), "controller_interface": "vendor_joint_follow", "joint_names": joint_names},
-        "streams": {"control": stream_ref(control_path), "commands": stream_ref(commands_path), "task_context": stream_ref(context_path, context_complete, "no_task_context_publisher_recorded"), "events": stream_ref(events_path), "tactile": stream_ref(tactile_path, bool(tactile_rows), "not_recorded_or_no_tactile_messages"), "cameras": {"recorded_frames": stream_ref(cameras_path, bool(camera_rows), "no_camera_messages_aligned")}},
+        "streams": {
+            "control": stream_ref(control_path, relative_to=output),
+            "commands": stream_ref(commands_path, relative_to=output),
+            "task_context": stream_ref(context_path, context_complete, "no_task_context_publisher_recorded", relative_to=output),
+            "events": stream_ref(events_path, relative_to=output),
+            "gripper_state": stream_ref(write("gripper_state.jsonl", [{"timestamp_ns": int(row["header_stamp_ns"]), "state": row.get("gripper_state"), "semantics": {"0": "open", "1": "closed"}} for row in rows if row.get("gripper_state") in (0, 1)]), any(row.get("gripper_state") in (0, 1) for row in rows), "not_recorded_by_source", relative_to=output),
+            "tactile": stream_ref(tactile_path, bool(tactile_rows), "not_recorded_or_no_tactile_messages", relative_to=output),
+            "cameras": {"recorded_frames": stream_ref(cameras_path, bool(camera_rows), "no_camera_messages_aligned", relative_to=output)},
+        },
         "terminal_audit": audit,
-        "data_integrity": {"synchronization_valid": causal_complete, "complete_causal_record": causal_complete, "validator_report_ref": "validator_report.json"},
+        "data_integrity": {
+            "synchronization_valid": causal_complete or policy_complete_ratio >= args.min_policy_complete_ratio,
+            "complete_causal_record": causal_complete,
+            "causal_complete_rows": causal_rows,
+            "policy_complete_rows": policy_rows,
+            "policy_complete_ratio": policy_complete_ratio,
+            "policy_minimum_complete_ratio": args.min_policy_complete_ratio,
+            "policy_training_admitted": policy_admitted,
+            "validator_report_ref": "validator_report.json",
+        },
         "provenance": {"code_revision": git_revision(Path(__file__).resolve().parents[1]), "adapter_version": ADAPTER_VERSION, "source_dataset_or_run": str(args.export_jsonl.resolve()), "content_sha256": hashlib.sha256(args.export_jsonl.read_bytes()).hexdigest()},
     }
     manifest_path = output / "episode.manifest.json"

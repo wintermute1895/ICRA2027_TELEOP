@@ -39,6 +39,91 @@ until it has a v0.1 manifest, task context, terminal audit, and complete
 Use the capture launcher for a real episode. It performs the preflight checks,
 starts the ROS graph, writes a RunEvidence directory, and records a rosbag.
 Real motion still requires its explicit E-stop and confirmation arguments.
+For real capture, SocketCAN interfaces must be brought up before starting this
+launcher. The launcher checks their live state and exits with a repair command
+instead of allowing the vendor LinkerTA node to block on an interactive sudo
+prompt. Do not put a sudo password in a project config or capture manifest.
+
+For repeated real collection, keep the teleoperation graph alive and use
+manual episode segments. The recorder window then uses Enter to start an
+episode, Enter again to stop and finalize its rosbag, asks for the terminal
+audit, and returns to the next episode without restarting the robot, LinkerTA,
+or cameras. `--episodes=0` keeps this loop available until `q` is entered at
+the start prompt. This is the preferred interactive workflow; Ctrl-C remains
+an emergency interruption, not the normal way to end a data segment.
+
+The recorder window handles both operator control and second-person annotation,
+so no tmux window switch is needed. Enter starts/stops an episode; digit keys
+are immediate and do not require Enter: `1` approach, `2` align, `3` short insert, `4`
+correction start/end, `5` stalled/misaligned, `6` recovery start, `7` target
+lost, `8` retreat, `9` success, and `0` failure. Events are accepted only while
+an episode is recording. Every event carries wall-clock, monotonic, and bag
+receipt timestamps (the sidecar's `timestamp_ns` is the capture wall clock) and is stored both on `/teleop/events` and in
+`artifacts/audit_events.jsonl`. Configure the de-identified auditor with
+`CAPTURE_AUDITOR_ID` or `--auditor-id`.
+
+The Python recorder exclusively owns this TTY. The rosbag subprocess is started
+with keyboard controls disabled and stdin connected to `/dev/null`; it cannot
+consume annotation digits, Enter, or change the recorder's terminal settings.
+
+## Independent Hand Presets
+
+Hand actuation is a separate process and terminal. It does not share the
+recorder's keyboard, so auditor digits and Enter retain their capture semantics.
+The controller publishes through `hand_adapter` and the official SDK; it never
+opens CAN itself.
+
+Start it after the adapter/SDK is running and the physical E-stop is reachable.
+For real hardware, the backend and controller can be started together in a
+dedicated terminal:
+
+```bash
+scripts/run_hand_preset_controller.sh \
+  --execute --physical-estop-ready \
+  --confirm EXECUTE_HAND_PRESET_WITH_ESTOP_READY
+```
+
+The command above assumes an already running, armed adapter. To start the
+right-hand O6 backend with its own CAN owner, use instead:
+
+```bash
+scripts/start_hand_control_session.sh \
+  --physical-estop-ready --confirm=I_UNDERSTAND_REAL_HAND
+```
+
+It waits for `/robot1/right_hand/joint_states`, then launches the controller;
+its SDK log is written under `/tmp/teleop_hand_control_logs` (or `ROS_LOG_DIR`).
+Start this terminal before the capture session and do **not** pass
+`--hand-sdk` to `start_capture_session.sh`; that option intentionally starts a
+second, disarmed SDK owner for observation only.
+
+In that controller window, `f` advances the configured cycle and `q` exits the
+controller only. The supplied right-hand cycle is `power_grasp (1) -> open
+(0)`. Edit `config/hand_presets.json` only after a dry run and supervised
+hardware check. The controller continuously publishes
+`/teleop/right/gripper_state` as `std_msgs/msg/UInt8` (`0=open`, `1=closed`),
+and the recorder includes this topic in every new bag. Raw six/ten-DoF hand
+command and state topics remain as evidence; canonical/model inputs use only
+the binary projection. No state is claimed before the first `f` command, which
+avoids labeling an unverified initial pose. The current arm trajectory filter
+still predicts arm residuals only; the recorded binary stream is ready for a
+future gripper/release head and does not silently turn hand state into arm
+action supervision.
+
+```bash
+bash scripts/start_capture_session.sh \
+  --real --physical-estop-ready --confirm=I_UNDERSTAND_REAL_ROBOT \
+  --arms=right --manual-segments --episodes=0 \
+  --camera-serial <primary_serial> \
+  --second-camera-serial <secondary_serial> \
+  --second-camera-namespace /camera2/camera \
+  --task-id precision_alignment --operator-id operator_01
+```
+
+When a display is available, the session opens one persistent `rqt_image_view`
+window per configured RGB camera (`/camera/camera/...` and
+`/camera2/camera/...`). They run as tmux windows and are closed automatically by
+`scripts/stop_capture_session.sh`; they never consume the recorder keyboard.
 
 For simulation, record the same field contract with simulation namespaces:
 
@@ -118,9 +203,12 @@ CAMERA_NAMESPACES=/camera/camera,/camera2/camera \
 bash scripts/record_episode.sh
 ```
 
-The recorder captures the driver-accepted `vendor_command`, measured TCP pose,
-task-context/event topics, and tactile streams. `vendor_command` is evidence of
-the command accepted for SDK transmission; it is not an observed robot action.
+The recorder always captures the driver-accepted `vendor_command` and measured
+joint state. It also subscribes to TCP pose, task-context/event, and tactile
+topics when publishers are present. TCP pose and its calibration are optional:
+they are neither required to collect an episode nor required for the ACT
+projection or `A_action` admission. `vendor_command` is evidence of the command
+accepted for SDK transmission; it is not an observed robot action.
 
 Before a real armed capture, `start_capture_session.sh` runs the strict
 read-only sample preflight. It requires a message from raw/filter/projected
@@ -231,6 +319,18 @@ The core algorithm loop is offline and conservative. It cannot command a robot:
 episode -> data-quality gate -> trajectory evaluator -> hard-case miner
         -> registry -> A/B aggregate -> next-round replay/collection plan
 ```
+
+For the first automatic audit experiment, download the frozen Qwen visual
+auditor to the mounted mobile SSD (the script detects `/media/$USER/Cyan_data`):
+
+```bash
+bash scripts/download_qwen_auditor.sh
+```
+
+The model is `Qwen/Qwen2.5-VL-3B-Instruct` at an immutable revision. The first
+experiment keeps it frozen and uses it only for offline, low-frequency JSON
+pre-labels; no Qwen process is started by the recorder and no model output can
+enter a robot command path.
 
 For every exported arm JSONL, generate the control-quality and hard-case
 reports. This is the same command for real and simulation data:

@@ -1,5 +1,10 @@
 # Causal Command Filter v0
 
+> Scope: this document describes the earlier linear ridge baseline. Its
+> executed-action requirement does not apply to the current Transformer-CVAE
+> trajectory model in `src/teleop_filter/`, which trains against an explicit
+> `residual_target_rad`; controller commands are not silently used as residuals.
+
 This is the first deployable experiment artifact for the learned filter
 hypothesis. It is intentionally a small linear ridge action prior rather than
 a claim that a particular neural architecture is the contribution.
@@ -47,11 +52,11 @@ When the source is a canonical `teleop_episode/v0.1` manifest, first project mat
 ```bash
 python3 tools/canonical_episode_to_filter_jsonl.py \
   --manifest episode.manifest.json \
-  --control-jsonl streams/control.jsonl \
-  --commands-jsonl streams/commands.jsonl \
-  --task-context-jsonl streams/task_context.jsonl \
   --output derived/filter_training.jsonl
 ```
+
+The adapter resolves control, command, and available task-context streams from
+the manifest. Explicit stream arguments remain available only as overrides.
 
 The adapter requires the manifest terminal audit to be `A_action` and retains
 raw, filter, safety-projected, executed, state, and optional `filter_context`

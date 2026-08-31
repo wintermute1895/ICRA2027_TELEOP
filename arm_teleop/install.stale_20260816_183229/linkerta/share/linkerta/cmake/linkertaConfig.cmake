@@ -1,1 +1,0 @@
-/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/build/linkerta/ament_cmake_core/linkertaConfig.cmake

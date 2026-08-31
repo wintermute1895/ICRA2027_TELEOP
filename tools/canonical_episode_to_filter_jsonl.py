@@ -15,6 +15,14 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def stream_path(manifest_path: Path, manifest: dict[str, Any], name: str) -> Path:
+    reference = manifest.get("streams", {}).get(name, {}).get("storage_ref")
+    if not isinstance(reference, str):
+        raise SystemExit(f"manifest does not declare streams.{name}.storage_ref")
+    path = Path(reference)
+    return path if path.is_absolute() else manifest_path.parent / path
+
+
 def index_rows(rows: list[dict[str, Any]]) -> tuple[list[int], dict[int, dict[str, Any]]]:
     indexed = {int(row["timestamp_ns"]): row for row in rows if "timestamp_ns" in row}
     return sorted(indexed), indexed
@@ -59,8 +67,8 @@ def admitted(manifest: dict[str, Any]) -> bool:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path, required=True)
-    parser.add_argument("--control-jsonl", type=Path, required=True)
-    parser.add_argument("--commands-jsonl", type=Path, required=True)
+    parser.add_argument("--control-jsonl", type=Path, help="override manifest control stream")
+    parser.add_argument("--commands-jsonl", type=Path, help="override manifest commands stream")
     parser.add_argument("--task-context-jsonl", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--alignment-tolerance-ns", type=int, default=None)
@@ -74,8 +82,15 @@ def main() -> int:
     tolerance = args.alignment_tolerance_ns
     if tolerance is None:
         tolerance = int(manifest.get("clock", {}).get("alignment_tolerance_ns", 100_000_000))
-    controls, commands = load_jsonl(args.control_jsonl), load_jsonl(args.commands_jsonl)
-    contexts = load_jsonl(args.task_context_jsonl) if args.task_context_jsonl else []
+    control_path = args.control_jsonl or stream_path(args.manifest, manifest, "control")
+    commands_path = args.commands_jsonl or stream_path(args.manifest, manifest, "commands")
+    context_path = args.task_context_jsonl
+    if context_path is None:
+        context_stream = manifest.get("streams", {}).get("task_context", {})
+        if context_stream.get("availability") == "available":
+            context_path = stream_path(args.manifest, manifest, "task_context")
+    controls, commands = load_jsonl(control_path), load_jsonl(commands_path)
+    contexts = load_jsonl(context_path) if context_path else []
     command_stamps, command_rows = index_rows(commands)
     context_stamps, context_rows = index_rows(contexts)
     action_spec = manifest.get("action_spec", {})
@@ -101,13 +116,19 @@ def main() -> int:
         row: dict[str, Any] = {
             "schema": "robot_teleop.episode/v1", "episode_id": manifest["episode_id"],
             "source_domain": manifest["source"], "sample_index": index, "header_stamp_ns": stamp,
-            "arm": manifest.get("configuration", {}).get("arm", "unknown"), "joint_names": joint_names,
+            "arm": manifest.get("configuration", {}).get("parameters", {}).get(
+                "arm", manifest.get("configuration", {}).get("arm", "unknown")
+            ), "joint_names": joint_names,
             "master_joint_raw": raw, "filter_output_action": filtered,
             "mapped_joint_command_rad": projected,
             "controller_command_rad": controller,
             "executed_joint_command_rad": get(control, "execution.observed_action"),
+            "gripper_state": get(control, "gripper_state"),
             "robot_joint_state_rad": state, "success": True,
         }
+        residual_target = get(control, "execution.residual_target_rad", "execution.residual_target")
+        if isinstance(residual_target, list):
+            row["residual_target_rad"] = residual_target
         if context is not None:
             context_values = get(context, "filter_context")
             if not isinstance(context_values, list):

@@ -86,16 +86,19 @@ class HandAdapter(Node):
         self.command_publishers[arm].publish(command)
 
     def _state_callback(self, arm: str, msg: JointState) -> None:
-        expected = self._length(arm)
-        if len(msg.position) != expected:
-            self.get_logger().error(f"{arm} hand state rejected: expected {expected} values, got {len(msg.position)}")
+        # State is an observation contract, not a command contract.  Physical
+        # hands may expose passive or firmware-defined coordinates in addition
+        # to their actively driven DoF. Preserve the vendor payload exactly.
+        actual = len(msg.position)
+        if actual == 0:
+            self.get_logger().error(f"{arm} hand state rejected: empty position array")
             return
         state = JointState()
         state.header = msg.header
-        state.name = [f"{arm}_hand_joint_{index + 1}" for index in range(expected)]
+        state.name = list(msg.name) if len(msg.name) == actual else [f"{arm}_hand_joint_{index + 1}" for index in range(actual)]
         state.position = list(msg.position)
-        state.velocity = list(msg.velocity) if len(msg.velocity) == expected else []
-        state.effort = list(msg.effort) if len(msg.effort) == expected else []
+        state.velocity = list(msg.velocity) if len(msg.velocity) == actual else []
+        state.effort = list(msg.effort) if len(msg.effort) == actual else []
         self.state_publishers[arm].publish(state)
 
 

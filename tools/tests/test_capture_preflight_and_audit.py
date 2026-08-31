@@ -25,6 +25,10 @@ class CapturePreflightAndAuditTest(unittest.TestCase):
         self.assertIn("/robot1/right_arm/joint_states", topics)
         self.assertIn("/cb_right_hand_matrix_touch_mass", topics)
 
+    def test_samples_are_opt_in(self):
+        source = (ROOT / "scripts/preflight.py").read_text(encoding="utf-8")
+        self.assertIn("--require-samples", source)
+
     def test_terminal_audit_is_explicit_and_immutable(self):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "audit.json"

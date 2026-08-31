@@ -1,1 +1,0 @@
-/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces/rosidl_generator_py/lbot_arm_interfaces/_lbot_arm_interfaces_s.ep.rosidl_typesupport_introspection_c.c

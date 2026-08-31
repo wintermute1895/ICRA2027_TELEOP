@@ -1,6 +1,0 @@
-[0.006s] Invoking command in '/home/pao/桌面/ICRA2027_TELEOP/arm_teleop/build/linkerta': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/pao/桌面/ICRA2027_TELEOP/arm_teleop/build/linkerta -- -j16 -l16
-[0.010s] CMake Error: The current CMakeCache.txt directory /home/pao/桌面/ICRA2027_TELEOP/arm_teleop/build/linkerta/CMakeCache.txt is different than the directory /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/build/linkerta where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
-[0.022s] CMake Error: The source directory "/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/src/linkerta" does not exist.
-[0.022s] Specify --help for usage, or press the help button on the CMake GUI.
-[0.023s] gmake: *** [Makefile:321：cmake_check_build_system] 错误 1
-[0.025s] Invoked command in '/home/pao/桌面/ICRA2027_TELEOP/arm_teleop/build/linkerta' returned '2': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/pao/桌面/ICRA2027_TELEOP/arm_teleop/build/linkerta -- -j16 -l16

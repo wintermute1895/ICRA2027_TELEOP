@@ -1,1 +1,0 @@
-/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces/ament_cmake_core/lbot_arm_interfacesConfig-version.cmake

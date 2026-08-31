@@ -1,0 +1,28 @@
+{
+  "schema": "robot_teleop.hand-presets/v1",
+  "arm": "right",
+  "robot_namespace": "/robot1",
+  "teleop_namespace": "/teleop",
+  "speed": 40.0,
+  "force": 40.0,
+  "publish_hz": 20.0,
+  "hold_seconds": 0.5,
+  "state_publish_hz": 2.0,
+  "state_timeout_s": 2.0,
+  "hands": {
+    "right": {
+      "model": "O6",
+      "cycle": ["power_grasp", "open"],
+      "presets": {
+        "open": {
+          "gripper_state": 0,
+          "positions": [200, 255, 255, 255, 255, 180]
+        },
+        "power_grasp": {
+          "gripper_state": 1,
+          "positions": [90, 135, 20, 20, 20, 20]
+        }
+      }
+    }
+  }
+}

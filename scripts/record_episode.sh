@@ -5,8 +5,11 @@ set -euo pipefail
 # This script never launches lbot_driver, linkerta, or any motion node.
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SYSTEM_PYTHON="${SYSTEM_PYTHON:-/usr/bin/python3}"
+[[ -x "$SYSTEM_PYTHON" ]] || { echo "system Python not found: $SYSTEM_PYTHON" >&2; exit 2; }
 RUN_DIR="${RUNEVIDENCE_RUN_DIR:-${ROOT_DIR}/evidence/teleop-standalone-$(date +%Y%m%d-%H%M%S)}"
 DURATION="${TELEOP_CAPTURE_DURATION_S:-60}"
+CAPTURE_MODE="${TELEOP_CAPTURE_MODE:-timed}"
 FINALIZE_TIMEOUT="${TELEOP_CAPTURE_FINALIZE_TIMEOUT_S:-300}"
 COMPRESSION_MODE="${RUNEVIDENCE_BAG_COMPRESSION_MODE:-file}"
 COMPRESSION_FORMAT="${RUNEVIDENCE_BAG_COMPRESSION_FORMAT:-zstd}"
@@ -18,6 +21,7 @@ CAMERA_NAMESPACES="${CAMERA_NAMESPACES:-$CAMERA_NAMESPACE}"
 ROBOT_STATE_NAMESPACE="${ROBOT_STATE_NAMESPACE:-/robot1}"
 TELEOP_NAMESPACE="${TELEOP_NAMESPACE:-/teleop}"
 SOURCE_DOMAIN="${SOURCE_DOMAIN:-real}"
+CAPTURE_ARMS="${TELEOP_CAPTURE_ARMS:-left,right}"
 SIM_CAMERA_NAMESPACES="${SIM_CAMERA_NAMESPACES:-}"
 if [[ -n "$SIM_CAMERA_NAMESPACES" && "$CAMERA_NAMESPACES" != *"$SIM_CAMERA_NAMESPACES"* ]]; then
   CAMERA_NAMESPACES+=",$SIM_CAMERA_NAMESPACES"
@@ -37,6 +41,10 @@ if ! [[ "$FINALIZE_TIMEOUT" =~ ^[1-9][0-9]*$ ]]; then
   echo "TELEOP_CAPTURE_FINALIZE_TIMEOUT_S must be a positive integer" >&2
   exit 2
 fi
+[[ "$CAPTURE_MODE" == "timed" || "$CAPTURE_MODE" == "manual" ]] || {
+  echo "TELEOP_CAPTURE_MODE must be timed or manual" >&2
+  exit 2
+}
 
 ARTIFACT_DIR="${RUN_DIR}/artifacts"
 BAG_DIR="${ARTIFACT_DIR}/rosbag2"
@@ -46,30 +54,34 @@ if [[ -e "$BAG_DIR" ]]; then
   exit 2
 fi
 
-TOPICS=(
-  /left_arm_joint_control
-  /right_arm_joint_control
-  "${TELEOP_NAMESPACE}/left/master_joint_raw"
-  "${TELEOP_NAMESPACE}/left/master_joint_filtered"
-  "${TELEOP_NAMESPACE}/left/mapped_joint_command"
-  "${TELEOP_NAMESPACE}/right/master_joint_raw"
-  "${TELEOP_NAMESPACE}/right/master_joint_filtered"
-  "${TELEOP_NAMESPACE}/right/mapped_joint_command"
-  "${ROBOT_STATE_NAMESPACE}/left_arm/joint_states"
-  "${ROBOT_STATE_NAMESPACE}/right_arm/joint_states"
-  "${ROBOT_STATE_NAMESPACE}/left_arm/vendor_command"
-  "${ROBOT_STATE_NAMESPACE}/right_arm/vendor_command"
-  "${ROBOT_STATE_NAMESPACE}/left_arm/pose_states"
-  "${ROBOT_STATE_NAMESPACE}/right_arm/pose_states"
-  "${ROBOT_STATE_NAMESPACE}/left_hand/control_cmd"
-  "${ROBOT_STATE_NAMESPACE}/right_hand/control_cmd"
-  "${ROBOT_STATE_NAMESPACE}/left_hand/joint_states"
-  "${ROBOT_STATE_NAMESPACE}/right_hand/joint_states"
-  "${TELEOP_NAMESPACE}/left/task_context"
-  "${TELEOP_NAMESPACE}/right/task_context"
-  "${TELEOP_NAMESPACE}/events"
-  "${TELEOP_NAMESPACE}/terminal_audit"
-)
+# In manual sessions runevidence intentionally detaches stdin.  The tmux
+# parent therefore controls stop through a small file instead of `read`.
+CONTROL_FILE="${TELEOP_CAPTURE_CONTROL_FILE:-}"
+RUN_MARKER="${TELEOP_CAPTURE_RUN_MARKER:-}"
+BAG_PID_FILE="${TELEOP_CAPTURE_BAG_PID_FILE:-}"
+if [[ -n "$RUN_MARKER" ]]; then
+  printf '%s\n' "$RUN_DIR" > "$RUN_MARKER"
+fi
+
+IFS=',' read -r -a ARM_LIST <<< "$CAPTURE_ARMS"
+(( ${#ARM_LIST[@]} )) || { echo "TELEOP_CAPTURE_ARMS must select an arm" >&2; exit 2; }
+TOPICS=("${TELEOP_NAMESPACE}/events" "${TELEOP_NAMESPACE}/terminal_audit")
+for arm in "${ARM_LIST[@]}"; do
+  [[ "$arm" == "left" || "$arm" == "right" ]] || { echo "unsupported arm: $arm" >&2; exit 2; }
+  TOPICS+=(
+    "/${arm}_arm_joint_control"
+    "${TELEOP_NAMESPACE}/${arm}/master_joint_raw"
+    "${TELEOP_NAMESPACE}/${arm}/master_joint_filtered"
+    "${TELEOP_NAMESPACE}/${arm}/mapped_joint_command"
+    "${ROBOT_STATE_NAMESPACE}/${arm}_arm/joint_states"
+    "${ROBOT_STATE_NAMESPACE}/${arm}_arm/vendor_command"
+    "${ROBOT_STATE_NAMESPACE}/${arm}_arm/pose_states"
+    "${ROBOT_STATE_NAMESPACE}/${arm}_hand/control_cmd"
+    "${ROBOT_STATE_NAMESPACE}/${arm}_hand/joint_states"
+    "${TELEOP_NAMESPACE}/${arm}/gripper_state"
+    "${TELEOP_NAMESPACE}/${arm}/task_context"
+  )
+done
 
 if [[ -n "$CAMERA_NAMESPACES" ]]; then
   IFS=',' read -r -a CAPTURE_CAMERAS <<< "$CAMERA_NAMESPACES"
@@ -93,14 +105,9 @@ if [[ "$SOURCE_DOMAIN" == "sim" ]]; then
 fi
 
 if [[ "$SOURCE_DOMAIN" == "real" ]]; then
-  TOPICS+=(
-    /cb_left_hand_force
-    /cb_right_hand_force
-    /cb_left_hand_matrix_touch
-    /cb_right_hand_matrix_touch
-    /cb_left_hand_matrix_touch_mass
-    /cb_right_hand_matrix_touch_mass
-  )
+  for arm in "${ARM_LIST[@]}"; do
+    TOPICS+=("/cb_${arm}_hand_state" "/cb_${arm}_hand_info" "/cb_${arm}_hand_force" "/cb_${arm}_hand_matrix_touch" "/cb_${arm}_hand_matrix_touch_mass")
+  done
 fi
 
 TOPICS+=(
@@ -108,7 +115,7 @@ TOPICS+=(
   /tf_static
 )
 
-python3 - "$ARTIFACT_DIR/teleop_capture_manifest.json" "$DURATION" "$CAMERA_NAMESPACE" "$COMPRESSION_MODE" "$COMPRESSION_FORMAT" "${TOPICS[@]}" <<'PY'
+"$SYSTEM_PYTHON" - "$ARTIFACT_DIR/teleop_capture_manifest.json" "$DURATION" "$CAMERA_NAMESPACE" "$COMPRESSION_MODE" "$COMPRESSION_FORMAT" "${TOPICS[@]}" <<'PY'
 import json
 import os
 import pathlib
@@ -122,6 +129,7 @@ compression_mode = sys.argv[4]
 compression_format = sys.argv[5]
 topics = sys.argv[6:]
 hardware_commands_enabled = os.environ.get("TELEOP_HARDWARE_COMMANDS_ENABLED", "false").lower() == "true"
+tactile_enabled = os.environ.get("TELEOP_TACTILE_ENABLED", "false").lower() == "true"
 robot_state_namespace = os.environ.get("ROBOT_STATE_NAMESPACE", "/robot1").rstrip("/")
 teleop_namespace = os.environ.get("TELEOP_NAMESPACE", "/teleop").rstrip("/")
 source_domain = os.environ.get("SOURCE_DOMAIN", "real")
@@ -165,7 +173,9 @@ payload = {
         "manifest": experiment_manifest,
     },
     "duration_s": duration,
+    "capture_mode": os.environ.get("TELEOP_CAPTURE_MODE", "timed"),
     "source_domain": source_domain,
+    "capture_arms": [item for item in os.environ.get("TELEOP_CAPTURE_ARMS", "left,right").split(",") if item],
     "camera_namespace": camera_namespace,
     "camera_namespaces": camera_namespaces,
     "camera_profile": os.environ.get("CAMERA_PROFILE", "640x480x15"),
@@ -189,8 +199,8 @@ payload = {
     "hardware_commands_enabled": hardware_commands_enabled,
     "motion_commands_published": hardware_commands_enabled,
     "tactile": {
-        "availability": "available" if source_domain == "real" else "unavailable",
-        "unavailable_reason": None if source_domain == "real" else "not_integrated_in_simulation",
+        "availability": "available" if source_domain == "real" and tactile_enabled else "unavailable",
+        "unavailable_reason": None if source_domain == "real" and tactile_enabled else ("not_enabled_for_capture" if source_domain == "real" else "not_integrated_in_simulation"),
         "topics_recorded": [topic for topic in topics if topic.startswith("/cb_")],
     },
     "recorded_fields": {
@@ -205,6 +215,16 @@ payload = {
         "events": f"{teleop_namespace}/events,{teleop_namespace}/terminal_audit",
         "hand_command": f"{robot_state_namespace}/left_hand/control_cmd,{robot_state_namespace}/right_hand/control_cmd",
         "hand_state": f"{robot_state_namespace}/left_hand/joint_states,{robot_state_namespace}/right_hand/joint_states",
+        "gripper_state": {
+            "left": f"{teleop_namespace}/left/gripper_state",
+            "right": f"{teleop_namespace}/right/gripper_state",
+            "encoding": "std_msgs/msg/UInt8",
+            "semantics": {"0": "open", "1": "closed"},
+            "timestamp_source": "rosbag_receipt_time_for_headerless_message",
+            "model_input": "binary_gripper_state",
+        },
+        "hand_state_raw": "/cb_left_hand_state,/cb_right_hand_state",
+        "hand_info_raw": "/cb_left_hand_info,/cb_right_hand_info",
         "tactile_force": "/cb_left_hand_force,/cb_right_hand_force",
         "tactile_matrix": "/cb_left_hand_matrix_touch,/cb_right_hand_matrix_touch",
         "tactile_mass": "/cb_left_hand_matrix_touch_mass,/cb_right_hand_matrix_touch_mass",
@@ -217,28 +237,74 @@ payload = {
 output.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 PY
 
-echo "Recording ${#TOPICS[@]} topics for ${DURATION}s into ${BAG_DIR}"
+echo "Recording ${#TOPICS[@]} topics into ${BAG_DIR} (mode=${CAPTURE_MODE})"
 COMPRESSION_ARGS=()
 if [[ "$COMPRESSION_MODE" != "none" ]]; then
   COMPRESSION_ARGS=(--compression-mode "$COMPRESSION_MODE" --compression-format "$COMPRESSION_FORMAT")
 fi
 set +e
-timeout --signal=INT --kill-after="${FINALIZE_TIMEOUT}s" "${DURATION}s" \
-  ros2 bag record \
+if [[ "$CAPTURE_MODE" == "manual" ]]; then
+  # Run rosbag in its own process group.  Signalling only the ros2 CLI wrapper
+  # can leave the recorder child running or skip its metadata finalization.
+  setsid ros2 bag record \
+    --disable-keyboard-controls \
     --storage sqlite3 \
     --output "$BAG_DIR" \
     "${COMPRESSION_ARGS[@]}" \
-    "${TOPICS[@]}"
-STATUS=$?
+    "${TOPICS[@]}" < /dev/null &
+  BAG_PID=$!
+  [[ -n "$BAG_PID_FILE" ]] && printf '%s\n' "$BAG_PID" > "$BAG_PID_FILE"
+  echo "RECORDING_STARTED pid=${BAG_PID}"
+  if [[ -n "$CONTROL_FILE" ]]; then
+    while [[ ! -s "$CONTROL_FILE" ]]; do sleep 0.2; done
+  else
+    read -r -p "正在录制。回车结束并保存本条数据（遥操保持运行）: "
+  fi
+  kill -INT -- "-$BAG_PID" 2>/dev/null || kill -INT "$BAG_PID" 2>/dev/null || true
+  # Wait for a clean shutdown, but never block forever on a recorder that did
+  # not handle SIGINT.  The database is checked independently of exit status.
+  finalize_deadline=$((SECONDS + 60))
+  while kill -0 "$BAG_PID" 2>/dev/null && (( SECONDS < finalize_deadline )); do
+    sleep 1
+  done
+  if kill -0 "$BAG_PID" 2>/dev/null; then
+    echo "rosbag did not exit after 60s; sending TERM" >&2
+    kill -TERM -- "-$BAG_PID" 2>/dev/null || kill -TERM "$BAG_PID" 2>/dev/null || true
+    sleep 2
+  fi
+  if kill -0 "$BAG_PID" 2>/dev/null; then
+    echo "rosbag still alive; sending KILL" >&2
+    kill -KILL -- "-$BAG_PID" 2>/dev/null || kill -KILL "$BAG_PID" 2>/dev/null || true
+  fi
+  wait "$BAG_PID" 2>/dev/null || true
+  STATUS=0
+else
+  timeout --signal=INT --kill-after="${FINALIZE_TIMEOUT}s" "${DURATION}s" \
+    ros2 bag record \
+      --disable-keyboard-controls \
+      --storage sqlite3 \
+      --output "$BAG_DIR" \
+      "${COMPRESSION_ARGS[@]}" \
+      "${TOPICS[@]}" < /dev/null
+  STATUS=$?
+fi
 set -e
 if [[ "$STATUS" != "0" && "$STATUS" != "124" && "$STATUS" != "130" ]]; then
   echo "ros2 bag record failed with status ${STATUS}" >&2
   exit "$STATUS"
 fi
 
+if [[ ! -s "${BAG_DIR}/metadata.yaml" ]]; then
+  # A forced stop can leave a valid SQLite bag without metadata.  rosbag2's
+  # reindex reconstructs metadata from the database without changing samples.
+  if compgen -G "${BAG_DIR}/*.db3" >/dev/null || compgen -G "${BAG_DIR}/*.db3.zstd" >/dev/null; then
+    echo "metadata.yaml missing; attempting ros2 bag reindex" >&2
+    ros2 bag reindex "$BAG_DIR" >/dev/null 2>&1 || true
+  fi
+fi
 if [[ ! -s "${BAG_DIR}/metadata.yaml" ]] || \
    { ! compgen -G "${BAG_DIR}/*.db3" >/dev/null && ! compgen -G "${BAG_DIR}/*.db3.zstd" >/dev/null; }; then
-  echo "ros2 bag did not produce metadata.yaml and a sqlite3 or zstd-compressed sqlite3 data file" >&2
+  echo "ros2 bag did not produce a complete metadata.yaml + sqlite3 artifact" >&2
   exit 3
 fi
 
@@ -249,12 +315,6 @@ AUDIT_PATH="${ARTIFACT_DIR}/terminal_audit.json"
 EPISODE_ID="${TELEOP_EPISODE_ID:-$(basename "$RUN_DIR")}"
 AUDIT_TOOL="${ROOT_DIR}/tools/finalize_episode_audit.py"
 if [[ "${TELEOP_INTERACTIVE_AUDIT:-true}" == "true" ]]; then
-  if [[ ! -t 0 || ! -t 1 ]]; then
-    echo "interactive terminal audit requires a TTY; writing failure audit" >&2
-    /usr/bin/python3 "$AUDIT_TOOL" --output "$AUDIT_PATH" --episode-id "$EPISODE_ID" \
-      --failure --termination-reason audit_unavailable --operator-id "${TELEOP_OPERATOR_ID:-anonymous}" \
-      --evidence-ref "$BAG_DIR"
-  else
     while true; do
       read -r -p "本次任务是否成功？[y/N]: " OUTCOME
       case "${OUTCOME,,}" in
@@ -274,12 +334,8 @@ if [[ "${TELEOP_INTERACTIVE_AUDIT:-true}" == "true" ]]; then
       "${SUCCESS_ARGS[@]}" --termination-reason "$TERMINATION_REASON" \
       --operator-id "${TELEOP_OPERATOR_ID:-anonymous}" "${SAFETY_ARGS[@]}" "${OVERRIDE_ARGS[@]}" \
       --evidence-ref "$BAG_DIR"
-  fi
 else
-  echo "TELEOP_INTERACTIVE_AUDIT=false: writing failure audit" >&2
-  /usr/bin/python3 "$AUDIT_TOOL" --output "$AUDIT_PATH" --episode-id "$EPISODE_ID" \
-    --failure --termination-reason audit_disabled --operator-id "${TELEOP_OPERATOR_ID:-anonymous}" \
-    --evidence-ref "$BAG_DIR"
+  echo "TELEOP_INTERACTIVE_AUDIT=false: parent will write terminal audit" >&2
 fi
 
 echo "Capture complete: ${RUN_DIR}"

@@ -1,0 +1,25 @@
+schema: robot_teleop.trajectory-filter-model/v0.1
+model:
+  history_length: 16
+  horizon: 1
+  latent_dim: 8
+  model_dim: 128
+  num_heads: 4
+  num_layers: 3
+  dropout: 0.1
+  context_dim: 0
+  visual_dim: 0 # set to the frozen VLM embedding width for task-aware training
+loss:
+  beta_kl: 0.001
+  smoothness_weight: 0.01
+runtime:
+  deterministic_prior: true
+  blend: 0.35
+  max_correction_rad: 0.05
+  deployment: offline_and_simulation_only
+semantics:
+  prior: learned_conditional_prior_from_past_commands_and_measured_state
+  posterior: training_only_conditioned_on_explicit_expert_residual_target
+  target: explicit_residual_target_rad; never_derived_from_controller_minus_raw
+  quality_claim: reconstruction_and_kl_are_model_diagnostics_not_ground_truth_human_quality
+  visual_semantics: none; trajectory_only_ablation

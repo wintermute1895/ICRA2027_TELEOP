@@ -46,6 +46,8 @@ def generate_launch_description():
     slave_namespaces = [f"robot{i+1}" for i in range(len(slave_arm_ips))]
     launch_driver = LaunchConfiguration("launch_driver")
     launch_linkerta = LaunchConfiguration("launch_linkerta")
+    enable_left_arm = LaunchConfiguration("enable_left_arm")
+    enable_right_arm = LaunchConfiguration("enable_right_arm")
     
     # 打印配置信息
     print(f"[hardware_teleop.launch.py] 从臂配置:")
@@ -92,6 +94,8 @@ def generate_launch_description():
             bridge_params,
             {"slave_namespaces": slave_namespaces},
             {"armed": ParameterValue(LaunchConfiguration("armed"), value_type=bool)},
+            {"enable_left_arm": ParameterValue(enable_left_arm, value_type=bool)},
+            {"enable_right_arm": ParameterValue(enable_right_arm, value_type=bool)},
         ]
     )
 
@@ -111,6 +115,8 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument("armed", default_value="false",
                               description="Explicitly allow commands to reach the robot"),
+        DeclareLaunchArgument("enable_left_arm", default_value="true"),
+        DeclareLaunchArgument("enable_right_arm", default_value="true"),
         *driver_nodes,          # 所有从臂驱动节点
         linkerta_launch,        # 主臂节点
         bridge_launch,          # mapping/filter/safety bridge

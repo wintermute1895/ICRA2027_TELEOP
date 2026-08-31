@@ -1,0 +1,8 @@
+# Optional frozen image encoder for task-aware filter embeddings.
+# Keep this separate from the ROS/LeRobot training environment because model
+# weights are selected per experiment and may be very large.
+transformers==4.57.1
+huggingface_hub>=0.30,<1
+safetensors>=0.5,<1
+Pillow>=10,<13
+sentencepiece>=0.2,<1

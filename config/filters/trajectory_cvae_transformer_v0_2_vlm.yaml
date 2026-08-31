@@ -1,0 +1,25 @@
+schema: robot_teleop.trajectory-filter-model/v0.1
+model:
+  history_length: 16
+  horizon: 1
+  latent_dim: 8
+  model_dim: 128
+  num_heads: 4
+  num_layers: 3
+  dropout: 0.1
+  context_dim: 0
+  visual_dim: 1536 # two SigLIP2-base image embeddings, 768d per camera, concat in camera order
+loss:
+  beta_kl: 0.001
+  smoothness_weight: 0.01
+runtime:
+  deterministic_prior: true
+  blend: 0.35
+  max_correction_rad: 0.05
+  deployment: offline_and_simulation_only
+semantics:
+  prior: learned_conditional_prior_from_past_commands_states_and_frozen_vlm_embedding
+  posterior: training_only_conditioned_on_explicit_expert_residual_target
+  target: explicit_residual_target_rad; never_derived_from_controller_minus_raw
+  visual_encoder: two_frozen_siglip2_base_768d_embeddings_concatenated_in_camera_order
+  quality_claim: reconstruction_and_kl_are_model_diagnostics_not_ground_truth_human_quality

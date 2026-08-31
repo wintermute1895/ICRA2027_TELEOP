@@ -1,11 +1,15 @@
 SemanticTeleop_MPC/
 cyberdog_sim_project/
 sim-web-visualizer-main/
-arm_teleop/build/
-arm_teleop/install/
-arm_teleop/log/
+# Colcon output is machine-specific, including archived attempts with suffixes.
+arm_teleop/build*/
+arm_teleop/install*/
+arm_teleop/log*/
+log/
 __pycache__/
-reports/*.json
+
+# RunEvidence and derived reports are artifacts, not source-controlled inputs.
+reports/
 
 # Experiment recordings and generated evidence stay outside Git.
 evidence/

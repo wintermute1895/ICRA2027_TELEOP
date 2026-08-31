@@ -1,0 +1,2 @@
+# Offline dataset conversion and learned-filter training.
+lerobot==0.4.4

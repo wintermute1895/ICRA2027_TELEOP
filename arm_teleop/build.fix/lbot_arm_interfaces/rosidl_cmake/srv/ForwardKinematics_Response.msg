@@ -1,5 +1,0 @@
-
-geometry_msgs/Vector3 position
-geometry_msgs/Vector3 euler
-
-bool success

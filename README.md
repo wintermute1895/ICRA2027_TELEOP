@@ -23,9 +23,97 @@ DexCatch 是独立的抓取/规划项目；这里只在离线阶段调用它评�
 
 ```bash
 ./scripts/build_ros2_workspace.sh
-./scripts/start_hardware_teleop.sh
-./scripts/start_capture_session.sh --episodes=1 --duration-s=30
+bash scripts/install_lerobot.sh
+bash scripts/start_capture_session.sh --config=config/capture_session.env
 ```
+
+## Data conversion
+
+The rosbag2 run is the immutable capture record. Canonical data is the stable
+audit/interchange layer, while LeRobot is a replaceable training projection.
+One production command performs all projections and writes an official local
+LeRobot v3 dataset without changing the source run:
+
+```bash
+bash scripts/convert_episode_to_lerobot.sh \
+  --run-dir evidence/teleop/<completed-episode> \
+  --camera main_rgb=/camera/camera/color/image_raw \
+  --camera auxiliary_rgb=/camera2/camera/color/image_raw
+```
+
+The real terminal audit must admit the episode for `policy_training`. For a
+conversion-only smoke test that never changes the real audit:
+
+```bash
+bash scripts/test_rosbag_to_lerobot.sh evidence/teleop/<completed-episode>
+```
+
+When the same canonical episode also passes the stricter `A_action` causal gate,
+the production command additionally writes `filter/filter_training.jsonl`.
+Internal stream paths are resolved from the manifest and remain portable when
+the complete derived directory is moved.
+
+Task-aware filter training adds a frozen VLM view before CVAE training. Generate
+embeddings with the selected VLM implementation, then attach them by timestamp:
+
+```bash
+VLM_CACHE_DIR=<vlm-cache> bash scripts/prepare_vlm_filter_view.sh \
+  --episode filter/filter_training.jsonl \
+  --camera main_rgb=derived/frames/main_rgb_frames.jsonl \
+  --camera auxiliary_rgb=derived/frames/auxiliary_rgb_frames.jsonl \
+  --output-dir derived/vlm-filter-view
+```
+
+An optional local VLM generator is included for a reproducible baseline:
+provision a local environment and cache the selected weights with
+`bash scripts/install_vlm.sh --download`, then run
+`tools/encode_images_with_vlm.py` on an image-index JSONL and attach its output.
+The encoder loads the model once and supports multiple named camera indexes in
+one pass; relative frame references are resolved relative to each index file.
+After the first successful download, add `--local-files-only` to guarantee that
+an experiment does not silently access the network.
+The script reuses `teleop-train` by default so CUDA/PyTorch is not duplicated;
+pass `--env-name teleop-vlm` when strict environment isolation is required.
+The default task-aware model is SigLIP2; CLIP remains a baseline. The VLM is
+frozen during filter training; changing the VLM requires a new embedding
+manifest and experiment revision.
+
+Use `config/filters/trajectory_cvae_transformer_v0_2_vlm.yaml` for the
+task-aware model; its `visual_dim: 1536` is two concatenated 768-dimensional
+SigLIP2-base camera embeddings. For another VLM or camera count, set
+`model.visual_dim` to the resulting width in a new versioned config. The
+attachment manifest records model identity, source hashes, camera and alignment;
+partial embedding coverage is rejected.
+
+## Learned filter
+
+The paper-model implementation is simulator-independent and lives in
+`src/teleop_filter/`. Its first version is a conditional trajectory VAE with a
+Transformer history encoder, learned conditional prior, training-only
+posterior, KL regularization, and bounded residual composition. It is currently
+authorized only for offline evaluation and simulation.
+
+```bash
+PYTHONPATH=src conda run -n teleop-train python \
+  tools/train_trajectory_filter.py \
+  --episode derived/filter_training_001.jsonl \
+  --episode derived/filter_training_002.jsonl \
+  --output-dir runs/filter/trajectory_cvae_v0_1
+
+PYTHONPATH=src conda run -n teleop-train python \
+  tools/evaluate_trajectory_filter.py \
+  --checkpoint runs/filter/trajectory_cvae_v0_1/trajectory_filter.pt \
+  --episode derived/filter_validation_001.jsonl \
+  --output-dir runs/filter/trajectory_cvae_v0_1/evaluation_001
+```
+
+The filter trainer requires an explicit `residual_target_rad` field. This must
+come from a verified expert correction, a reference-constrained local target,
+or controlled perturbation/recovery data. It is never inferred as
+`controller_command - raw_command`.
+
+训练和评估只接受明确准入的 filter-training JSONL。推理输出经过有界残差组合，当前仍
+只允许离线与仿真使用，不能直接发布到真实机器人控制话题。
 
 ## Standalone USB-C insertion scene
 
@@ -36,24 +124,24 @@ visual-only and must carry a source/license manifest.
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
-/home/ilex/miniforge3/envs/mpc_env/bin/python -B \
+python -B \
   tools/build_connector_insertion_scene.py \
   --task usb_c_laptop_insertion \
   --output /tmp/usb_c_laptop_insertion.mjcf.xml
 
-/home/ilex/miniforge3/envs/mpc_env/bin/python -B \
+python -B \
   tools/validate_connector_insertion_scene.py \
   --scene /tmp/usb_c_laptop_insertion.mjcf.xml --require-named-contract
 
-/home/ilex/miniforge3/envs/mpc_env/bin/python -B \
+python -B \
   tools/validate_connector_insertion_scene.py \
   --scene /tmp/usb_c_laptop_insertion.mjcf.xml --check-collisions
 
-/home/ilex/miniforge3/envs/mpc_env/bin/python -B \
+python -B \
   tools/validate_connector_insertion_scene.py \
   --scene /tmp/usb_c_laptop_insertion.mjcf.xml --check-success-geometry
 
-MUJOCO_GL=egl /home/ilex/miniforge3/envs/mpc_env/bin/python -B \
+MUJOCO_GL=egl python -B \
   tools/validate_connector_insertion_scene.py \
   --scene /tmp/usb_c_laptop_insertion.mjcf.xml \
   --render /tmp/usb_c_contact_sheet.png

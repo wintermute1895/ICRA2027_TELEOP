@@ -1,1 +1,0 @@
-Invoking command in '/home/pao/桌面/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/pao/桌面/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces -- -j16 -l16

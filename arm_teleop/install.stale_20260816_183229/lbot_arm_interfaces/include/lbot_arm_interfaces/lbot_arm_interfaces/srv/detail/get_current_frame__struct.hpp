@@ -1,1 +1,0 @@
-/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces/rosidl_generator_cpp/lbot_arm_interfaces/srv/detail/get_current_frame__struct.hpp

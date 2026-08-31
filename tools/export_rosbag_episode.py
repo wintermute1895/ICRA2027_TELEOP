@@ -29,6 +29,36 @@ def stamp_ns(message: Any, fallback: int) -> int:
     return value if value > 0 else fallback
 
 
+def deduplicate_state_samples(samples: list[tuple[int, int, Any]]) -> tuple[list[tuple[int, int, Any]], int]:
+    """Sort by message time and retain the latest-received sample per timestamp."""
+    ordered = sorted(samples, key=lambda item: (item[0], item[1]))
+    unique: list[tuple[int, int, Any]] = []
+    for sample in ordered:
+        if unique and sample[0] == unique[-1][0]:
+            unique[-1] = sample
+        else:
+            unique.append(sample)
+    return unique, len(ordered) - len(unique)
+
+
+def merge_audit_events(events: list[dict[str, Any]], sidecar: Path | None) -> list[dict[str, Any]]:
+    combined = list(events)
+    if sidecar is not None and sidecar.is_file():
+        for line in sidecar.read_text(encoding="utf-8").splitlines():
+            if line.strip():
+                value = json.loads(line)
+                if isinstance(value, dict):
+                    combined.append(value)
+    unique: dict[tuple[Any, ...], dict[str, Any]] = {}
+    for event in combined:
+        identity = (
+            event.get("episode_id"), event.get("auditor_id"), event.get("sequence"),
+            event.get("timestamp_ns"), event.get("event_type"),
+        )
+        unique[identity] = event
+    return sorted(unique.values(), key=lambda value: (int(value.get("timestamp_ns", 0)), int(value.get("sequence", 0))))
+
+
 def args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bag", type=Path, required=True, help="rosbag2 directory")
@@ -103,10 +133,11 @@ def main() -> int:
     task_context_topic = f"{teleop_ns}/{opt.arm}/task_context"
     sim_context_topic = f"{robot_ns}/{opt.arm}_arm/filter_context"
     reader, temporary, compression_mode = open_reader(opt.bag)
-    types = {item.name: get_message(item.type) for item in reader.get_all_topics_and_types()}
+    topic_types = {item.name: item.type for item in reader.get_all_topics_and_types()}
+    message_types: dict[str, Any] = {}
     required = (state_topic, master_raw_topic, master_filtered_topic, command_topic, vendor_command_topic, tcp_pose_topic, rgb_topic, depth_topic)
-    missing = [topic for topic in required if topic not in types]
-    if state_topic not in types:
+    missing = [topic for topic in required if topic not in topic_types]
+    if state_topic not in topic_types:
         raise SystemExit(f"required state topic missing: {state_topic}")
     master_raw: list[tuple[int, Any]] = []
     master_filtered: list[tuple[int, Any]] = []
@@ -119,16 +150,37 @@ def main() -> int:
     tactile_matrix: list[tuple[int, Any]] = []
     tactile_mass: list[tuple[int, Any]] = []
     task_context: list[tuple[int, Any]] = []
+    gripper_states: list[tuple[int, Any]] = []
+    audit_events: list[dict[str, Any]] = []
     state_samples: list[tuple[int, int, Any]] = []
     max_age_ns = int(opt.max_camera_age_ms * 1e6)
     max_command_age_ns = int(opt.max_command_age_ms * 1e6)
+    event_topic = f"{teleop_ns}/events"
+    gripper_state_topic = f"{teleop_ns}/{opt.arm}/gripper_state"
     while reader.has_next():
         topic, raw, bag_time_ns = reader.read_next()
         camera_topic_names = {value for _, _, value, _ in camera_topics} | {value for _, _, _, value in camera_topics}
-        if topic not in {state_topic, master_raw_topic, master_filtered_topic, command_topic, vendor_command_topic, tcp_pose_topic, tactile_force_topic, tactile_matrix_topic, tactile_mass_topic, task_context_topic, sim_context_topic} | camera_topic_names:
+        if topic not in {state_topic, master_raw_topic, master_filtered_topic, command_topic, vendor_command_topic, tcp_pose_topic, tactile_force_topic, tactile_matrix_topic, tactile_mass_topic, task_context_topic, sim_context_topic, event_topic, gripper_state_topic} | camera_topic_names:
             continue
-        message = deserialize_message(raw, types[topic])
+        if topic not in message_types:
+            message_types[topic] = get_message(topic_types[topic])
+        message = deserialize_message(raw, message_types[topic])
         message_stamp_ns = stamp_ns(message, bag_time_ns)
+        if topic == event_topic:
+            raw_event = getattr(message, "data", "")
+            try:
+                event = json.loads(raw_event)
+            except (TypeError, json.JSONDecodeError):
+                event = {"raw": str(raw_event)}
+            if not isinstance(event, dict):
+                event = {"value": event}
+            event.setdefault("timestamp_ns", message_stamp_ns)
+            event.setdefault("receipt_stamp_ns", int(bag_time_ns))
+            event.setdefault("severity", "info")
+            event.setdefault("source", "rosbag:/teleop/events")
+            event.setdefault("payload", {})
+            audit_events.append(event)
+            continue
         if topic == master_raw_topic:
             master_raw.append((message_stamp_ns, message))
             continue
@@ -161,11 +213,14 @@ def main() -> int:
         if topic in {task_context_topic, sim_context_topic}:
             task_context.append((message_stamp_ns, message))
             continue
+        if topic == gripper_state_topic:
+            gripper_states.append((message_stamp_ns, message))
+            continue
         state_samples.append((message_stamp_ns, int(bag_time_ns), message))
 
     for stamps in (*rgb_stamps.values(), *depth_stamps.values()):
         stamps.sort()
-    state_samples.sort(key=lambda item: item[0])
+    state_samples, duplicate_state_timestamps_dropped = deduplicate_state_samples(state_samples)
 
     def tactile_ref(samples: list[tuple[int, Any]], topic_name: str, state_stamp_ns: int) -> dict[str, Any] | None:
         if not samples:
@@ -218,6 +273,7 @@ def main() -> int:
     vendor_for = make_command_lookup(vendor_commands)
     pose_for = make_command_lookup(tcp_poses)
     context_for = make_command_lookup(task_context)
+    gripper_for = make_command_lookup(gripper_states)
 
     def context_value(message: Any) -> dict[str, Any] | None:
         if message is None:
@@ -243,6 +299,7 @@ def main() -> int:
         vendor = vendor_for(message_stamp_ns)
         pose = pose_for(message_stamp_ns)
         context = context_for(message_stamp_ns)
+        gripper = gripper_for(message_stamp_ns)
         tcp_pose = None
         tcp_frame = None
         if pose is not None:
@@ -278,6 +335,7 @@ def main() -> int:
             "tcp_pose_base": tcp_pose,
             "tcp_pose_frame": tcp_frame,
             "task_context": context_value(context),
+            "gripper_state": (int(getattr(gripper, "data")) if gripper is not None and int(getattr(gripper, "data", 255)) in (0, 1) else None),
             "rgb": camera_ref(rgb_stamps[camera_ids[0]], rgb_topic, message_stamp_ns),
             "depth": camera_ref(depth_stamps[camera_ids[0]], depth_topic, message_stamp_ns),
             "cameras": {camera_id: {"rgb": camera_ref(rgb_stamps[camera_id], rgb_topic_name, message_stamp_ns), "depth": camera_ref(depth_stamps[camera_id], depth_topic_name, message_stamp_ns)} for camera_id, _, rgb_topic_name, depth_topic_name in camera_topics},
@@ -291,6 +349,8 @@ def main() -> int:
         })
     if not records:
         raise SystemExit(f"no state records found on {state_topic}")
+    local_event_sidecar = opt.bag.parent / "audit_events.jsonl" if opt.bag.is_dir() else None
+    audit_events = merge_audit_events(audit_events, local_event_sidecar)
     opt.output.parent.mkdir(parents=True, exist_ok=True)
     with opt.output.open("w", encoding="utf-8") as stream:
         for record in records:
@@ -312,7 +372,9 @@ def main() -> int:
             "tactile_force": tactile_force_topic,
             "tactile_matrix": tactile_matrix_topic,
             "tactile_mass": tactile_mass_topic,
-            "task_context": task_context_topic if task_context_topic in types else sim_context_topic,
+            "task_context": task_context_topic if task_context_topic in topic_types else sim_context_topic,
+            "gripper_state": gripper_state_topic,
+            "events": event_topic if event_topic in topic_types else None,
             "cameras": {camera_id: {"rgb": rgb_topic_name, "depth": depth_topic_name} for camera_id, _, rgb_topic_name, depth_topic_name in camera_topics},
         },
         "missing_topics": missing,
@@ -320,12 +382,21 @@ def main() -> int:
         "command_alignment": {"policy": "latest_header_stamp_not_after_state", "maximum_age_ms": opt.max_command_age_ms},
         "compression_handling": compression_mode,
         "tactile_alignment": {"policy": "latest_header_or_bag_stamp_not_after_state", "maximum_age_ms": opt.max_command_age_ms},
-        "tactile_topics_available": {"force": tactile_force_topic in types, "matrix": tactile_matrix_topic in types, "mass": tactile_mass_topic in types},
-        "task_context_topic_available": task_context_topic in types or sim_context_topic in types,
+        "tactile_topics_available": {"force": tactile_force_topic in topic_types, "matrix": tactile_matrix_topic in topic_types, "mass": tactile_mass_topic in topic_types},
+        "task_context_topic_available": task_context_topic in topic_types or sim_context_topic in topic_types,
+        "gripper_state_topic_available": gripper_state_topic in topic_types,
         "sample_count": len(records),
+        "audit_event_count": len(audit_events),
+        "timestamp_integrity": {
+            "state_samples_with_duplicate_header_stamp_dropped": duplicate_state_timestamps_dropped,
+            "duplicate_policy": "retain_latest_bag_receipt_per_header_stamp",
+        },
         "hardware_accessed": False,
     }
     manifest_path = opt.output.with_suffix(opt.output.suffix + ".manifest.json")
+    events_path = opt.output.with_suffix(opt.output.suffix + ".events.jsonl")
+    events_path.write_text("".join(json.dumps(event, sort_keys=True) + "\n" for event in audit_events), encoding="utf-8")
+    manifest["audit_events_sidecar"] = str(events_path)
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     if temporary is not None:
         temporary.cleanup()

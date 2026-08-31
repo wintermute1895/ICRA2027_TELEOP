@@ -1,1 +1,0 @@
-/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces/rosidl_generator_c/lbot_arm_interfaces/srv/detail/set_enable__type_support.h

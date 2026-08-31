@@ -1,5 +1,0 @@
-[0.008s] Invoking command in '/home/pao/桌面/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /home/pao/桌面/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces -- -j16 -l16
-[0.016s] CMake Error: The current CMakeCache.txt directory /home/pao/桌面/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces/CMakeCache.txt is different than the directory /home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/build/lbot_arm_interfaces where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
-[0.028s] CMake Error: The source directory "/home/fanshihao/Desktop/ICRA2027_TELEOP/arm_teleop/src/lbot_arm_interfaces" does not exist.
-[0.029s] Specify --help for usage, or press the help button on the CMake GUI.
-[0.038s] gmake: *** [Makefile:4865：cmake_check_build_system] 错误 1

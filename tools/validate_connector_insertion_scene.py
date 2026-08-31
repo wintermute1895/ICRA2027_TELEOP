@@ -55,8 +55,20 @@ def run_collision(model: mujoco.MjModel) -> dict:
         plug_pose(model, data, x, y, angle)
         contacts = contact_records(model, data)
         results[label] = {"contact_count": len(contacts), "penetration_count": sum(c["distance_m"] < 0 for c in contacts), "contacts": contacts}
-    enabled = bool(np.any(model.geom_contype > 0) and np.any(model.geom_conaffinity > 0))
-    results["collision_groups_enabled"] = enabled
+    plug_geom = name_id(model, mujoco.mjtObj.mjOBJ_GEOM, "usb_c_plug")
+    receptacle_wall_geoms = [
+        name_id(model, mujoco.mjtObj.mjOBJ_GEOM, name)
+        for name in ("usb_c_channel_wall_left", "usb_c_channel_wall_right", "usb_c_channel_wall_top", "usb_c_channel_wall_bottom", "usb_c_funnel_wall_left", "usb_c_funnel_wall_right")
+    ]
+    table_geom = name_id(model, mujoco.mjtObj.mjOBJ_GEOM, "task_table")
+    laptop_geom = name_id(model, mujoco.mjtObj.mjOBJ_GEOM, "task_laptop")
+    enabled_pairs = {
+        "plug_receptacle": all(model.geom_contype[plug_geom] & model.geom_conaffinity[wall] and model.geom_contype[wall] & model.geom_conaffinity[plug_geom] for wall in receptacle_wall_geoms),
+        "plug_table": bool(model.geom_contype[plug_geom] & model.geom_conaffinity[table_geom] and model.geom_contype[table_geom] & model.geom_conaffinity[plug_geom]),
+        "plug_laptop": bool(model.geom_contype[plug_geom] & model.geom_conaffinity[laptop_geom] and model.geom_contype[laptop_geom] & model.geom_conaffinity[plug_geom]),
+    }
+    enabled = all(enabled_pairs.values())
+    results["collision_groups_enabled"] = enabled_pairs
     results["passed"] = (results["outside"]["penetration_count"] == 0 and results["offset"]["contact_count"] > 0 and results["aligned_goal"]["penetration_count"] == 0 and enabled)
     return results
 
