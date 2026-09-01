@@ -8,6 +8,7 @@ from .trajectory_vae import (
 )
 from .runtime import TrajectoryFilterPrediction, TrajectoryFilterRuntime
 from .safety import ProjectionResult, SafetyLimits, SafetyProjector
+from .training_config import DataConfig, FilterTrainingConfig, LossConfig
 
 __all__ = [
     "ConditionalTrajectoryVAE",
@@ -19,4 +20,7 @@ __all__ = [
     "ProjectionResult",
     "SafetyLimits",
     "SafetyProjector",
+    "DataConfig",
+    "FilterTrainingConfig",
+    "LossConfig",
 ]

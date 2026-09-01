@@ -20,7 +20,7 @@ from torch.nn import functional as F
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from teleop_filter import ConditionalTrajectoryVAE, TrajectoryFilterConfig, trajectory_vae_loss  # noqa: E402
+from teleop_filter import ConditionalTrajectoryVAE, FilterTrainingConfig, trajectory_vae_loss  # noqa: E402
 
 
 @dataclass
@@ -35,6 +35,17 @@ class EpisodeWindows:
     target_semantics: str
     episode_id: str
     visual_provenance: dict[str, object] | None = None
+
+
+@dataclass
+class StackedWindows:
+    commands: np.ndarray
+    states: np.ndarray
+    contexts: np.ndarray | None
+    visuals: np.ndarray | None
+    targets: np.ndarray
+    correction_mask: np.ndarray
+    correction_weights: np.ndarray
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -178,7 +189,7 @@ def build_windows(
     )
 
 
-def stack(items: list[EpisodeWindows]) -> tuple[np.ndarray, np.ndarray, np.ndarray | None, np.ndarray | None, np.ndarray, np.ndarray, np.ndarray]:
+def stack(items: list[EpisodeWindows]) -> StackedWindows:
     if not items:
         raise ValueError("at least one episode is required")
     context_presence = {item.contexts is not None for item in items}
@@ -200,7 +211,9 @@ def stack(items: list[EpisodeWindows]) -> tuple[np.ndarray, np.ndarray, np.ndarr
     correction_weights = np.concatenate([item.correction_weights for item in items])
     contexts = None if items[0].contexts is None else np.concatenate([item.contexts for item in items])
     visuals = None if items[0].visuals is None else np.concatenate([item.visuals for item in items])
-    return commands, states, contexts, visuals, targets, correction_mask, correction_weights
+    return StackedWindows(
+        commands, states, contexts, visuals, targets, correction_mask, correction_weights
+    )
 
 
 def mean_std(array: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -211,12 +224,18 @@ def mean_std(array: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 
 def loader(
-    arrays: tuple[np.ndarray, np.ndarray, np.ndarray | None, np.ndarray | None, np.ndarray, np.ndarray, np.ndarray],
+    arrays: StackedWindows,
     normalization: dict[str, tuple[np.ndarray, np.ndarray]],
     batch_size: int,
     shuffle: bool,
 ) -> DataLoader:
-    commands, states, contexts, visuals, targets, correction_mask, correction_weights = arrays
+    commands = arrays.commands
+    states = arrays.states
+    contexts = arrays.contexts
+    visuals = arrays.visuals
+    targets = arrays.targets
+    correction_mask = arrays.correction_mask
+    correction_weights = arrays.correction_weights
     commands = (commands - normalization["commands"][0]) / normalization["commands"][1]
     states = (states - normalization["states"][0]) / normalization["states"][1]
     targets = (targets - normalization["targets"][0]) / normalization["targets"][1]
@@ -271,7 +290,7 @@ def run_epoch(
                 optimizer.step()
             count = len(commands)
             samples += count
-            for key in totals:
+            for key in losses:
                 totals[key] += float(losses[key].detach()) * count
             element_loss = F.smooth_l1_loss(outputs["prediction"], targets, reduction="none").mean(dim=-1)
             for name, selected in (("correction_reconstruction", correction_mask > 0.5), ("background_reconstruction", correction_mask <= 0.5)):
@@ -301,27 +320,29 @@ def main() -> int:
     if args.epochs < 1 or args.batch_size < 1 or not 0.0 <= args.validation_fraction < 1.0:
         raise SystemExit("invalid epochs, batch size, or validation fraction")
 
-    payload = yaml.safe_load(args.config.read_text(encoding="utf-8"))
-    if payload.get("schema") != "robot_teleop.trajectory-filter-model/v0.1":
-        raise SystemExit("unsupported model config schema")
-    model_values = payload["model"]
+    try:
+        training_config = FilterTrainingConfig.from_mapping(
+            yaml.safe_load(args.config.read_text(encoding="utf-8"))
+        )
+    except (OSError, ValueError, yaml.YAMLError) as error:
+        raise SystemExit(f"invalid filter config: {error}") from error
     first = build_windows(
-        args.episode[0], history_length=int(model_values["history_length"]),
-        horizon=int(model_values["horizon"]), context_dim=int(model_values["context_dim"]),
-        visual_dim=int(model_values.get("visual_dim", 0)),
-        correction_loss_weight=float(payload["loss"].get("correction_weight", 1.0)),
-        allow_synthetic_smoke=bool(payload.get("data", {}).get("allow_synthetic_smoke", False)),
+        args.episode[0], history_length=training_config.history_length,
+        horizon=training_config.horizon, context_dim=training_config.context_dim,
+        visual_dim=training_config.visual_dim,
+        correction_loss_weight=training_config.loss.correction_weight,
+        allow_synthetic_smoke=training_config.data.allow_synthetic_smoke,
     )
     action_dim, state_dim = first.commands.shape[-1], first.states.shape[-1]
     episodes = [first]
     for path in args.episode[1:]:
         episodes.append(build_windows(
-            path, history_length=int(model_values["history_length"]),
-            horizon=int(model_values["horizon"]), context_dim=int(model_values["context_dim"]),
-            visual_dim=int(model_values.get("visual_dim", 0)),
+            path, history_length=training_config.history_length,
+            horizon=training_config.horizon, context_dim=training_config.context_dim,
+            visual_dim=training_config.visual_dim,
             action_dim=action_dim, state_dim=state_dim,
-            correction_loss_weight=float(payload["loss"].get("correction_weight", 1.0)),
-            allow_synthetic_smoke=bool(payload.get("data", {}).get("allow_synthetic_smoke", False)),
+            correction_loss_weight=training_config.loss.correction_weight,
+            allow_synthetic_smoke=training_config.data.allow_synthetic_smoke,
         ))
     if len({item.episode_id for item in episodes}) != len(episodes):
         raise SystemExit("duplicate episode_id in inputs")
@@ -332,22 +353,15 @@ def main() -> int:
     train_episodes = episodes[validation_count:]
     train_arrays = stack(train_episodes)
     normalization = {
-        "commands": mean_std(train_arrays[0]), "states": mean_std(train_arrays[1]),
-        "targets": mean_std(train_arrays[4]),
+        "commands": mean_std(train_arrays.commands), "states": mean_std(train_arrays.states),
+        "targets": mean_std(train_arrays.targets),
     }
-    if train_arrays[2] is not None:
-        normalization["contexts"] = mean_std(train_arrays[2])
-    if train_arrays[3] is not None:
-        normalization["visuals"] = mean_std(train_arrays[3])
+    if train_arrays.contexts is not None:
+        normalization["contexts"] = mean_std(train_arrays.contexts)
+    if train_arrays.visuals is not None:
+        normalization["visuals"] = mean_std(train_arrays.visuals)
 
-    config = TrajectoryFilterConfig(
-        action_dim=action_dim, state_dim=state_dim,
-        history_length=int(model_values["history_length"]), horizon=int(model_values["horizon"]),
-        context_dim=int(model_values["context_dim"]), visual_dim=int(model_values.get("visual_dim", 0)),
-        latent_dim=int(model_values["latent_dim"]),
-        model_dim=int(model_values["model_dim"]), num_heads=int(model_values["num_heads"]),
-        num_layers=int(model_values["num_layers"]), dropout=float(model_values["dropout"]),
-    )
+    config = training_config.model_config(action_dim=action_dim, state_dim=state_dim)
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     device = torch.device(args.device)
@@ -355,17 +369,18 @@ def main() -> int:
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=1e-4)
     train_loader = loader(train_arrays, normalization, args.batch_size, True)
     validation_loader = loader(stack(validation_episodes), normalization, args.batch_size, False) if validation_episodes else None
-    loss_cfg = payload["loss"]
     history = []
     for epoch in range(1, args.epochs + 1):
         train_metrics = run_epoch(
             model, train_loader, optimizer, context_dim=config.context_dim, visual_dim=config.visual_dim,
-            beta_kl=float(loss_cfg["beta_kl"]), smoothness_weight=float(loss_cfg["smoothness_weight"]),
+            beta_kl=training_config.loss.beta_kl,
+            smoothness_weight=training_config.loss.smoothness_weight,
             device=device,
         )
         validation_metrics = None if validation_loader is None else run_epoch(
             model, validation_loader, None, context_dim=config.context_dim, visual_dim=config.visual_dim,
-            beta_kl=float(loss_cfg["beta_kl"]), smoothness_weight=float(loss_cfg["smoothness_weight"]),
+            beta_kl=training_config.loss.beta_kl,
+            smoothness_weight=training_config.loss.smoothness_weight,
             device=device,
         )
         history.append({"epoch": epoch, "train": train_metrics, "validation": validation_metrics})
@@ -379,7 +394,7 @@ def main() -> int:
         "normalization": {key: {"mean": mean, "std": std} for key, (mean, std) in normalization.items()},
         "visual_encoder": train_episodes[0].visual_provenance,
         "target_semantics": train_episodes[0].target_semantics,
-        "runtime": payload["runtime"],
+        "runtime": dict(training_config.runtime),
     }
     torch.save(checkpoint, args.output_dir / "trajectory_filter.pt")
     sources = [{
@@ -395,7 +410,7 @@ def main() -> int:
         "device": str(device), "seed": args.seed, "history": history,
         "visual_encoder": train_episodes[0].visual_provenance,
         "target_semantics": train_episodes[0].target_semantics,
-        "correction_weight": float(loss_cfg.get("correction_weight", 1.0)),
+        "correction_weight": training_config.loss.correction_weight,
         "deployment": "offline_and_simulation_only",
     }
     (args.output_dir / "training_report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
