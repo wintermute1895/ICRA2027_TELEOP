@@ -180,8 +180,10 @@ PY
   TASK_ID="$MANIFEST_TASK_ID"
   OPERATOR_ID="$MANIFEST_OPERATOR_ID"
 fi
-EXPERIMENT_ID="$(awk '/^experiment_id:/{print $2; exit}' "$EXPERIMENT_PROFILE")"
-[[ -n "$EXPERIMENT_ID" ]] || die "experiment_id missing from profile: $EXPERIMENT_PROFILE"
+if [[ -z "$EXPERIMENT_MANIFEST" ]]; then
+  EXPERIMENT_ID="$(awk '/^experiment_id:/{print $2; exit}' "$EXPERIMENT_PROFILE")"
+  [[ -n "$EXPERIMENT_ID" ]] || die "experiment_id missing from profile: $EXPERIMENT_PROFILE"
+fi
 
 if (( REAL )); then
   (( ESTOP_READY )) || die "real mode requires --physical-estop-ready"

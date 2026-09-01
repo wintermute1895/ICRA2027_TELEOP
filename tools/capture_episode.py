@@ -21,8 +21,10 @@ from pathlib import Path
 
 try:
     from tools.audit_event_recorder import append_event, event_for_key
+    from tools.validate_capture_artifacts import validate as validate_capture_artifacts
 except ModuleNotFoundError:
     from audit_event_recorder import append_event, event_for_key
+    from validate_capture_artifacts import validate as validate_capture_artifacts
 
 
 def classify_input(data: bytes) -> str:
@@ -419,10 +421,21 @@ def main() -> int:
             ok, wall_seconds, exit_code = False, 0.0, 130
         finally:
             write_annotation_state(args.annotation_state, status="finalizing", active=False, run_dir=run_dir)
-        finish_run(run_dir, exit_code, False, wall_seconds)
-        write_host_capture(run_dir, "end", "standard")
         if ok:
             write_terminal_audit(run_dir, args)
+        capture_failures = validate_capture_artifacts(run_dir, require_terminal_audit=ok)
+        validation_path = run_dir / "artifacts" / "capture_validation.json"
+        validation_path.write_text(json.dumps({
+            "schema": "robot_teleop.capture-artifact-validation/v0.1",
+            "passed": not capture_failures,
+            "failures": capture_failures,
+        }, indent=2) + "\n", encoding="utf-8")
+        if capture_failures:
+            ok = False
+            exit_code = 4
+            print(f"[FAILED] capture validation: {', '.join(capture_failures)}", flush=True)
+        finish_run(run_dir, exit_code, False, wall_seconds)
+        write_host_capture(run_dir, "end", "standard")
         write_report(run_dir); write_analysis(run_dir); build_manifest(run_dir)
         print(f"[EPISODE {i}] {'complete' if ok else 'incomplete'}: {run_dir}", flush=True)
         write_annotation_state(args.annotation_state, status="ready", active=False)

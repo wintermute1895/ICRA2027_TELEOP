@@ -43,6 +43,10 @@ class MultiCameraCaptureConfigTest(unittest.TestCase):
         self.assertIn("operstate", source)
         self.assertIn("enable_all_can.sh --confirm ENABLE_ALL_CAN_INTERFACES", source)
 
+    def test_manifest_experiment_id_is_not_overwritten_by_profile(self):
+        source = (ROOT / "scripts/start_capture_session.sh").read_text(encoding="utf-8")
+        self.assertIn('if [[ -z "$EXPERIMENT_MANIFEST" ]]; then', source)
+
 
 if __name__ == "__main__":
     unittest.main()
