@@ -14,6 +14,7 @@ import numpy as np
 import torch
 import yaml
 from torch.utils.data import DataLoader, TensorDataset
+from torch.nn import functional as F
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,6 +30,9 @@ class EpisodeWindows:
     contexts: np.ndarray | None
     visuals: np.ndarray | None
     targets: np.ndarray
+    correction_mask: np.ndarray
+    correction_weights: np.ndarray
+    target_semantics: str
     episode_id: str
     visual_provenance: dict[str, object] | None = None
 
@@ -45,6 +49,25 @@ def vector(row: dict, name: str, size: int) -> np.ndarray | None:
     return result if np.isfinite(result).all() else None
 
 
+def correction_flags(rows: list[dict]) -> np.ndarray:
+    """Materialize timestamped auditor events into a per-row correction mask."""
+    flags = []
+    active = False
+    for index, row in enumerate(rows):
+        if isinstance(row.get("correction_active"), bool):
+            active = row["correction_active"]
+        elif isinstance(row.get("correction_interval"), list) and len(row["correction_interval"]) == 2:
+            start, end = row["correction_interval"]
+            active = int(start) <= index <= int(end)
+        else:
+            if row.get("correction_start") is True:
+                active = True
+            if row.get("correction_end") is True:
+                active = False
+        flags.append(active)
+    return np.asarray(flags, dtype=np.float32)
+
+
 def build_windows(
     path: Path,
     *,
@@ -54,13 +77,28 @@ def build_windows(
     visual_dim: int = 0,
     action_dim: int | None = None,
     state_dim: int | None = None,
+    correction_loss_weight: float = 1.0,
+    allow_synthetic_smoke: bool = False,
 ) -> EpisodeWindows:
     rows = read_jsonl(path)
     if not rows:
         raise ValueError(f"empty episode: {path}")
     if any(row.get("success") is not True for row in rows):
         raise ValueError(f"episode is not an admitted success view: {path}")
-    inferred_action = len(rows[0].get("residual_target_rad") or [])
+    if correction_loss_weight < 0.0:
+        raise ValueError("correction_loss_weight must be non-negative")
+    target_name = "expert_action_target_rad"
+    if not any(target_name in row for row in rows):
+        # Kept solely for isolated historical smoke fixtures. It is never
+        # accepted unless the fixture explicitly identifies its synthetic source.
+        target_name = "residual_target_rad"
+        synthetic = {row.get("action_target_source", row.get("correction_label_source")) for row in rows}
+        if not allow_synthetic_smoke or synthetic != {"synthetic_smoke_only"}:
+            raise ValueError(
+                "episode lacks expert_action_target_rad; "
+                "build a correction-segment view with recorded_expert_action targets"
+            )
+    inferred_action = len(rows[0].get(target_name) or [])
     inferred_state = len(rows[0].get("robot_joint_state_rad") or [])
     action_dim = action_dim or inferred_action
     state_dim = state_dim or inferred_state
@@ -86,7 +124,8 @@ def build_windows(
             "embedding_dim": visual_dim,
         }
 
-    command_windows, state_windows, context_windows, visual_windows, targets = [], [], [], [], []
+    command_windows, state_windows, context_windows, visual_windows, targets, masks, weights = [], [], [], [], [], [], []
+    flags = correction_flags(rows)
     for anchor in range(history_length, len(rows) - horizon + 1):
         history_rows = rows[anchor - history_length:anchor]
         future_rows = rows[anchor:anchor + horizon]
@@ -94,7 +133,7 @@ def build_windows(
         states = [vector(row, "robot_joint_state_rad", state_dim) for row in history_rows]
         if int(horizon) != 1:
             raise ValueError("the task-aware residual MVP requires horizon=1")
-        future = [vector(row, "residual_target_rad", action_dim) for row in future_rows]
+        future = [vector(row, target_name, action_dim) for row in future_rows]
         if any(value is None for value in (*commands, *states, *future)):
             continue
         contexts = None
@@ -110,15 +149,17 @@ def build_windows(
         command_windows.append(np.stack(commands))
         state_windows.append(np.stack(states))
         targets.append(np.stack(future))
+        mask = flags[anchor:anchor + horizon]
+        masks.append(mask)
+        weights.append((1.0 + correction_loss_weight * mask)[..., None])
         if contexts is not None:
             context_windows.append(np.stack(contexts))
         if visuals is not None:
             visual_windows.append(np.stack(visuals))
     if not targets:
         raise ValueError(
-            f"no complete residual-target windows in episode: {path}; "
-            "provide residual_target_rad from expert correction, reference projection, "
-            "or controlled recovery data"
+            f"no complete expert-action windows in episode: {path}; "
+            "provide expert_action_target_rad from a verified correction segment"
         )
     episode_id = str(rows[0].get("episode_id") or path.stem)
     return EpisodeWindows(
@@ -127,12 +168,15 @@ def build_windows(
         contexts=np.stack(context_windows) if context_dim else None,
         visuals=np.stack(visual_windows) if visual_dim else None,
         targets=np.stack(targets),
+        correction_mask=np.stack(masks),
+        correction_weights=np.stack(weights),
+        target_semantics="recorded_expert_action" if target_name == "expert_action_target_rad" else "synthetic_smoke_residual",
         episode_id=episode_id,
         visual_provenance=visual_provenance,
     )
 
 
-def stack(items: list[EpisodeWindows]) -> tuple[np.ndarray, np.ndarray, np.ndarray | None, np.ndarray | None, np.ndarray]:
+def stack(items: list[EpisodeWindows]) -> tuple[np.ndarray, np.ndarray, np.ndarray | None, np.ndarray | None, np.ndarray, np.ndarray, np.ndarray]:
     if not items:
         raise ValueError("at least one episode is required")
     context_presence = {item.contexts is not None for item in items}
@@ -145,12 +189,16 @@ def stack(items: list[EpisodeWindows]) -> tuple[np.ndarray, np.ndarray, np.ndarr
         raise ValueError("all episodes must use the same visual embedding dimension")
     if any(item.visual_provenance != items[0].visual_provenance for item in items):
         raise ValueError("all episodes must use identical VLM model revision and camera order")
+    if any(item.target_semantics != items[0].target_semantics for item in items):
+        raise ValueError("all episodes must use identical action-target semantics")
     commands = np.concatenate([item.commands for item in items])
     states = np.concatenate([item.states for item in items])
     targets = np.concatenate([item.targets for item in items])
+    correction_mask = np.concatenate([item.correction_mask for item in items])
+    correction_weights = np.concatenate([item.correction_weights for item in items])
     contexts = None if items[0].contexts is None else np.concatenate([item.contexts for item in items])
     visuals = None if items[0].visuals is None else np.concatenate([item.visuals for item in items])
-    return commands, states, contexts, visuals, targets
+    return commands, states, contexts, visuals, targets, correction_mask, correction_weights
 
 
 def mean_std(array: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -161,12 +209,12 @@ def mean_std(array: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 
 def loader(
-    arrays: tuple[np.ndarray, np.ndarray, np.ndarray | None, np.ndarray | None, np.ndarray],
+    arrays: tuple[np.ndarray, np.ndarray, np.ndarray | None, np.ndarray | None, np.ndarray, np.ndarray, np.ndarray],
     normalization: dict[str, tuple[np.ndarray, np.ndarray]],
     batch_size: int,
     shuffle: bool,
 ) -> DataLoader:
-    commands, states, contexts, visuals, targets = arrays
+    commands, states, contexts, visuals, targets, correction_mask, correction_weights = arrays
     commands = (commands - normalization["commands"][0]) / normalization["commands"][1]
     states = (states - normalization["states"][0]) / normalization["states"][1]
     targets = (targets - normalization["targets"][0]) / normalization["targets"][1]
@@ -178,6 +226,8 @@ def loader(
         visuals = (visuals - normalization["visuals"][0]) / normalization["visuals"][1]
         tensors.append(torch.from_numpy(visuals))
     tensors.append(torch.from_numpy(targets))
+    tensors.append(torch.from_numpy(correction_mask))
+    tensors.append(torch.from_numpy(correction_weights))
     return DataLoader(TensorDataset(*tensors), batch_size=batch_size, shuffle=shuffle)
 
 
@@ -193,7 +243,8 @@ def run_epoch(
     device: torch.device,
 ) -> dict[str, float]:
     model.train(optimizer is not None)
-    totals = {key: 0.0 for key in ("total", "reconstruction", "kl", "smoothness")}
+    totals = {key: 0.0 for key in ("total", "reconstruction", "kl", "smoothness", "correction_reconstruction", "background_reconstruction")}
+    metric_counts = {"correction_reconstruction": 0, "background_reconstruction": 0}
     samples = 0
     with torch.set_grad_enabled(optimizer is not None):
         for batch in batches:
@@ -204,9 +255,12 @@ def run_epoch(
             visual = batch[offset].to(device) if visual_dim else None
             offset += int(bool(visual_dim))
             targets = batch[offset].to(device)
+            correction_mask = batch[offset + 1].to(device)
+            correction_weights = batch[offset + 2].to(device)
             outputs = model(commands, states, targets, context, visual)
             losses = trajectory_vae_loss(
-                outputs, targets, beta_kl=beta_kl, smoothness_weight=smoothness_weight
+                outputs, targets, beta_kl=beta_kl, smoothness_weight=smoothness_weight,
+                reconstruction_weights=correction_weights,
             )
             if optimizer is not None:
                 optimizer.zero_grad()
@@ -217,7 +271,15 @@ def run_epoch(
             samples += count
             for key in totals:
                 totals[key] += float(losses[key].detach()) * count
-    return {key: value / samples for key, value in totals.items()} | {"samples": samples}
+            element_loss = F.smooth_l1_loss(outputs["prediction"], targets, reduction="none").mean(dim=-1)
+            for name, selected in (("correction_reconstruction", correction_mask > 0.5), ("background_reconstruction", correction_mask <= 0.5)):
+                if selected.any():
+                    selected_count = int(selected.sum())
+                    totals[name] += float(element_loss[selected].sum().detach())
+                    metric_counts[name] += selected_count
+    metrics = {key: value / samples for key, value in totals.items() if key not in metric_counts}
+    metrics.update({key: (totals[key] / metric_counts[key] if metric_counts[key] else 0.0) for key in metric_counts})
+    return metrics | {"samples": samples, "correction_windows": metric_counts["correction_reconstruction"]}
 
 
 def main() -> int:
@@ -245,6 +307,8 @@ def main() -> int:
         args.episode[0], history_length=int(model_values["history_length"]),
         horizon=int(model_values["horizon"]), context_dim=int(model_values["context_dim"]),
         visual_dim=int(model_values.get("visual_dim", 0)),
+        correction_loss_weight=float(payload["loss"].get("correction_weight", 1.0)),
+        allow_synthetic_smoke=bool(payload.get("data", {}).get("allow_synthetic_smoke", False)),
     )
     action_dim, state_dim = first.commands.shape[-1], first.states.shape[-1]
     episodes = [first]
@@ -254,6 +318,8 @@ def main() -> int:
             horizon=int(model_values["horizon"]), context_dim=int(model_values["context_dim"]),
             visual_dim=int(model_values.get("visual_dim", 0)),
             action_dim=action_dim, state_dim=state_dim,
+            correction_loss_weight=float(payload["loss"].get("correction_weight", 1.0)),
+            allow_synthetic_smoke=bool(payload.get("data", {}).get("allow_synthetic_smoke", False)),
         ))
     if len({item.episode_id for item in episodes}) != len(episodes):
         raise SystemExit("duplicate episode_id in inputs")
@@ -310,6 +376,7 @@ def main() -> int:
         "model_state": model.cpu().state_dict(),
         "normalization": {key: {"mean": mean, "std": std} for key, (mean, std) in normalization.items()},
         "visual_encoder": train_episodes[0].visual_provenance,
+        "target_semantics": train_episodes[0].target_semantics,
         "runtime": payload["runtime"],
     }
     torch.save(checkpoint, args.output_dir / "trajectory_filter.pt")
@@ -325,6 +392,8 @@ def main() -> int:
         },
         "device": str(device), "seed": args.seed, "history": history,
         "visual_encoder": train_episodes[0].visual_provenance,
+        "target_semantics": train_episodes[0].target_semantics,
+        "correction_weight": float(loss_cfg.get("correction_weight", 1.0)),
         "deployment": "offline_and_simulation_only",
     }
     (args.output_dir / "training_report.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

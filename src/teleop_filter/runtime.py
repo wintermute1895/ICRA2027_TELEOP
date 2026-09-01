@@ -17,6 +17,7 @@ from .trajectory_vae import (
 
 @dataclass(frozen=True)
 class TrajectoryFilterPrediction:
+    predicted_actions: np.ndarray
     predicted_residuals: np.ndarray
     latent_variance: np.ndarray
 
@@ -34,6 +35,9 @@ class TrajectoryFilterRuntime:
         self.model.eval()
         self.normalization = checkpoint["normalization"]
         self.visual_encoder = checkpoint.get("visual_encoder")
+        self.target_semantics = checkpoint.get("target_semantics", "residual")
+        if self.target_semantics not in {"residual", "synthetic_smoke_residual", "recorded_expert_action"}:
+            raise ValueError(f"unsupported target semantics: {self.target_semantics}")
         if self.config.visual_dim:
             if not isinstance(self.visual_encoder, dict):
                 raise ValueError("visual checkpoint lacks frozen-encoder provenance")
@@ -98,8 +102,14 @@ class TrajectoryFilterRuntime:
             target_std = torch.as_tensor(
                 target_stats["std"], dtype=torch.float32, device=self.device
             )
-            predicted_residuals = outputs["prediction"] * target_std + target_mean
+            predicted_actions = outputs["prediction"] * target_std + target_mean
+            if self.target_semantics == "recorded_expert_action":
+                raw_current = torch.as_tensor(commands[:, -1:, :], dtype=torch.float32, device=self.device)
+                predicted_residuals = predicted_actions - raw_current
+            else:
+                predicted_residuals = predicted_actions
         return TrajectoryFilterPrediction(
+            predicted_actions=predicted_actions.cpu().numpy(),
             predicted_residuals=predicted_residuals.cpu().numpy(),
             latent_variance=outputs["latent_variance"].cpu().numpy(),
         )

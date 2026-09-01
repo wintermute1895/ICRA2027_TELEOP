@@ -27,7 +27,7 @@ def rows(path: Path) -> list[dict[str, Any]]:
 
 
 def validate_filter_rows(source: list[dict[str, Any]]) -> None:
-    required_vectors = ("master_joint_raw", "robot_joint_state_rad", "residual_target_rad")
+    required_vectors = ("master_joint_raw", "robot_joint_state_rad")
     for index, row in enumerate(source):
         if row.get("success") is not True:
             raise ValueError(f"episode row {index} is not an admitted success row")
@@ -35,6 +35,8 @@ def validate_filter_rows(source: list[dict[str, Any]]) -> None:
             value = row.get(name)
             if not isinstance(value, list) or not value:
                 raise ValueError(f"episode row {index} lacks non-empty {name}")
+        if not any(isinstance(row.get(name), list) and row.get(name) for name in ("expert_action_target_rad", "residual_target_rad")):
+            raise ValueError(f"episode row {index} lacks non-empty expert_action_target_rad or residual_target_rad")
 
 
 def main() -> int:

@@ -40,7 +40,7 @@ class TrajectoryFilterConfig:
 
 
 class ConditionalTrajectoryVAE(nn.Module):
-    """Predict residual targets without consuming future observations at inference."""
+    """Predict expert action targets without consuming future observations at inference."""
 
     def __init__(self, config: TrajectoryFilterConfig) -> None:
         super().__init__()
@@ -112,16 +112,16 @@ class ConditionalTrajectoryVAE(nn.Module):
         self,
         commands: Tensor,
         states: Tensor,
-        target_residuals: Tensor,
+        target_actions: Tensor,
         context: Tensor | None = None,
         visual: Tensor | None = None,
     ) -> dict[str, Tensor]:
         cfg = self.config
-        if tuple(target_residuals.shape) != (commands.shape[0], cfg.horizon, cfg.action_dim):
-            raise ValueError("target_residuals does not match configured horizon/action dimensions")
+        if tuple(target_actions.shape) != (commands.shape[0], cfg.horizon, cfg.action_dim):
+            raise ValueError("target_actions does not match configured horizon/action dimensions")
         history = self.encode_history(commands, states, context, visual)
         prior_mean, prior_log_variance = self._distribution(self.prior(history))
-        posterior_input = torch.cat([history, target_residuals.flatten(start_dim=1)], dim=-1)
+        posterior_input = torch.cat([history, target_actions.flatten(start_dim=1)], dim=-1)
         posterior_mean, posterior_log_variance = self._distribution(self.posterior(posterior_input))
         latent = self._sample(posterior_mean, posterior_log_variance)
         prediction = self.decoder(torch.cat([history, latent], dim=-1)).view(
@@ -174,15 +174,25 @@ def diagonal_gaussian_kl(
 
 def trajectory_vae_loss(
     outputs: dict[str, Tensor],
-    target_residuals: Tensor,
+    target_actions: Tensor,
     *,
     beta_kl: float = 1e-3,
     smoothness_weight: float = 1e-2,
+    reconstruction_weights: Tensor | None = None,
 ) -> dict[str, Tensor]:
     if beta_kl < 0.0 or smoothness_weight < 0.0:
         raise ValueError("loss weights must be non-negative")
     prediction = outputs["prediction"]
-    reconstruction = F.smooth_l1_loss(prediction, target_residuals)
+    if reconstruction_weights is None:
+        reconstruction = F.smooth_l1_loss(prediction, target_actions)
+    else:
+        if reconstruction_weights.shape != target_actions.shape[:-1] + (1,):
+            raise ValueError("reconstruction_weights must align with target batch/horizon")
+        if not torch.isfinite(reconstruction_weights).all() or torch.any(reconstruction_weights < 0.0):
+            raise ValueError("reconstruction_weights must be finite and non-negative")
+        element_loss = F.smooth_l1_loss(prediction, target_actions, reduction="none")
+        weights = reconstruction_weights.to(dtype=element_loss.dtype)
+        reconstruction = (element_loss * weights).sum() / weights.expand_as(element_loss).sum().clamp_min(1e-6)
     kl = diagonal_gaussian_kl(
         outputs["posterior_mean"], outputs["posterior_log_variance"],
         outputs["prior_mean"], outputs["prior_log_variance"],

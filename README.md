@@ -107,9 +107,11 @@ PYTHONPATH=src conda run -n teleop-train python \
   --output-dir runs/filter/trajectory_cvae_v0_1/evaluation_001
 ```
 
-The filter trainer requires an explicit `residual_target_rad` field. This must
-come from a verified expert correction, a reference-constrained local target,
-or controlled perturbation/recovery data. It is never inferred as
+The filter trainer requires an explicit `expert_action_target_rad` field from a
+verified correction segment. At runtime the predicted expert action is compared
+with the current raw teleoperation command to form a bounded residual. The
+legacy `residual_target_rad` field is accepted only for explicitly enabled
+`synthetic_smoke_only` regression fixtures and is never inferred as
 `controller_command - raw_command`.
 
 训练和评估只接受明确准入的 filter-training JSONL。推理输出经过有界残差组合，当前仍

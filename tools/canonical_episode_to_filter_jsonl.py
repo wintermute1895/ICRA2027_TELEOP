@@ -126,9 +126,14 @@ def main() -> int:
             "gripper_state": get(control, "gripper_state"),
             "robot_joint_state_rad": state, "success": True,
         }
-        residual_target = get(control, "execution.residual_target_rad", "execution.residual_target")
-        if isinstance(residual_target, list):
-            row["residual_target_rad"] = residual_target
+        expert_action_target = get(
+            control,
+            "execution.expert_action_target_rad",
+            "execution.expert_action_target",
+        )
+        if isinstance(expert_action_target, list):
+            row["expert_action_target_rad"] = expert_action_target
+            row["action_target_source"] = "recorded_expert_action"
         if context is not None:
             context_values = get(context, "filter_context")
             if not isinstance(context_values, list):

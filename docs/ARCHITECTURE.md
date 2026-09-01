@@ -113,9 +113,11 @@ Conda 环境和可选权重缓存，避免把具体权重和网络下载强行�
 `trajectory_cvae_transformer_v0_2_vlm.yaml`，要求每个历史窗口都有完整的冻结 embedding；
 当前配置把两台相机的 768 维 SigLIP2 embedding 按固定 camera order 拼接为 1536 维。
 
-任务感知 residual 模型只训练显式 `residual_target_rad`。该字段必须来自专家纠正、
-reference-constrained local target 或受控扰动恢复实验；不得由
-`controller_command - raw_command` 自动制造，否则模型只会复制现有控制链路。
+任务感知模型优先训练显式 `expert_action_target_rad`：它来自人工确认的 correction
+segment 中记录的专家动作。运行时再用预测专家动作减去当前 raw teleoperation command
+形成 residual。`residual_target_rad` 仅允许带有 `synthetic_smoke_only` provenance 的
+隔离回归 smoke；不得由 `controller_command - raw_command` 自动制造，否则模型只会复制
+现有控制链路。
 
 任务、reference、policy、安全和 evaluation profile 由
 `tools/resolve_experiment_manifest.py` 解析为不可变 manifest。条件采用
