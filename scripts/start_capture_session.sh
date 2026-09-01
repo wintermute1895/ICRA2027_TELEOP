@@ -431,18 +431,16 @@ MONITOR_ARM="right"; (( LEFT_ENABLED && ! RIGHT_ENABLED )) && MONITOR_ARM="left"
 launch_cmd monitor "while true; do date; ros2 topic hz /robot1/${MONITOR_ARM}_arm/joint_states --window 20 2>/dev/null | head -n 4; ros2 topic hz /camera/camera/color/image_raw --window 20 2>/dev/null | head -n 4; sleep 5; done"
 launch_cmd sync "\"$SYSTEM_PYTHON\" \"$ROOT_DIR/tools/diagnose_time_sync.py\" --duration-s 10 --camera-namespace /camera/camera --output \"$RUN_ROOT/pre_capture_time_sync.json\""
 
-RECORDER="$ROOT_DIR/scripts/record_episode.sh"
 # tmux windows inherit the server environment from session creation, not variables
 # exported later in this launcher. Pass the resolved camera list explicitly so the
 # recorder always captures every camera that passed preflight.
-RECORDER_PARENT="$ROOT_DIR/scripts/run_manual_episode.sh"
 ANNOTATION_STATE="$RUN_ROOT/.annotation_state.json"
 RECORDER_ENV="export CAMERA_NAMESPACES=\"$CAMERA_NAMESPACES\"; export TELEOP_CAPTURE_DURATION_S=$DURATION_S; export TELEOP_CAPTURE_MODE=$CAPTURE_MODE; export TELEOP_CAPTURE_EPISODES=$EPISODES; export TELEOP_CAPTURE_ARMS=$ARMS; export TELEOP_TACTILE_ENABLED=$([[ \"$LEFT_TOUCH\" == true || \"$RIGHT_TOUCH\" == true ]] && echo true || echo false); export TELEOP_HARDWARE_COMMANDS_ENABLED=$([[ $REAL -eq 1 ]] && echo true || echo false); export TELEOP_EXPERIMENT_ID=$EXPERIMENT_ID; export TELEOP_CONDITION_ID=$CONDITION_ID; export TELEOP_OPERATOR_ID=$OPERATOR_ID; export TELEOP_AUDITOR_ID=$AUDITOR_ID; export TELEOP_TASK_ID=$TASK_ID; export TELEOP_EXPERIMENT_PROFILE=$EXPERIMENT_PROFILE; export TELEOP_EXPERIMENT_MANIFEST=\"$EXPERIMENT_MANIFEST\"; export RUNEVIDENCE_BAG_COMPRESSION_MODE=file; export RUNEVIDENCE_BAG_COMPRESSION_FORMAT=zstd; export RUNEVIDENCE_ROOT=\"$RUN_ROOT\"; export RUNEVIDENCE_BIN=\"$RUNEVIDENCE_BIN\";"
-if [[ "$CAPTURE_MODE" == "manual" ]]; then
-  launch_cmd recorder "$RECORDER_ENV \"$RUNEVIDENCE_PYTHON\" \"$ROOT_DIR/tools/capture_episode.py\" --runs-root \"$RUN_ROOT\" --episodes \"$EPISODES\" --arms \"$ARMS\" --cameras \"$CAMERA_NAMESPACES\" --experiment-id \"$EXPERIMENT_ID\" --condition-id \"$CONDITION_ID\" --operator-id \"$OPERATOR_ID\" --auditor-id \"$AUDITOR_ID\" --annotation-state \"$ANNOTATION_STATE\" --event-publisher-python \"$SYSTEM_PYTHON\" --task-id \"$TASK_ID\" --camera-profile \"${WIDTH}x${HEIGHT}x${FPS}\"; exec bash"
-else
-  launch_cmd recorder "$RECORDER_ENV i=1; while [[ $EPISODES -eq 0 || \$i -le $EPISODES ]]; do \"$RUNEVIDENCE_BIN\" run --domain robotics --runs-root \"$RUN_ROOT\" --label \"$EXPERIMENT_ID-$CONDITION_ID-episode-\$i\" --input experiment_id=\"$EXPERIMENT_ID\" --input condition_id=\"$CONDITION_ID\" --input operator_id=\"$OPERATOR_ID\" --input task_id=\"$TASK_ID\" -- bash \"$RECORDER\"; i=\$((i + 1)); done; exec bash"
+RECORDER_ARGS="--runs-root \"$RUN_ROOT\" --episodes \"$EPISODES\" --arms \"$ARMS\" --cameras \"$CAMERA_NAMESPACES\" --experiment-id \"$EXPERIMENT_ID\" --condition-id \"$CONDITION_ID\" --operator-id \"$OPERATOR_ID\" --auditor-id \"$AUDITOR_ID\" --annotation-state \"$ANNOTATION_STATE\" --event-publisher-python \"$SYSTEM_PYTHON\" --task-id \"$TASK_ID\" --camera-profile \"${WIDTH}x${HEIGHT}x${FPS}\""
+if [[ "$CAPTURE_MODE" == "timed" ]]; then
+  RECORDER_ARGS+=" --auto-start --max-duration \"$DURATION_S\""
 fi
+launch_cmd recorder "$RECORDER_ENV \"$RUNEVIDENCE_PYTHON\" \"$ROOT_DIR/tools/capture_episode.py\" $RECORDER_ARGS; exec bash"
 
 tmux select-window -t "$SESSION:preflight"
 log "tmux session started: $SESSION"

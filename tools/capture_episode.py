@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import signal
+import select
 import subprocess
 import sys
 import time
@@ -239,6 +240,13 @@ def record_one(args: argparse.Namespace, run_dir: Path, topic_list: list[str]) -
             stdout=log,
             stderr=subprocess.STDOUT,
         )
+        startup_deadline = time.monotonic() + 5.0
+        while process.poll() is None and time.monotonic() < startup_deadline:
+            if bag_dir.is_dir() and any(bag_dir.iterdir()):
+                break
+            time.sleep(0.05)
+        if process.poll() is not None or not bag_dir.is_dir() or not any(bag_dir.iterdir()):
+            raise OSError("rosbag did not create its output within 5 seconds")
     except OSError as error:
         log.write(f"rosbag start failed: {error}\n".encode())
         log.close()
@@ -256,8 +264,10 @@ def record_one(args: argparse.Namespace, run_dir: Path, topic_list: list[str]) -
     keyboard_fd = None
     stop_requested = threading.Event()
     keyboard_failed = threading.Event()
+    recording_done = threading.Event()
     annotation_sequence = 0
     correction_active = False
+    keyboard = None
     if sys.stdin.isatty():
         keyboard_fd = os.dup(sys.stdin.fileno())
         old_tty = termios.tcgetattr(keyboard_fd)
@@ -267,7 +277,10 @@ def record_one(args: argparse.Namespace, run_dir: Path, topic_list: list[str]) -
         def keyboard_reader() -> None:
             nonlocal annotation_sequence, correction_active
             try:
-                while True:
+                while not recording_done.is_set():
+                    ready, _, _ = select.select([keyboard_fd], [], [], 0.1)
+                    if not ready:
+                        continue
                     data = os.read(keyboard_fd, 1)
                     action = classify_input(data)
                     if action in {"closed", "stop"}:
@@ -330,6 +343,25 @@ def record_one(args: argparse.Namespace, run_dir: Path, topic_list: list[str]) -
     except KeyboardInterrupt:
         stop_reason = "keyboard_interrupt"
     finally:
+        recording_done.set()
+        if keyboard is not None:
+            keyboard.join(timeout=1.0)
+        if correction_active:
+            state = {"active": True, "episode_id": run_dir.name, "run_dir": str(run_dir)}
+            event, correction_active = event_for_key(
+                "4", state, auditor_id=args.auditor_id,
+                sequence=annotation_sequence + 1,
+                correction_active=True, ros_time_ns=time.time_ns(),
+            )
+            if event is not None:
+                event["source"] = "capture_state_machine"
+                event["payload"]["auto_closed_at_episode_end"] = True
+                append_event(run_dir, event)
+                if event_publisher is not None and event_publisher.stdin is not None:
+                    with suppress(BrokenPipeError, OSError):
+                        event_publisher.stdin.write((json.dumps(event, sort_keys=True) + "\n").encode())
+                        event_publisher.stdin.flush()
+                print("\n[AUDIT] open correction interval closed at episode end.", flush=True)
         if old_tty is not None:
             with suppress(OSError):
                 termios.tcsetattr(keyboard_fd, termios.TCSADRAIN, old_tty)
@@ -385,6 +417,7 @@ def main() -> int:
     parser.add_argument("--compression-mode", default="file")
     parser.add_argument("--compression-format", default="zstd")
     parser.add_argument("--source-domain", default="real")
+    parser.add_argument("--auto-start", action="store_true")
     args = parser.parse_args()
     args.arms = [x for x in args.arms.split(",") if x]
     args.cameras = [x for x in args.cameras.split(",") if x]
@@ -395,17 +428,20 @@ def main() -> int:
     i = 1
     write_annotation_state(args.annotation_state, status="ready", active=False)
     while args.episodes == 0 or i <= args.episodes:
-        print(
-            f"\n========== READY: EPISODE {i} ==========\n"
-            "按 Enter 开始本条；输入 q 后回车退出。录制中数字键 1-9/0 可实时标注。",
-            flush=True,
-        )
-        try:
-            if input().strip().lower() == "q":
+        if args.auto_start:
+            print(f"\n========== AUTO START: EPISODE {i} ==========", flush=True)
+        else:
+            print(
+                f"\n========== READY: EPISODE {i} ==========\n"
+                "按 Enter 开始本条；输入 q 后回车退出。录制中数字键 1-9/0 可实时标注。",
+                flush=True,
+            )
+            try:
+                if input().strip().lower() == "q":
+                    break
+            except EOFError:
+                print("[EXIT] input closed; ending capture session.", flush=True)
                 break
-        except EOFError:
-            print("[EXIT] input closed; ending capture session.", flush=True)
-            break
         label = f"{args.experiment_id}-{args.condition_id}-episode-{i}"
         run_dir = initialize_run(args.runs_root, new_run_id(label), [sys.argv[0]], label, {
             "experiment_id": args.experiment_id, "condition_id": args.condition_id,
