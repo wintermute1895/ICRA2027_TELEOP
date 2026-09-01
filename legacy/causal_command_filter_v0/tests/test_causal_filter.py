@@ -5,10 +5,10 @@ from pathlib import Path
 
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "ros2_ws/src/sim_robot_driver"))
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "legacy/causal_command_filter_v0"))
 
-from sim_robot_driver.causal_filter import blend_command, build_feature, predict, train_ridge
+from causal_filter import blend_command, build_feature, predict, train_ridge
 
 
 class CausalFilterTest(unittest.TestCase):

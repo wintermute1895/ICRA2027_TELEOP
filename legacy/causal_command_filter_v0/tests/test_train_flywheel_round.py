@@ -5,8 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "tools"))
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "legacy/causal_command_filter_v0"))
 
 from train_flywheel_round import train_round  # noqa: E402
 

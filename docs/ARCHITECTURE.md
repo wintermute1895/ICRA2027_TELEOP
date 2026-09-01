@@ -80,6 +80,10 @@ requires the full causal command chain and `A_action` admission.
 
 ## Learned-filter boundary
 
+The former causal command-prior implementation is archived under
+`legacy/causal_command_filter_v0/` and is not part of the main ROS package or
+flywheel training path.
+
 `src/teleop_filter/trajectory_vae.py` is the algorithm core. It contains no ROS,
 hardware, task geometry, or simulator imports. The conditional prior is learned
 from past operator commands and measured state. The posterior sees the accepted

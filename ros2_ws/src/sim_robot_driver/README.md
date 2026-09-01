@@ -107,39 +107,12 @@ ros2 run sim_robot_driver mujoco_command_mirror --ros-args \
 Simulation state is intentionally published below `/sim/robot1`; hardware
 state remains below `/robot1`. This prevents accidental topic collisions.
 
-## Causal Command Filter v0
+## Learned filters
 
-`causal_filter_node` is a simulation-only experiment adapter. It reads the
-bridge's already mapped command and simulation joint state, predicts a
-successful-trajectory action prior from causal history, then emits a bounded
-blend on `/filter_v0/<arm>_arm/joint_follow`. Missing state, model mismatch,
-or an out-of-distribution feature vector falls back to the mapped command.
-It never starts a hardware driver and is not part of the hardware launch.
-
-Train only from an explicitly admitted `teleop_episode/v0.1` projection.
-The rosbag exporter produces derived `episode/v1` rows and is not sufficient for
-this claim. A legacy derived row may be used only for an engineering smoke test,
-never for `A_action` or a reported flywheel result:
-
-```bash
-python3 tools/canonical_episode_to_filter_jsonl.py \
-  --manifest evidence/sim/<episode>/episode.manifest.json \
-  --control-jsonl evidence/sim/<episode>/streams/control.jsonl \
-  --commands-jsonl evidence/sim/<episode>/streams/commands.jsonl \
-  --task-context-jsonl evidence/sim/<episode>/streams/task_context.jsonl \
-  --output derived/filter_training.jsonl
-```
-
-The adapter enforces successful `A_action` admission, synchronization validity,
-and the complete `raw -> filter -> projected -> executed` causal chain before
-training can consume the output.
-
-Launch it in the simulation path only:
-
-```bash
-ros2 launch sim_robot_driver sim_teleop.launch.py render:=false \
-  filter_enabled:=true filter_model_path:=/absolute/path/filter.json
-```
-
-With `filter_enabled:=true`, the ordinary bridge is deliberately unarmed and
-the mirror consumes only `/filter_v0`; this prevents competing command
+The simulation package intentionally does not install or launch the former
+causal command-prior filter. That experiment is preserved under
+`legacy/causal_command_filter_v0/` for historical baseline comparison only.
+The current algorithm is the task-conditioned residual model in
+`src/teleop_filter/`, which must be integrated through a separate shadow-first
+adapter before any deployment claim. The legacy filter is intentionally absent
+from the launch and package entry points.

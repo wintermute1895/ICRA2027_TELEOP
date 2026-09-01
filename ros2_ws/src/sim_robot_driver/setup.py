@@ -14,6 +14,5 @@ setup(
     entry_points={"console_scripts": [
         "mujoco_command_mirror = sim_robot_driver.mujoco_command_mirror:main",
         "keyboard_master = sim_robot_driver.keyboard_master:main",
-        "causal_filter_node = sim_robot_driver.causal_filter_node:main",
     ]},
 )

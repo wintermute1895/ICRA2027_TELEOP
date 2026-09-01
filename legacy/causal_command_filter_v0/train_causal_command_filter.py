@@ -10,10 +10,10 @@ import argparse
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "ros2_ws/src/sim_robot_driver"))
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from sim_robot_driver.causal_filter import build_feature, train_ridge  # noqa: E402
+from causal_filter import build_feature, train_ridge  # noqa: E402
 from episode_analysis_common import finite_vector, load_jsonl  # noqa: E402
 
 

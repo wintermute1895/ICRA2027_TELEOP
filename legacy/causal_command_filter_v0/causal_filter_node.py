@@ -10,7 +10,10 @@ from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from lbot_arm_interfaces.msg import FollowJoint
 
-from .causal_filter import CausalFilterModel, blend_command
+try:
+    from .causal_filter import CausalFilterModel, blend_command
+except ImportError:  # pragma: no cover - legacy standalone invocation
+    from causal_filter import CausalFilterModel, blend_command
 
 
 class CausalFilterNode(Node):

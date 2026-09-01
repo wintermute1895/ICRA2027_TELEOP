@@ -70,14 +70,14 @@ values; missing context is rejected, never zero-filled.
 
 ## Flywheel Round Training
 
-`tools/train_flywheel_round.py` trains one immutable simulation-only filter
+`legacy/causal_command_filter_v0/train_flywheel_round.py` trains one immutable simulation-only filter
 round from a JSON config. It projects only canonical `A_action` episodes using
 the strict adapter, preserves episode-level train/validation splits, and writes
 a model plus a report containing round lineage, input episode IDs, config/code
 hashes, rejected episodes, and offline prediction metrics.
 
 ```bash
-python3 tools/train_flywheel_round.py \
+python3 legacy/causal_command_filter_v0/train_flywheel_round.py \
   --round-config config/filters/flywheel_round.example.json \
   --output-dir runs/filter/F_static_d0_v1
 ```
