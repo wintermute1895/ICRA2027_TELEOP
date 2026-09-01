@@ -142,8 +142,7 @@ class O6SDKTransport:
             raise O6HandError(
                 "linkerbot O6 Python SDK is unavailable. Expected the "
                 "repository SDK at third_party/linkerbot-python-sdk-main/src "
-                "(or an installed linkerbot-py package); install its Python "
-                "dependencies, including python-can, if the import fails"
+                f"(or an installed linkerbot-py package): {exc}"
             ) from exc
         self.hand = O6(
             side=self.side,

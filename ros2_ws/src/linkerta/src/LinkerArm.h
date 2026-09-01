@@ -41,6 +41,7 @@ public:
     std::vector<float> getJointPosition();
     std::vector<bool> getJointErrorCode();
     std::string getVersion();
+    std::string getCanInterface() const { return bus->getInterface(); }
     void resetZero(const uint8_t joint = 0xFF);
     
     

@@ -29,6 +29,12 @@ int main(int argc, char ** argv)
         // LinkerArm::LinkerArm arm(id, channel, baudrate);
         std::this_thread::sleep_for(200ms);
         std::cout << arm.getVersion() << std::endl;
+        auto can_interface_pub = node->create_publisher<std_msgs::msg::String>(
+            "/linkerta/can_interface", rclcpp::QoS(1).reliable().transient_local());
+        std_msgs::msg::String can_interface_msg;
+        can_interface_msg.data = arm.getCanInterface();
+        can_interface_pub->publish(can_interface_msg);
+        RCLCPP_INFO(node->get_logger(), "LinkerTA selected CAN interface: %s", can_interface_msg.data.c_str());
         
         if (calibration == 1) {
             arm.resetZero();

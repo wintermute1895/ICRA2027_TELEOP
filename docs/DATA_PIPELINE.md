@@ -70,12 +70,15 @@ consume annotation digits, Enter, or change the recorder's terminal settings.
 
 Hand actuation is a separate process and terminal. It does not share the
 recorder's keyboard, so auditor digits and Enter retain their capture semantics.
-The controller publishes through `hand_adapter` and the official SDK; it never
-opens CAN itself.
+For the installed O6, the active controller reuses the same direct `linkerbot`
+backend as `tools/hand_gesture_player.py`. It is the sole CAN owner and also
+publishes ROS command evidence, normalized O6 feedback, and binary gripper
+state. The official LinkerHand ROS SDK remains available for passive/other-model
+integration, but is not in this O6 actuation path because it did not recognize
+the installed firmware.
 
-Start it after the adapter/SDK is running and the physical E-stop is reachable.
-For real hardware, the backend and controller can be started together in a
-dedicated terminal:
+The lower-level `run_hand_preset_controller.sh` ROS backend is only for a
+separately validated, already-running `hand_adapter` deployment:
 
 ```bash
 scripts/run_hand_preset_controller.sh \
@@ -83,28 +86,35 @@ scripts/run_hand_preset_controller.sh \
   --confirm EXECUTE_HAND_PRESET_WITH_ESTOP_READY
 ```
 
-The command above assumes an already running, armed adapter. To start the
-right-hand O6 backend with its own CAN owner, use instead:
+For the installed right-hand O6, use the direct controller instead:
 
 ```bash
-scripts/start_hand_control_session.sh \
+scripts/start_hand_control_session.sh --can=can1 \
   --physical-estop-ready --confirm=I_UNDERSTAND_REAL_HAND
 ```
 
-It waits for `/robot1/right_hand/joint_states`, then launches the controller;
-its SDK log is written under `/tmp/teleop_hand_control_logs` (or `ROS_LOG_DIR`).
-Start this terminal before the capture session and do **not** pass
+It requires valid six-axis O6 feedback before accepting `f` and publishes
+`/robot1/right_hand/joint_states` itself.
+With `--can=auto` (the default), it reads LinkerTA's retained
+`/linkerta/can_interface` announcement and selects the other UP CAN interface;
+it never probes CAN buses by sending hand frames. If LinkerTA is not running,
+pass the verified hand interface explicitly, for example `--can=can1`.
+Start this terminal before recording the first episode and do **not** pass
 `--hand-sdk` to `start_capture_session.sh`; that option intentionally starts a
 second, disarmed SDK owner for observation only.
 
 In that controller window, `f` advances the configured cycle and `q` exits the
-controller only. The supplied right-hand cycle is `power_grasp (1) -> open
-(0)`. Edit `config/hand_presets.json` only after a dry run and supervised
+controller only. The supplied right-hand cycle is loaded from
+`gestures/o6_tuned.json`: gesture `0` (open mapping), then gestures `1`,
+`2`, and `3` (grasp mappings), and back to `0`. Edit the `gripper_state`
+mapping in `config/hand_presets.json` only after a dry run and supervised
 hardware check. The controller continuously publishes
 `/teleop/right/gripper_state` as `std_msgs/msg/UInt8` (`0=open`, `1=closed`),
-and the recorder includes this topic in every new bag. Raw six/ten-DoF hand
-command and state topics remain as evidence; canonical/model inputs use only
-the binary projection. No state is claimed before the first `f` command, which
+and the recorder includes this topic in every new bag. The direct O6 backend
+uses normalized `[0,100]` positions and converts them to raw CAN internally;
+the ROS command evidence remains in the project `[0,255]` contract. Canonical
+model inputs use only the binary projection. No binary state is claimed before
+the first `f` command, which
 avoids labeling an unverified initial pose. The current arm trajectory filter
 still predicts arm residuals only; the recorded binary stream is ready for a
 future gripper/release head and does not silently turn hand state into arm

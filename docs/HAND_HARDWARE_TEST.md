@@ -1,5 +1,11 @@
 # Hand Hardware Test
 
+> Current installed O6 actuation uses `scripts/start_hand_control_session.sh`,
+> which reuses the direct `linkerbot` backend proven by
+> `tools/hand_gesture_player.py`. The official ROS SDK procedure below remains
+> an observation/other-model reference and must not run concurrently on the
+> same CAN interface.
+
 The official LinkerHand ROS2 SDK owns the CAN protocol, motor limits, faults,
 speed and force handling. The platform adapter does not replace those controls.
 Its only role is a shared topic contract and an `armed` gate.

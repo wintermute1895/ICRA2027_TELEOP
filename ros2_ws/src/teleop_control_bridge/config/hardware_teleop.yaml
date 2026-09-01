@@ -37,7 +37,10 @@ joint_mapping_bridge_node:
     one_euro_derivative_cutoff_hz: 1.0
 
     # 机器人类型: LS 或 RS
-    robot_type: "RS"
+    # Live controller identification reports LKLS73-O2 for the connected arm.
+    # Keep this aligned with the controller model so the bridge selects the
+    # correct software joint limits and does not reject valid LS commands.
+    robot_type: "LS"
 
     #========================================
     # 首次移动配置

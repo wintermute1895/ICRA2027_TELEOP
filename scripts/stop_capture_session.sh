@@ -17,7 +17,7 @@ fi
 # tmux does not always propagate signals through ROS launch wrappers.  Ask the
 # known capture processes to terminate gracefully, without touching unrelated
 # applications.
-for pattern in 'ros2 bag record' 'realsense2_camera_node' 'linkerta_node' 'joint_mapping_bridge_node' 'lbot_driver'; do
+for pattern in 'ros2 bag record' 'realsense2_camera_node' 'rqt_image_view' 'linkerta_node' 'joint_mapping_bridge_node' 'lbot_driver'; do
   pids="$(pgrep -f "$pattern" || true)"
   if [[ -n "$pids" ]]; then
     echo "Stopping residual $pattern: $pids"

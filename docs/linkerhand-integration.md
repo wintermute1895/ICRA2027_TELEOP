@@ -1,5 +1,11 @@
 # LinkerHand integration
 
+The installed O6 active-control path is intentionally separate: it uses the
+repository `linkerbot` O6 backend through `scripts/start_hand_control_session.sh`
+because the official ROS SDK did not recognize that hand's firmware. That
+single process owns CAN and publishes the same project command/state evidence
+topics. Do not run it together with the official SDK path documented below.
+
 The upstream SDK is pinned in `third_party/linkerhand_ros2_sdk` as a Git
 submodule. Its source is not modified. The ROS2 workspace exposes it through
 the read-only link `ros2_ws/src/linker_hand_ros2_sdk`.

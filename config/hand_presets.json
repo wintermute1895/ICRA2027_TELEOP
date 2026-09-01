@@ -12,17 +12,15 @@
   "hands": {
     "right": {
       "model": "O6",
-      "cycle": ["power_grasp", "open"],
-      "presets": {
-        "open": {
-          "gripper_state": 0,
-          "positions": [200, 255, 255, 255, 255, 180]
-        },
-        "power_grasp": {
-          "gripper_state": 1,
-          "positions": [90, 135, 20, 20, 20, 20]
-        }
-      }
+      "position_encoding": "normalized_0_100",
+      "command_encoding": "ros_joint_state_raw_0_255",
+      "gesture_file": "../gestures/o6_tuned.json",
+      "cycle": [
+        {"name": "gesture_0_open", "gesture_id": 0, "gripper_state": 0},
+        {"name": "gesture_1_grasp", "gesture_id": 1, "gripper_state": 1},
+        {"name": "gesture_2_grasp", "gesture_id": 2, "gripper_state": 1},
+        {"name": "gesture_3_grasp", "gesture_id": 3, "gripper_state": 1}
+      ]
     }
   }
 }

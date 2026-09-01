@@ -59,6 +59,7 @@ namespace Communication //Communicator
         void updateSendRate();
         void updateReceiveRate();
         std::string printMillisecondTime();
+        const std::string& getInterface() const { return interface; }
 
     private:
         int socket_fd;
@@ -86,4 +87,3 @@ namespace Communication //Communicator
 }
 #endif
 #endif // CAN_BUS_H
-

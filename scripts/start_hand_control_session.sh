@@ -2,8 +2,8 @@
 set -Eeuo pipefail
 
 # Independent real-hand session. It does not start, stop, or read from the
-# capture recorder. The official SDK owns CAN; the keyboard controller only
-# publishes the existing ROS adapter topic.
+# capture recorder. The controller reuses the O6 backend proven by
+# hand_gesture_player.py and is the only CAN owner.
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SYSTEM_PYTHON="${SYSTEM_PYTHON:-/usr/bin/python3}"
 ROS_SETUP="${ROS_SETUP:-/opt/ros/jazzy/setup.bash}"
@@ -13,6 +13,28 @@ MODEL="O6"
 CAN_INTERFACE="auto"
 ESTOP_READY=0
 CONFIRM=""
+
+parse_ros_string_data() {
+  local line value first last
+  while IFS= read -r line; do
+    [[ "$line" == data:* ]] || continue
+    value="${line#data:}"
+    value="${value#"${value%%[![:space:]]*}"}"
+    value="${value%"${value##*[![:space:]]}"}"
+    if (( ${#value} >= 2 )); then
+      first="${value:0:1}"
+      last="${value: -1}"
+      if [[ "$first" == "$last" ]] && { [[ "$first" == "'" ]] || [[ "$first" == '"' ]]; }; then
+        value="${value:1:${#value}-2}"
+      fi
+    fi
+    if [[ "$value" =~ ^[A-Za-z0-9._-]+$ ]]; then
+      printf '%s\n' "$value"
+      return 0
+    fi
+  done
+  return 1
+}
 
 for arg in "$@"; do
   case "$arg" in
@@ -50,96 +72,35 @@ if [[ "$CAN_INTERFACE" == auto ]]; then
     echo "CAN auto-detection found no UP SocketCAN interfaces" >&2
     exit 2
   fi
+  LINKERTA_SAMPLE="$(timeout 5s ros2 topic echo --once --qos-durability transient_local /linkerta/can_interface 2>/dev/null || true)"
+  LINKERTA_CAN="$(parse_ros_string_data <<<"$LINKERTA_SAMPLE" || true)"
+  if [[ -z "$LINKERTA_CAN" ]]; then
+    echo "LinkerTA CAN assignment is unavailable on /linkerta/can_interface." >&2
+    echo "Start the capture session first, then start this independent hand controller." >&2
+    echo "No hand SDK was started and no CAN probe was sent." >&2
+    exit 2
+  fi
+  REMAINING=()
+  for candidate in "${CANDIDATES[@]}"; do
+    [[ "$candidate" == "$LINKERTA_CAN" ]] || REMAINING+=("$candidate")
+  done
+  if (( ${#REMAINING[@]} != 1 )); then
+    echo "Cannot select a unique hand CAN after excluding LinkerTA=$LINKERTA_CAN; remaining: ${REMAINING[*]:-none}" >&2
+    exit 2
+  fi
+  CAN_INTERFACE="${REMAINING[0]}"
 fi
-if [[ "$CAN_INTERFACE" != auto ]]; then
-  ip link show "$CAN_INTERFACE" >/dev/null 2>&1 || { echo "CAN interface not found: $CAN_INTERFACE" >&2; exit 2; }
-  ip link show "$CAN_INTERFACE" | grep -q 'state UP' || { echo "CAN interface is not UP: $CAN_INTERFACE" >&2; exit 2; }
-else
-  CANDIDATES=("${CANDIDATES[@]}")
-fi
-if ros2 node list 2>/dev/null | grep -Eq '/(hand_adapter|linker_hand_sdk_(left|right))$'; then
-  echo "an existing hand adapter/SDK node is already running; refusing a second CAN owner" >&2
+ip link show "$CAN_INTERFACE" >/dev/null 2>&1 || { echo "CAN interface not found: $CAN_INTERFACE" >&2; exit 2; }
+ip link show "$CAN_INTERFACE" | grep -q 'state UP' || { echo "CAN interface is not UP: $CAN_INTERFACE" >&2; exit 2; }
+if ros2 node list 2>/dev/null | grep -Eq '/(hand_adapter|hand_preset_controller|linker_hand_sdk_(left|right))$'; then
+  echo "an existing hand controller/adapter/SDK node is already running; refusing a second CAN owner" >&2
   exit 2
 fi
 
 LOG_DIR="${ROS_LOG_DIR:-/tmp/teleop_hand_control_logs}"
 mkdir -p "$LOG_DIR"
-SDK_MODEL="$MODEL"
-[[ "$MODEL" == "L20Lite" ]] && SDK_MODEL="L10"
-STATE_TOPIC="/robot1/${ARM}_hand/joint_states"
-launch_backend() {
-  local can_interface="$1" armed="$2" allow_commands="$3" launch_log="$4"
-  if [[ "$ARM" == "right" ]]; then
-    ros2 launch hand_adapter hand_interface.launch.py \
-      armed:="$armed" launch_right_sdk:=true launch_left_sdk:=false \
-      right_model:="$MODEL" right_sdk_model:="$SDK_MODEL" right_can:="$can_interface" \
-      initialize_pose:=false allow_sdk_commands:="$allow_commands" >"$launch_log" 2>&1 &
-  else
-    ros2 launch hand_adapter hand_interface.launch.py \
-      armed:="$armed" launch_left_sdk:=true launch_right_sdk:=false \
-      left_model:="$MODEL" left_sdk_model:="$SDK_MODEL" left_can:="$can_interface" \
-      initialize_pose:=false allow_sdk_commands:="$allow_commands" >"$launch_log" 2>&1 &
-  fi
-  echo $!
-}
-
-stop_backend() {
-  local pid="$1"
-  kill -INT "$pid" 2>/dev/null || true
-  for _ in $(seq 1 20); do
-    kill -0 "$pid" 2>/dev/null || return 0
-    sleep 0.1
-  done
-  kill -TERM "$pid" 2>/dev/null || true
-  wait "$pid" 2>/dev/null || true
-}
-
-valid_state_sample() {
-  "$SYSTEM_PYTHON" -c '
-import re, sys
-text = sys.stdin.read()
-match = re.search(r"(?:^|\n)position:\s*(.*?)(?:\n(?:velocity|effort|---):|\Z)", text, re.S)
-values = [] if match is None else [float(value) for value in re.findall(r"-?\d+(?:\.\d+)?", match.group(1))]
-raise SystemExit(0 if values and any(value >= 0.0 for value in values) else 1)
-'
-}
-
-if [[ "$CAN_INTERFACE" == auto ]]; then
-  RESPONDING=()
-  for candidate in "${CANDIDATES[@]}"; do
-    probe_log="$LOG_DIR/hand_probe_${candidate}_$(date +%Y%m%dT%H%M%S).log"
-    probe_pid="$(launch_backend "$candidate" false false "$probe_log")"
-    sample="$(timeout 8s ros2 topic echo --once "$STATE_TOPIC" 2>/dev/null || true)"
-    if valid_state_sample <<<"$sample"; then
-      RESPONDING+=("$candidate")
-    fi
-    stop_backend "$probe_pid"
-    sleep 0.5
-  done
-  if (( ${#RESPONDING[@]} != 1 )); then
-    echo "CAN auto-detection could not identify exactly one hand interface; responding candidates: ${RESPONDING[*]:-none}" >&2
-    echo "Probe logs: $LOG_DIR/hand_probe_*.log" >&2
-    echo "Pass --can=<interface> only after checking the wiring." >&2
-    exit 2
-  fi
-  CAN_INTERFACE="${RESPONDING[0]}"
-fi
-
-LAUNCH_LOG="$LOG_DIR/hand_control_$(date +%Y%m%dT%H%M%S).log"
-LAUNCH_PID="$(launch_backend "$CAN_INTERFACE" true true "$LAUNCH_LOG")"
-cleanup() { stop_backend "$LAUNCH_PID"; }
-trap cleanup EXIT INT TERM
-for _ in $(seq 1 60); do
-  kill -0 "$LAUNCH_PID" 2>/dev/null || { echo "hand SDK exited; inspect $LAUNCH_LOG" >&2; exit 3; }
-  if timeout 1s ros2 topic echo --once "$STATE_TOPIC" >/dev/null 2>&1; then
-    echo "[HAND] state ready: $STATE_TOPIC (can=$CAN_INTERFACE, model=$MODEL)"
-    "$SYSTEM_PYTHON" "$ROOT_DIR/tools/hand_preset_controller.py" \
-      --config "$ROOT_DIR/config/hand_presets.json" --arm "$ARM" \
-      --execute --physical-estop-ready \
-      --confirm EXECUTE_HAND_PRESET_WITH_ESTOP_READY
-    exit $?
-  fi
-  sleep 0.25
-done
-echo "no hand state received; inspect $LAUNCH_LOG" >&2
-exit 3
+export ROS_LOG_DIR="$LOG_DIR"
+exec "$SYSTEM_PYTHON" "$ROOT_DIR/tools/hand_preset_controller.py" \
+  --config "$ROOT_DIR/config/hand_presets.json" --arm "$ARM" \
+  --backend direct-o6 --can "$CAN_INTERFACE" --execute \
+  --physical-estop-ready --confirm EXECUTE_HAND_PRESET_WITH_ESTOP_READY
