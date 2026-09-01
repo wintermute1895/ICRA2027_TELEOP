@@ -1,0 +1,25 @@
+schema: robot_teleop.filter-training-pipeline/v0.1
+path_base: ../..
+
+# Edit only these two directories for a normal episode. The projection is the
+# timestamped output made by convert_episode_to_lerobot.sh.
+source:
+  run_directory: evidence/teleop/EDIT_EPISODE_DIRECTORY
+  projection_directory: evidence/teleop/EDIT_EPISODE_DIRECTORY/derived/EDIT_PROJECTION_DIRECTORY
+  expert_action_field: controller_command_rad
+
+# Defaults to <projection_directory>/filter_training_vlm.
+output: {}
+
+vlm:
+  enabled: true
+  model_id: google/siglip2-base-patch16-224
+  revision: 75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2
+  cache_dir: /media/ilex/Cyan_data/ICRA2027_MODELS/huggingface
+  device: cpu
+  batch_size: 32
+  max_age_ms: 100.0
+  allow_network: false
+  cameras:
+    - id: main_rgb
+    - id: auxiliary_rgb

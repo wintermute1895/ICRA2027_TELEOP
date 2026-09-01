@@ -36,8 +36,12 @@ def event_mask(rows: list[dict[str, Any]], events: list[dict[str, Any]]) -> list
         while event_index < len(ordered) and timestamp(ordered[event_index]) <= stamp:
             kind = ordered[event_index].get("event_type")
             if kind == "correction_start":
+                if active:
+                    raise ValueError("correction_start repeated before correction_end")
                 active = True
             elif kind == "correction_end":
+                if not active:
+                    raise ValueError("correction_end has no matching correction_start")
                 active = False
             event_index += 1
         if isinstance(row.get("correction_active"), bool):

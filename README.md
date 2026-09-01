@@ -27,6 +27,15 @@ bash scripts/install_lerobot.sh
 bash scripts/start_capture_session.sh --config=config/capture_session.env
 ```
 
+日常数采的相机、会话、操作者和默认任务参数均在
+`config/capture_session.env`；真机急停与授权仍必须显式写在命令行：
+
+```bash
+bash scripts/stop_capture_session.sh
+bash scripts/start_capture_session.sh \
+  --real --physical-estop-ready --confirm=I_UNDERSTAND_REAL_ROBOT
+```
+
 ## Data conversion
 
 The rosbag2 run is the immutable capture record. Canonical data is the stable
@@ -48,6 +57,10 @@ conversion-only smoke test that never changes the real audit:
 bash scripts/test_rosbag_to_lerobot.sh evidence/teleop/<completed-episode>
 ```
 
+触觉不是当前主数采或滤波器训练输入。仓库中保留的 tactile/hand SDK topic 仅用于
+历史硬件适配和明确 opt-in 的诊断；默认 `config/capture_session.env` 不启动它们，
+不能据此认为当前数据包含可用触觉监督。
+
 When the same canonical episode also passes the stricter `A_action` causal gate,
 the production command additionally writes `filter/filter_training.jsonl`.
 Internal stream paths are resolved from the manifest and remain portable when
@@ -57,12 +70,13 @@ Task-aware filter training adds a frozen VLM view before CVAE training. Generate
 embeddings with the selected VLM implementation, then attach them by timestamp:
 
 ```bash
-VLM_CACHE_DIR=<vlm-cache> bash scripts/prepare_vlm_filter_view.sh \
-  --episode filter/filter_training.jsonl \
-  --camera main_rgb=derived/frames/main_rgb_frames.jsonl \
-  --camera auxiliary_rgb=derived/frames/auxiliary_rgb_frames.jsonl \
-  --output-dir derived/vlm-filter-view
+bash scripts/prepare_filter_training_view.sh \
+  --config=config/pipeline/filter_training_view.yaml
 ```
+
+编辑 `config/pipeline/filter_training_view.yaml` 中的 episode/projection 路径即可；
+其中相机顺序、SigLIP2 revision、移动硬盘 cache、device、batch size 和时间对齐阈值
+都会写入运行 manifest。旧的逐项参数入口仍保留用于兼容脚本。
 
 An optional local VLM generator is included for a reproducible baseline:
 provision a local environment and cache the selected weights with

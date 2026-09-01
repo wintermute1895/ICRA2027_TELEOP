@@ -10,6 +10,7 @@ import unittest
 from pathlib import Path
 
 from tools.capture_episode import classify_input
+from tools.capture_episode import write_terminal_audit
 
 
 class CaptureKeyboardInputTest(unittest.TestCase):
@@ -25,6 +26,26 @@ class CaptureKeyboardInputTest(unittest.TestCase):
 
     def test_other_keys_do_nothing(self) -> None:
         self.assertEqual(classify_input(b"x"), "ignore")
+
+    def test_terminal_audit_enter_defers_and_records_timestamps(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            run_dir = root / "episode"
+            run_dir.mkdir()
+            import builtins
+            original = builtins.input
+            builtins.input = lambda _prompt="": ""
+            try:
+                write_terminal_audit(run_dir, type("Args", (), {"operator_id": "op"})())
+            finally:
+                builtins.input = original
+            audit = json.loads((run_dir / "artifacts/terminal_audit.json").read_text())
+            self.assertEqual(audit["termination_reason"], "audit_deferred")
+            self.assertIsInstance(audit["timestamp_ns"], int)
+
+    def test_capture_manifest_does_not_hardcode_manual_mode(self):
+        source = (Path(__file__).resolve().parents[2] / "tools/capture_episode.py").read_text(encoding="utf-8")
+        self.assertNotIn('"capture_mode": "manual"', source)
 
     def test_rosbag_has_no_tty_and_digit_does_not_stop_episode(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

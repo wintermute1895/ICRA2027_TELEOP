@@ -21,9 +21,9 @@ The final actuator endpoint is the only intended distinction:
 | Actuator endpoint | `sim_robot_driver` / MuJoCo | `lbot_driver` / official SDK and CAN |
 | Export and scoring | identical tools | identical tools |
 
-For real capture, the recorder additionally records LinkerHand force, matrix
-pressure, and matrix-mass topics. Simulation intentionally records none of
-these topics yet; its capture manifest declares `not_integrated_in_simulation`.
+触觉不是当前主数采或滤波器训练输入。历史 LinkerHand force/matrix/mass topic 仅在
+明确启用旧硬件适配时才会记录；默认 real capture 不启动 tactile SDK，simulation
+也不记录这些 topic。
 Arm joint commands and states remain radians; LinkerHand command values use the
 SDK's documented `[0,255]` scale.
 
@@ -89,7 +89,7 @@ scripts/run_hand_preset_controller.sh \
 For the installed right-hand O6, use the direct controller instead:
 
 ```bash
-scripts/start_hand_control_session.sh --can=can1 \
+scripts/start_hand_control_session.sh --config=config/hands/o6_control.env \
   --physical-estop-ready --confirm=I_UNDERSTAND_REAL_HAND
 ```
 
@@ -122,13 +122,11 @@ action supervision.
 
 ```bash
 bash scripts/start_capture_session.sh \
-  --real --physical-estop-ready --confirm=I_UNDERSTAND_REAL_ROBOT \
-  --arms=right --manual-segments --episodes=0 \
-  --camera-serial <primary_serial> \
-  --second-camera-serial <secondary_serial> \
-  --second-camera-namespace /camera2/camera \
-  --task-id precision_alignment --operator-id operator_01
+  --real --physical-estop-ready --confirm=I_UNDERSTAND_REAL_ROBOT
 ```
+
+相机序列号、分辨率、采集模式、任务和操作者等稳定参数集中在
+`config/capture_session.env`。急停和真机授权不进入配置文件。
 
 When a display is available, the session opens one persistent `rqt_image_view`
 window per configured RGB camera (`/camera/camera/...` and
@@ -188,8 +186,7 @@ The exporter is read-only. File-level zstd rosbag files are expanded to a
 temporary directory under `/tmp` and removed after parsing; image pixels remain
 in the source rosbag and JSONL keeps timestamped references only.
 
-For tactile-enabled hardware capture, opt in to the LinkerHand SDK while
-keeping hand actuation disarmed:
+历史兼容场景如需单独诊断 tactile hardware，可显式 opt in；这不属于当前主数据集：
 
 ```bash
 bash scripts/start_capture_session.sh --hand-sdk --left-touch --right-touch
@@ -214,8 +211,8 @@ bash scripts/record_episode.sh
 ```
 
 The recorder always captures the driver-accepted `vendor_command` and measured
-joint state. It also subscribes to TCP pose, task-context/event, and tactile
-topics when publishers are present. TCP pose and its calibration are optional:
+joint state. It also subscribes to TCP pose and task-context/event topics when
+publishers are present. TCP pose and its calibration are optional:
 they are neither required to collect an episode nor required for the ACT
 projection or `A_action` admission. `vendor_command` is evidence of the command
 accepted for SDK transmission; it is not an observed robot action.
@@ -229,8 +226,9 @@ directly for diagnosis:
 python3 scripts/preflight.py --mode capture --source real --sample-timeout-s 5
 ```
 
-Add `--require-tactile` only when both tactile SDK streams were explicitly
-enabled. The check never publishes a command or invokes hardware SDK APIs.
+The optional tactile preflight remains only for historical hardware diagnostics;
+it is not part of the current capture command or training contract. The check
+never publishes a command or invokes hardware SDK APIs.
 
 Each output directory contains:
 
@@ -245,9 +243,9 @@ right_data_quality.json
 
 Each state-aligned JSONL record includes raw master input, One-Euro filtered
 master input, mapped arm command, measured arm state, and nearest RGB/depth
-frame references when their source topics exist. Real records also include the
-latest force/matrix/mass tactile sample when it is fresh enough. A missing
-source topic is listed in the export manifest; no absent signal is synthesized.
+frame references when their source topics exist. A missing source topic is
+listed in the export manifest; no absent signal is synthesized. Tactile streams
+are intentionally outside the current main dataset contract.
 
 ## Canonical v0.1 And ACT Projection
 

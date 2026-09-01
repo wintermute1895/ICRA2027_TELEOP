@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build a frozen multi-camera VLM view for an admitted residual-training episode.
+# Build a frozen multi-camera VLM view for an admitted action-training episode.
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -18,6 +18,7 @@ fi
 CACHE_DIR="${VLM_CACHE_DIR:-$DEFAULT_VLM_CACHE}"
 DEVICE="${VLM_DEVICE:-cuda}"
 BATCH_SIZE="${VLM_BATCH_SIZE:-32}"
+MAX_AGE_MS="${VLM_MAX_AGE_MS:-100.0}"
 ALLOW_NETWORK=0
 CAMERA_IDS=()
 FRAME_INDEXES=()
@@ -27,7 +28,7 @@ usage() {
 Usage: bash scripts/prepare_vlm_filter_view.sh [options]
 
 Required:
-  --episode PATH              Admitted filter_training.jsonl with residual_target_rad
+  --episode PATH              Admitted filter view with expert_action_target_rad
   --camera ID=INDEX_JSONL     Repeat once per camera, in the desired concat order
   --output-dir PATH           New derived output directory
 
@@ -37,6 +38,7 @@ Options:
   --cache-dir PATH            Local Hugging Face cache
   --device DEVICE             Default: cuda
   --batch-size N              Default: 32
+  --max-age-ms N              Maximum timestamp alignment age (default: 100)
   --allow-network             Permit transformers network access (offline by default)
 EOF
 }
@@ -57,6 +59,7 @@ while (($#)); do
     --cache-dir) CACHE_DIR="${2:-}"; shift 2 ;;
     --device) DEVICE="${2:-}"; shift 2 ;;
     --batch-size) BATCH_SIZE="${2:-}"; shift 2 ;;
+    --max-age-ms) MAX_AGE_MS="${2:-}"; shift 2 ;;
     --allow-network) ALLOW_NETWORK=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage; echo "[FATAL] unknown option: $1" >&2; exit 2 ;;
@@ -100,7 +103,7 @@ echo "[1/2] frozen VLM embeddings"
 attach=(
   "$PYTHON" "$ROOT_DIR/tools/attach_vlm_embeddings.py"
   --episode "$EPISODE" --embeddings "$EMBEDDINGS" --output "$FILTER_VIEW"
-  --model-id "$MODEL_ID" --model-revision "$REVISION"
+  --model-id "$MODEL_ID" --model-revision "$REVISION" --max-age-ms "$MAX_AGE_MS"
 )
 for camera_id in "${CAMERA_IDS[@]}"; do attach+=(--camera-id "$camera_id"); done
 

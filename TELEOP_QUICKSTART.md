@@ -81,10 +81,12 @@ tmux attach -t teleop_capture
 bash scripts/start_capture_session.sh \
   --real \
   --physical-estop-ready \
-  --confirm=I_UNDERSTAND_REAL_ROBOT \
-  --episodes=1 \
-  --duration-s=30
+  --confirm=I_UNDERSTAND_REAL_ROBOT
 ```
+
+相机、episode 循环、采集模式、任务与人员 ID 都从默认的
+`config/capture_session.env` 读取；临时实验可用 `--config=PATH` 切换配置。
+真机急停与授权参数不能写入配置文件。
 
 相机默认使用 `640x480@15`，RGB 和深度启用同步与深度对齐。每个 episode 由
 RunEvidence 管理，至少记录：

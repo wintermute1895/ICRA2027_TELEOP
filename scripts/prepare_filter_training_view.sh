@@ -3,6 +3,30 @@
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$ROOT_DIR/scripts/lib/training_env.sh"
+
+# Stable pipeline settings belong in a versioned YAML file. Keep this legacy
+# flag-based path for compatibility with existing automation.
+ARGS=("$@")
+for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
+  arg="${ARGS[arg_index]}"
+  if [[ "$arg" == --config=* || "$arg" == --config ]]; then
+    ENV_PREFIX="$(resolve_training_env_prefix)" || {
+      echo "[FATAL] training environment not found" >&2
+      exit 2
+    }
+    if [[ "$arg" == --config=* ]]; then
+      CONFIG_ARG="${arg#*=}"
+    else
+      ((arg_index += 1))
+      CONFIG_ARG="${ARGS[arg_index]:-}"
+    fi
+    [[ -n "$CONFIG_ARG" ]] || { echo "[FATAL] --config requires a path" >&2; exit 2; }
+    exec "${PIPELINE_PYTHON:-$ENV_PREFIX/bin/python}" "$ROOT_DIR/tools/prepare_filter_training_view.py" \
+      --config "$CONFIG_ARG"
+  fi
+done
+
 EPISODE=""
 EVENTS=""
 EXPERT_ACTION_FIELD=""
@@ -13,11 +37,15 @@ REVISION="main"
 CACHE_DIR=""
 DEVICE="cuda"
 BATCH_SIZE="32"
+MAX_AGE_MS="100.0"
 
 usage() {
   cat >&2 <<'EOF'
 Usage: scripts/prepare_filter_training_view.sh --episode PATH \
   --expert-action-field FIELD --output-dir PATH [options]
+
+Preferred:
+  --config PATH                  versioned YAML containing all pipeline settings
 
 Required:
   --episode PATH                  canonical/filter-training JSONL source
@@ -32,6 +60,7 @@ Options:
   --cache-dir PATH                local Hugging Face cache
   --device DEVICE                 default: cuda
   --batch-size N                  default: 32
+  --max-age-ms N                 maximum timestamp alignment age (default: 100)
 EOF
 }
 
@@ -47,6 +76,7 @@ while (($#)); do
     --cache-dir) CACHE_DIR="${2:-}"; shift 2 ;;
     --device) DEVICE="${2:-}"; shift 2 ;;
     --batch-size) BATCH_SIZE="${2:-}"; shift 2 ;;
+    --max-age-ms) MAX_AGE_MS="${2:-}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) usage; echo "[FATAL] unknown option: $1" >&2; exit 2 ;;
   esac
@@ -60,7 +90,7 @@ if [[ -n "$EVENTS" ]]; then
   [[ -f "$EVENTS" ]] || { echo "[FATAL] events file not found: $EVENTS" >&2; exit 2; }
 fi
 
-ENV_PREFIX="${TRAINING_ENV_PREFIX:-/home/ilex/miniconda3/envs/teleop-train}"
+ENV_PREFIX="${TRAINING_ENV_PREFIX:-$(resolve_training_env_prefix)}"
 PYTHON="${ENV_PREFIX}/bin/python"
 [[ -x "$PYTHON" ]] || { echo "[FATAL] training Python not found: $PYTHON" >&2; exit 2; }
 mkdir -p "$OUTPUT_DIR"
@@ -75,7 +105,7 @@ if ((${#CAMERA_SPECS[@]} == 0)); then
   exit 0
 fi
 
-VLMCMD=(bash "$ROOT_DIR/scripts/prepare_vlm_filter_view.sh" --episode "$CORRECTION_VIEW" --output-dir "$OUTPUT_DIR/vlm" --model-id "$MODEL_ID" --revision "$REVISION" --device "$DEVICE" --batch-size "$BATCH_SIZE")
+VLMCMD=(bash "$ROOT_DIR/scripts/prepare_vlm_filter_view.sh" --episode "$CORRECTION_VIEW" --output-dir "$OUTPUT_DIR/vlm" --model-id "$MODEL_ID" --revision "$REVISION" --device "$DEVICE" --batch-size "$BATCH_SIZE" --max-age-ms "$MAX_AGE_MS")
 [[ -z "$CACHE_DIR" ]] || VLMCMD+=(--cache-dir "$CACHE_DIR")
 for spec in "${CAMERA_SPECS[@]}"; do VLMCMD+=(--camera "$spec"); done
 echo "[2/2] frozen VLM attachment"

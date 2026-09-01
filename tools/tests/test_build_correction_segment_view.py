@@ -33,6 +33,24 @@ class CorrectionSegmentViewTest(unittest.TestCase):
             self.assertEqual(rows[1]["expert_action_target_rad"], [0.1, -0.1])
             self.assertEqual(rows[1]["action_target_source"], "recorded_expert_action")
 
+    def test_rejects_unmatched_correction_end(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            episode = root / "episode.jsonl"
+            episode.write_text(json.dumps({
+                "timestamp_ns": 100, "controller_command_rad": [0.1], "success": True,
+            }) + "\n")
+            events = root / "events.jsonl"
+            events.write_text(json.dumps({"timestamp_ns": 100, "event_type": "correction_end"}) + "\n")
+            output = root / "view.jsonl"
+            result = subprocess.run([
+                sys.executable, str(ROOT / "tools/build_correction_segment_view.py"),
+                "--episode", str(episode), "--events", str(events),
+                "--expert-action-field", "controller_command_rad", "--output", str(output),
+            ], text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("correction_end has no matching", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

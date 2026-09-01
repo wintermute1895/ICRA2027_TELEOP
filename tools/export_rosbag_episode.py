@@ -243,16 +243,20 @@ def main() -> int:
     def camera_ref(stamps: list[int], topic_name: str, state_stamp_ns: int) -> dict[str, Any] | None:
         if not stamps:
             return None
-        index = bisect.bisect_left(stamps, state_stamp_ns)
-        candidates = stamps[max(0, index - 1):index + 1]
-        frame_stamp = min(candidates, key=lambda value: abs(value - state_stamp_ns))
-        if abs(state_stamp_ns - frame_stamp) > max_age_ns:
+        # Keep the export causal: a state at t may only use an image captured at
+        # or before t.  Choosing the nearest frame can accidentally attach a
+        # future observation and leak information into filter training/replay.
+        index = bisect.bisect_right(stamps, state_stamp_ns) - 1
+        if index < 0:
+            return None
+        frame_stamp = stamps[index]
+        if state_stamp_ns - frame_stamp > max_age_ns:
             return None
         return {
             "topic": topic_name,
             "header_stamp_ns": frame_stamp,
-            "age_ms": abs(state_stamp_ns - frame_stamp) / 1e6,
-            "alignment": "nearest_header_stamp",
+            "age_ms": (state_stamp_ns - frame_stamp) / 1e6,
+            "alignment": "latest_header_stamp_not_after_state",
         }
 
     def make_command_lookup(samples: list[tuple[int, Any]]):
@@ -378,7 +382,7 @@ def main() -> int:
             "cameras": {camera_id: {"rgb": rgb_topic_name, "depth": depth_topic_name} for camera_id, _, rgb_topic_name, depth_topic_name in camera_topics},
         },
         "missing_topics": missing,
-        "camera_alignment": {"policy": "nearest_header_stamp", "maximum_age_ms": opt.max_camera_age_ms},
+        "camera_alignment": {"policy": "latest_header_stamp_not_after_state", "maximum_age_ms": opt.max_camera_age_ms},
         "command_alignment": {"policy": "latest_header_stamp_not_after_state", "maximum_age_ms": opt.max_command_age_ms},
         "compression_handling": compression_mode,
         "tactile_alignment": {"policy": "latest_header_or_bag_stamp_not_after_state", "maximum_age_ms": opt.max_command_age_ms},

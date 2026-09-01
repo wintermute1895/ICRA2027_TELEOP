@@ -64,7 +64,7 @@ def check(mode: str, *, source: str = "real", arms: tuple[str, ...] = ("left", "
         for package in ROS_PACKAGES:
             ok, detail = command(["ros2", "pkg", "prefix", package]) if shutil.which("ros2") else (False, "ros2 not found")
             add(f"ros2:{package}", ok, detail or "available")
-    if mode in ("all", "ros2", "hand"):
+    if mode in ("all", "hand"):
         python_can_available = importlib.util.find_spec("can") is not None
         add(
             "python:can",

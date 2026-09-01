@@ -1,0 +1,16 @@
+\section{Method}
+\label{sec:method}
+
+At time $t$, the correction model consumes a history of raw teleoperation
+commands $u^{raw}$, measured robot state $q$, and frozen visual embeddings $z$:
+\begin{equation}
+  \hat{u}_{t+1} = f_\theta(u^{raw}_{t-H+1:t}, q_{t-H+1:t}, z_{t-H+1:t}).
+\end{equation}
+The deployed command is a bounded residual relative to the human command:
+\begin{equation}
+  u^{out}_t = \Pi_{safe}\left(u^{raw}_t + \alpha(\hat{u}_{t+1} - u^{raw}_t)\right).
+\end{equation}
+
+Human and visual-language annotations identify correction intervals for sample
+selection and loss weighting. Future correction labels are never an online
+input. The fixed safety gate and the operator retain final authority.

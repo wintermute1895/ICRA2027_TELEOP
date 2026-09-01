@@ -93,11 +93,14 @@ def topics(arms: list[str], cameras: list[str], robot_ns: str, teleop_ns: str) -
 
 
 def write_capture_manifest(run_dir: Path, args: argparse.Namespace, topic_list: list[str]) -> None:
+    arms = list(args.arms)
+    arm_topics = lambda suffix: ",".join(f"{args.teleop_ns}/{arm}/{suffix}" for arm in arms)
+    robot_topics = lambda suffix: ",".join(f"{args.robot_ns}/{arm}_arm/{suffix}" for arm in arms)
     payload = {
         "schema": "robot_teleop.teleop-capture/v1",
         "episode_schema": "robot_teleop.episode/v1",
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "capture_mode": "manual",
+        "capture_mode": getattr(args, "capture_mode", "timed" if getattr(args, "auto_start", False) else "manual"),
         "source_domain": args.source_domain,
         "capture_arms": args.arms,
         "camera_namespaces": args.cameras,
@@ -116,14 +119,16 @@ def write_capture_manifest(run_dir: Path, args: argparse.Namespace, topic_list: 
             "topics_recorded": [],
         },
         "recorded_fields": {
-            "robot_joint_state": ",".join(f"{args.robot_ns}/{a}_arm/joint_states" for a in args.arms),
-            "mapped_joint_command": ",".join(f"{args.teleop_ns}/{a}/mapped_joint_command" for a in args.arms),
+            "robot_joint_state": robot_topics("joint_states"),
+            "mapped_joint_command": arm_topics("mapped_joint_command"),
+            "master_joint_raw": arm_topics("master_joint_raw"),
+            "master_joint_filtered": arm_topics("master_joint_filtered"),
             "camera_rgb": ",".join(f"{c.rstrip('/')}/color/image_raw" for c in args.cameras),
             "camera_depth": ",".join(f"{c.rstrip('/')}/aligned_depth_to_color/image_raw" for c in args.cameras),
             "tf": "/tf,/tf_static",
             "audit_events": f"{args.teleop_ns}/events",
             "gripper_state": {
-                "topics": {arm: f"{args.teleop_ns}/{arm}/gripper_state" for arm in args.arms},
+                "topics": {arm: f"{args.teleop_ns}/{arm}/gripper_state" for arm in arms},
                 "encoding": "std_msgs/msg/UInt8",
                 "semantics": {"0": "open", "1": "closed"},
                 "timestamp_source": "rosbag_receipt_time_for_headerless_message",
@@ -164,12 +169,13 @@ def stop_process(process: subprocess.Popen[bytes], timeout: float = 30.0) -> int
 def write_terminal_audit(run_dir: Path, args: argparse.Namespace) -> None:
     """Write the contract's one-per-episode terminal audit after the bag closes."""
     path = run_dir / "artifacts" / "terminal_audit.json"
-    print("[AUDIT] 回车跳过并标记 audit_deferred；输入 y 后填写结果。", flush=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    print("[AUDIT] 输入 y 填写成功/失败；回车或 n 跳过并标记 audit_deferred。", flush=True)
     try:
-        choice = input("是否现在填写成功/失败？[Y/n]: ").strip().lower()
+        choice = input("是否现在填写成功/失败？[y/N]: ").strip().lower()
     except EOFError:
         choice = "n"
-    if choice in {"n", "no"}:
+    if choice not in {"y", "yes"}:
         success = False
         reason = "audit_deferred"
         safety = False
@@ -196,6 +202,8 @@ def write_terminal_audit(run_dir: Path, args: argparse.Namespace) -> None:
         "audit_source": "manual_structured",
         "operator_id": args.operator_id,
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "timestamp_ns": time.time_ns(),
+        "monotonic_time_ns": time.monotonic_ns(),
         "evidence_refs": ["artifacts/rosbag2"],
     }
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -222,6 +230,7 @@ def record_one(args: argparse.Namespace, run_dir: Path, topic_list: list[str]) -
     log_path = run_dir / "logs" / f"{label}.log"
     log = log_path.open("wb")
     event_publisher = None
+    process: subprocess.Popen[bytes] | None = None
     try:
         event_publisher = subprocess.Popen(
             [args.event_publisher_python, str(Path(__file__).with_name("audit_event_publisher.py")), "--topic", f"{args.teleop_ns}/events"],
@@ -249,6 +258,11 @@ def record_one(args: argparse.Namespace, run_dir: Path, topic_list: list[str]) -
             raise OSError("rosbag did not create its output within 5 seconds")
     except OSError as error:
         log.write(f"rosbag start failed: {error}\n".encode())
+        if process is not None and process.poll() is None:
+            # A rosbag process can exist even when its output directory is
+            # delayed.  Reap it here so a failed episode cannot keep recording
+            # outside the RunEvidence lifecycle or block the next session.
+            stop_process(process)
         log.close()
         if event_publisher is not None:
             with suppress(OSError):

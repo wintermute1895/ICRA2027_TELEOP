@@ -28,6 +28,20 @@ def metrics(prediction: np.ndarray, target: np.ndarray) -> dict[str, float]:
     }
 
 
+def residual_targets(windows, target_semantics: str) -> np.ndarray:
+    """Return targets in the same residual space used by runtime inference.
+
+    Training on ``recorded_expert_action`` stores absolute joint commands.  The
+    runtime deliberately converts its predicted absolute action to a residual
+    by subtracting the latest raw teleoperation command.  Comparing that
+    residual to the absolute target would produce a plausible-looking but
+    invalid error metric, so the conversion must also happen in evaluation.
+    """
+    if target_semantics == "recorded_expert_action":
+        return windows.targets - windows.commands[:, -1:, :]
+    return windows.targets
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", type=Path, required=True)
@@ -64,17 +78,20 @@ def main() -> int:
             windows.visuals,
             deterministic=not args.stochastic,
         )
+        targets = residual_targets(windows, runtime.target_semantics)
         summary = {
             "episode_id": windows.episode_id,
             "source": str(path.resolve()),
             "source_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
             "windows": int(len(windows.targets)),
-            **metrics(result.predicted_residuals, windows.targets),
+            "target_semantics": runtime.target_semantics,
+            "metric_space": "residual_rad",
+            **metrics(result.predicted_residuals, targets),
             "latent_variance_mean": float(result.latent_variance.mean()),
             "proposed_residual_abs_mean_rad": float(np.abs(result.predicted_residuals[:, 0]).mean()),
         }
         summaries.append(summary)
-        error = result.predicted_residuals - windows.targets
+        error = result.predicted_residuals - targets
         absolute_error_sum += float(np.abs(error).sum())
         squared_error_sum += float(np.square(error).sum())
         error_elements += int(error.size)
@@ -85,7 +102,7 @@ def main() -> int:
                 "episode_id": windows.episode_id,
                 "window_index": index,
                 "predicted_residual_rad": result.predicted_residuals[index, 0].tolist(),
-                "target_residual_rad": windows.targets[index, 0].tolist(),
+                "target_residual_rad": targets[index, 0].tolist(),
                 "latent_variance": float(result.latent_variance[index]),
             })
 
@@ -96,6 +113,8 @@ def main() -> int:
         "checkpoint_sha256": hashlib.sha256(args.checkpoint.read_bytes()).hexdigest(),
         "mode": "stochastic_prior" if args.stochastic else "deterministic_prior",
         "deployment": "offline_and_simulation_only",
+        "target_semantics": runtime.target_semantics,
+        "metric_space": "residual_rad",
         "aggregate": {
             "episodes": len(summaries),
             "windows": total_windows,

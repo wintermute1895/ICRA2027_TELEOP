@@ -10,19 +10,22 @@ SYSTEM_PYTHON="${SYSTEM_PYTHON:-/usr/bin/python3}"
 [[ -x "$SYSTEM_PYTHON" ]] || { echo "[FATAL] system Python not found: $SYSTEM_PYTHON" >&2; exit 2; }
 CONFIG_FILE="${CAPTURE_CONFIG:-$ROOT_DIR/config/capture_session.env}"
 DATA_ROOT="${CAPTURE_DATA_ROOT:-}"
-if [[ -f "$CONFIG_FILE" ]]; then
-  # shellcheck disable=SC1090
-  source "$CONFIG_FILE"
-fi
-# Resolve an explicitly requested config before applying defaults.
-for arg in "$@"; do
-  if [[ "$arg" == --config=* ]]; then
-    CONFIG_FILE="${arg#*=}"
-    [[ -f "$CONFIG_FILE" ]] || { echo "[FATAL] config file not found: $CONFIG_FILE" >&2; exit 2; }
-    # shellcheck disable=SC1090
-    source "$CONFIG_FILE"
-  fi
+# Resolve the requested configuration before applying defaults. Supporting
+# both --config=PATH and --config PATH avoids option-order-dependent behavior.
+ARGS=("$@")
+for ((index = 0; index < ${#ARGS[@]}; index++)); do
+  case "${ARGS[index]}" in
+    --config=*) CONFIG_FILE="${ARGS[index]#*=}" ;;
+    --config)
+      ((index += 1))
+      CONFIG_FILE="${ARGS[index]:-}"
+      ;;
+  esac
 done
+if [[ "$CONFIG_FILE" != /* ]]; then CONFIG_FILE="$ROOT_DIR/$CONFIG_FILE"; fi
+[[ -f "$CONFIG_FILE" ]] || { echo "[FATAL] config file not found: $CONFIG_FILE" >&2; exit 2; }
+# shellcheck disable=SC1090
+source "$CONFIG_FILE"
 SESSION="teleop_capture"
 DURATION_S="30"
 EPISODES="2"
@@ -58,7 +61,7 @@ Usage:
 
 Safe default starts the real-robot driver and recorder but keeps teleop armed=false.
 Options:
-  --config PATH                  load session defaults (default: config/capture_session.env)
+  --config=PATH                  load session defaults (default: config/capture_session.env)
   --data-root PATH               store RunEvidence directly on an external disk
   --real                         allow armed=true (still requires both confirmations)
   --physical-estop-ready        confirm physical E-stop is reachable
@@ -88,24 +91,51 @@ EOF
 
 die() { echo "[FATAL] $*" >&2; exit 2; }
 log() { echo "[teleop-capture] $*"; }
+validate_config_bool() {
+  local name="$1" value="${!1:-false}"
+  [[ "$value" == true || "$value" == false ]] || die "$name must be true or false in $CONFIG_FILE"
+}
 
 # Apply config-file defaults first; explicit CLI options below override them.
-[[ "${CAPTURE_REAL:-false}" == true ]] && REAL=1
+for name in CAPTURE_REAL CAPTURE_MANUAL_SEGMENTS CAPTURE_NO_PREVIEW CAPTURE_HAND_SDK CAPTURE_LEFT_TOUCH CAPTURE_RIGHT_TOUCH; do
+  validate_config_bool "$name"
+done
+[[ "${CAPTURE_REAL:-false}" == true ]] && die "CAPTURE_REAL=true is not allowed in config; pass --real explicitly"
 [[ -n "${CAPTURE_ARMS:-}" ]] && ARMS="$CAPTURE_ARMS"
+[[ -n "${CAPTURE_SESSION:-}" ]] && SESSION="$CAPTURE_SESSION"
+[[ -n "${CAPTURE_DURATION_S:-}" ]] && DURATION_S="$CAPTURE_DURATION_S"
 [[ -n "${CAPTURE_EPISODES:-}" ]] && EPISODES="$CAPTURE_EPISODES"
 [[ -n "${CAPTURE_CAMERA_SERIAL:-}" ]] && CAMERA_SERIAL="$CAPTURE_CAMERA_SERIAL"
+[[ -n "${CAPTURE_CAMERA_NAMESPACE:-}" ]] && CAMERA_NAMESPACE="$CAPTURE_CAMERA_NAMESPACE"
 [[ -n "${CAPTURE_SECOND_CAMERA_SERIAL:-}" ]] && SECOND_CAMERA_SERIAL="$CAPTURE_SECOND_CAMERA_SERIAL"
 [[ -n "${CAPTURE_SECOND_CAMERA_NAMESPACE:-}" ]] && SECOND_CAMERA_NAMESPACE="$CAPTURE_SECOND_CAMERA_NAMESPACE"
+[[ -n "${CAPTURE_WIDTH:-}" ]] && WIDTH="$CAPTURE_WIDTH"
+[[ -n "${CAPTURE_HEIGHT:-}" ]] && HEIGHT="$CAPTURE_HEIGHT"
+[[ -n "${CAPTURE_FPS:-}" ]] && FPS="$CAPTURE_FPS"
+[[ -n "${CAPTURE_EXPERIMENT_PROFILE:-}" ]] && EXPERIMENT_PROFILE="$CAPTURE_EXPERIMENT_PROFILE"
+[[ -n "${CAPTURE_CONDITION_ID:-}" ]] && CONDITION_ID="$CAPTURE_CONDITION_ID"
 [[ -n "${CAPTURE_TASK_ID:-}" ]] && TASK_ID="$CAPTURE_TASK_ID"
 [[ -n "${CAPTURE_OPERATOR_ID:-}" ]] && OPERATOR_ID="$CAPTURE_OPERATOR_ID"
 [[ -n "${CAPTURE_AUDITOR_ID:-}" ]] && AUDITOR_ID="$CAPTURE_AUDITOR_ID"
+[[ -n "${CAPTURE_EXPERIMENT_MANIFEST:-}" ]] && EXPERIMENT_MANIFEST="$CAPTURE_EXPERIMENT_MANIFEST"
 [[ "${CAPTURE_MANUAL_SEGMENTS:-false}" == true ]] && CAPTURE_MODE="manual"
 [[ "${CAPTURE_NO_PREVIEW:-false}" == true ]] && PREVIEW=0
+[[ "${CAPTURE_HAND_SDK:-false}" == true ]] && HAND_SDK=1
+[[ -n "${CAPTURE_LEFT_HAND_CAN:-}" ]] && LEFT_HAND_CAN="$CAPTURE_LEFT_HAND_CAN"
+[[ -n "${CAPTURE_RIGHT_HAND_CAN:-}" ]] && RIGHT_HAND_CAN="$CAPTURE_RIGHT_HAND_CAN"
+[[ "${CAPTURE_LEFT_TOUCH:-false}" == true ]] && LEFT_TOUCH="true"
+[[ "${CAPTURE_RIGHT_TOUCH:-false}" == true ]] && RIGHT_TOUCH="true"
 [[ -n "${CAPTURE_DATA_ROOT:-}" ]] && DATA_ROOT="$CAPTURE_DATA_ROOT"
+[[ "$EXPERIMENT_PROFILE" == /* ]] || EXPERIMENT_PROFILE="$ROOT_DIR/$EXPERIMENT_PROFILE"
+if [[ -n "$EXPERIMENT_MANIFEST" && "$EXPERIMENT_MANIFEST" != /* ]]; then
+  EXPERIMENT_MANIFEST="$ROOT_DIR/$EXPERIMENT_MANIFEST"
+fi
 
-for arg in "$@"; do
+for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
+  arg="${ARGS[arg_index]}"
   case "$arg" in
-    --config=*) CONFIG_FILE="${arg#*=}"; [[ -f "$CONFIG_FILE" ]] || die "config file not found: $CONFIG_FILE"; source "$CONFIG_FILE" ;;
+    --config=*) ;;
+    --config) ((arg_index += 1)) ;;
     --data-root=*) DATA_ROOT="${arg#*=}" ;;
     --real) REAL=1 ;;
     --physical-estop-ready) ESTOP_READY=1 ;;
@@ -137,12 +167,14 @@ done
 
 [[ "$DURATION_S" =~ ^[1-9][0-9]*$ ]] || die "--duration-s must be a positive integer"
 [[ "$EPISODES" =~ ^[0-9]+$ ]] || die "--episodes must be a non-negative integer"
+[[ "$WIDTH" =~ ^[1-9][0-9]*$ && "$HEIGHT" =~ ^[1-9][0-9]*$ && "$FPS" =~ ^[1-9][0-9]*$ ]] || die "camera width, height and fps must be positive integers"
 (( ${#SESSION} <= 40 )) || die "tmux session name is too long"
 [[ -f "$EXPERIMENT_PROFILE" ]] || die "experiment profile not found: $EXPERIMENT_PROFILE"
 [[ "$CONDITION_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--condition contains unsupported characters"
 [[ "$OPERATOR_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--operator-id contains unsupported characters"
 [[ "$AUDITOR_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--auditor-id contains unsupported characters"
 [[ "$TASK_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--task-id contains unsupported characters"
+[[ "$CAMERA_NAMESPACE" =~ ^/[A-Za-z0-9_/-]+$ ]] || die "--camera-namespace contains unsupported characters"
 [[ "$SECOND_CAMERA_NAMESPACE" =~ ^/[A-Za-z0-9_/-]+$ ]] || die "--second-camera-namespace contains unsupported characters"
 [[ "$LEFT_HAND_CAN" =~ ^[A-Za-z0-9._-]+$ ]] || die "--left-hand-can contains unsupported characters"
 [[ "$RIGHT_HAND_CAN" =~ ^[A-Za-z0-9._-]+$ ]] || die "--right-hand-can contains unsupported characters"
@@ -220,7 +252,7 @@ source "$ROS_SETUP"
 set -u
 command -v ros2 >/dev/null || die "ros2 is unavailable after sourcing $ROS_SETUP"
 [[ -f "$ROOT_DIR/ros2_ws/install/setup.bash" ]] || die "ROS2 workspace is not built"
-[[ -f "$ROOT_DIR/scripts/record_episode.sh" ]] || die "recorder script is missing"
+[[ -f "$ROOT_DIR/tools/capture_episode.py" ]] || die "Python recorder is missing"
 
 set +u
 source "$ROOT_DIR/ros2_ws/install/setup.bash"
@@ -323,6 +355,9 @@ RUNEVIDENCE_PYTHON="$(dirname "$RUNEVIDENCE_BIN")/python3"
 [[ -x "$RUNEVIDENCE_PYTHON" ]] || die "RunEvidence Python interpreter not found: $RUNEVIDENCE_PYTHON"
 if (( PREVIEW )); then
   ros2 pkg prefix rqt_image_view >/dev/null 2>&1 || die "ROS package rqt_image_view is missing; install the matching ROS package or use --no-preview"
+  RQT_IMAGE_VIEW_EXEC="$(ros2 pkg prefix rqt_image_view)/lib/rqt_image_view/rqt_image_view"
+  [[ -x "$RQT_IMAGE_VIEW_EXEC" ]] || die "rqt_image_view executable not found: $RQT_IMAGE_VIEW_EXEC"
+  "$SYSTEM_PYTHON" -c 'import rqt_gui, rclpy' >/dev/null 2>&1 || die "ROS GUI modules are unavailable in SYSTEM_PYTHON=$SYSTEM_PYTHON; source the ROS environment or set SYSTEM_PYTHON=/usr/bin/python3"
 fi
 mkdir -p "$RUN_ROOT"
 [[ -w "$RUN_ROOT" ]] || die "data root is not writable: $RUN_ROOT"
@@ -368,12 +403,24 @@ wait_for_tactile_modality() {
 }
 
 tmux new-session -d -s "$SESSION" -n preflight "bash -lc 'echo robot teleoperation capture preflight passed; echo experiment=$EXPERIMENT_ID condition=$CONDITION_ID task=$TASK_ID operator=$OPERATOR_ID; echo mode=$([[ $REAL -eq 1 ]] && echo REAL_ARMED || echo SAFE_OBSERVATION); echo robot_ip=$ROBOT_IP; echo camera=$CAMERA_SERIAL ${WIDTH}x${HEIGHT}@${FPS}; exec bash'"
+# A tmux server can outlive a previous desktop session.  Explicitly refresh
+# GUI variables so viewers use the current display/authentication context.
+for gui_var in DISPLAY XAUTHORITY XDG_RUNTIME_DIR WAYLAND_DISPLAY; do
+  if [[ -n "${!gui_var:-}" ]]; then
+    tmux set-environment -t "$SESSION" "$gui_var" "${!gui_var}"
+  else
+    tmux set-environment -t "$SESSION" -r "$gui_var" 2>/dev/null || true
+  fi
+done
 launch_cmd driver "ros2 launch lbot_driver lbot_start_driver.launch.py"
 if (( LEFT_ENABLED )); then wait_for_topic /robot1/left_arm/joint_states 20; fi
 if (( RIGHT_ENABLED )); then wait_for_topic /robot1/right_arm/joint_states 20; fi
-launch_cmd camera "ros2 launch realsense2_camera rs_launch.py camera_namespace:=camera camera_name:=camera serial_no:=_$CAMERA_SERIAL enable_sync:=true align_depth.enable:=true rgb_camera.color_profile:=${WIDTH},${HEIGHT},${FPS} depth_module.depth_profile:=${WIDTH},${HEIGHT},${FPS}"
-wait_for_topic /camera/camera/color/image_raw 30
-wait_for_topic /camera/camera/aligned_depth_to_color/image_raw 30
+CAMERA_ROOT="${CAMERA_NAMESPACE%/*}"
+CAMERA_NAME="${CAMERA_NAMESPACE##*/}"
+[[ -n "$CAMERA_ROOT" && "$CAMERA_ROOT" != "/" && -n "$CAMERA_NAME" ]] || die "camera namespace must include a namespace and camera name"
+launch_cmd camera "ros2 launch realsense2_camera rs_launch.py camera_namespace:=${CAMERA_ROOT#/} camera_name:=$CAMERA_NAME serial_no:=_$CAMERA_SERIAL enable_sync:=true align_depth.enable:=true rgb_camera.color_profile:=${WIDTH},${HEIGHT},${FPS} depth_module.depth_profile:=${WIDTH},${HEIGHT},${FPS}"
+wait_for_topic "$CAMERA_NAMESPACE/color/image_raw" 30
+wait_for_topic "$CAMERA_NAMESPACE/aligned_depth_to_color/image_raw" 30
 CAMERA_NAMESPACES="$CAMERA_NAMESPACE"
 if [[ -n "$SECOND_CAMERA_SERIAL" ]]; then
   SECOND_CAMERA_ROOT="${SECOND_CAMERA_NAMESPACE%/*}"
@@ -415,21 +462,21 @@ else
   log "Capture-topic sample preflight is skipped in safe observation mode; run scripts/preflight.py --mode capture after teleop inputs are active."
 fi
 if (( PREVIEW )); then
-  if [[ -n "${DISPLAY:-}" ]]; then
+  if [[ -n "${DISPLAY:-}" || -n "${WAYLAND_DISPLAY:-}" ]]; then
     # Keep one GUI process per RGB stream. They live in tmux windows and are
     # closed automatically with the capture session; the recorder TTY remains
     # independent of both viewers.
-    launch_cmd preview_rgb1 "ros2 run rqt_image_view rqt_image_view /camera/camera/color/image_raw"
+    launch_cmd preview_rgb1 "exec \"$SYSTEM_PYTHON\" \"$RQT_IMAGE_VIEW_EXEC\" \"${CAMERA_NAMESPACE%/}/color/image_raw\""
     if [[ -n "$SECOND_CAMERA_SERIAL" ]]; then
-      launch_cmd preview_rgb2 "ros2 run rqt_image_view rqt_image_view ${SECOND_CAMERA_NAMESPACE%/}/color/image_raw"
+      launch_cmd preview_rgb2 "exec \"$SYSTEM_PYTHON\" \"$RQT_IMAGE_VIEW_EXEC\" \"${SECOND_CAMERA_NAMESPACE%/}/color/image_raw\""
     fi
   else
     log "WARN: DISPLAY is empty; camera preview window skipped"
   fi
 fi
 MONITOR_ARM="right"; (( LEFT_ENABLED && ! RIGHT_ENABLED )) && MONITOR_ARM="left"
-launch_cmd monitor "while true; do date; ros2 topic hz /robot1/${MONITOR_ARM}_arm/joint_states --window 20 2>/dev/null | head -n 4; ros2 topic hz /camera/camera/color/image_raw --window 20 2>/dev/null | head -n 4; sleep 5; done"
-launch_cmd sync "\"$SYSTEM_PYTHON\" \"$ROOT_DIR/tools/diagnose_time_sync.py\" --duration-s 10 --camera-namespace /camera/camera --output \"$RUN_ROOT/pre_capture_time_sync.json\""
+launch_cmd monitor "while true; do date; ros2 topic hz /robot1/${MONITOR_ARM}_arm/joint_states --window 20 2>/dev/null | head -n 4; ros2 topic hz ${CAMERA_NAMESPACE%/}/color/image_raw --window 20 2>/dev/null | head -n 4; sleep 5; done"
+launch_cmd sync "\"$SYSTEM_PYTHON\" \"$ROOT_DIR/tools/diagnose_time_sync.py\" --duration-s 10 --camera-namespace \"$CAMERA_NAMESPACE\" --output \"$RUN_ROOT/pre_capture_time_sync.json\""
 
 # tmux windows inherit the server environment from session creation, not variables
 # exported later in this launcher. Pass the resolved camera list explicitly so the
