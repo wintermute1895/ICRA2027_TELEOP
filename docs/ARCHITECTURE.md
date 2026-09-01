@@ -119,6 +119,11 @@ segment 中记录的专家动作。运行时再用预测专家动作减去当前
 隔离回归 smoke；不得由 `controller_command - raw_command` 自动制造，否则模型只会复制
 现有控制链路。
 
+Correction 事件的解释不属于模型训练脚本。`tools/build_correction_segment_view.py`
+读取人工审计事件 sidecar，按时间戳生成 `correction_active`/`correction_mask`，并从
+显式指定的记录动作字段生成 `expert_action_target_rad`。训练器只消费这个标准化 view；
+事件来源和动作来源写入 view manifest，便于复核和重放。
+
 任务、reference、policy、安全和 evaluation profile 由
 `tools/resolve_experiment_manifest.py` 解析为不可变 manifest。条件采用
 `nominal_reference_v1` 等版本化 ID，论文中的 A/B/B0/B1/B2 只是 profile 的角色

@@ -54,7 +54,9 @@ def correction_flags(rows: list[dict]) -> np.ndarray:
     flags = []
     active = False
     for index, row in enumerate(rows):
-        if isinstance(row.get("correction_active"), bool):
+        if isinstance(row.get("correction_mask"), (bool, int, float)):
+            active = bool(row["correction_mask"])
+        elif isinstance(row.get("correction_active"), bool):
             active = row["correction_active"]
         elif isinstance(row.get("correction_interval"), list) and len(row["correction_interval"]) == 2:
             start, end = row["correction_interval"]

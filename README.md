@@ -114,6 +114,18 @@ legacy `residual_target_rad` field is accepted only for explicitly enabled
 `synthetic_smoke_only` regression fixtures and is never inferred as
 `controller_command - raw_command`.
 
+To materialize the correction-aware action view before VLM attachment, use the
+explicit segment adapter (the action field must be chosen from the recorded
+episode contract):
+
+```bash
+python tools/build_correction_segment_view.py \
+  --episode canonical/filter_training.jsonl \
+  --events artifacts/audit_events.jsonl \
+  --expert-action-field controller_command_rad \
+  --output derived/correction_view.jsonl
+```
+
 训练和评估只接受明确准入的 filter-training JSONL。推理输出经过有界残差组合，当前仍
 只允许离线与仿真使用，不能直接发布到真实机器人控制话题。
 

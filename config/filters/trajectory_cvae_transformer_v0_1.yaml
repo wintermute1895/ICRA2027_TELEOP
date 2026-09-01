@@ -22,7 +22,7 @@ runtime:
   deployment: offline_and_simulation_only
 semantics:
   prior: learned_conditional_prior_from_past_commands_and_measured_state
-  posterior: training_only_conditioned_on_explicit_expert_residual_target
+  posterior: training_only_conditioned_on_explicit_expert_action_target
   target: explicit_expert_action_target_rad_from_correction_segment; runtime_residual_is_predicted_action_minus_raw
   quality_claim: reconstruction_and_kl_are_model_diagnostics_not_ground_truth_human_quality
   visual_semantics: none; trajectory_only_ablation
