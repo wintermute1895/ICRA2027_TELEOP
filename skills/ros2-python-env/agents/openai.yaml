@@ -1,0 +1,4 @@
+interface:
+  display_name: "ROS2 Python Environment"
+  short_description: "Run repository tools with a clean ROS2 Jazzy Python environment"
+  default_prompt: "Prepare a clean ROS2 Jazzy Python environment and run the requested command."

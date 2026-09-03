@@ -90,6 +90,14 @@ def main() -> int:
             "latent_variance_mean": float(result.latent_variance.mean()),
             "proposed_residual_abs_mean_rad": float(np.abs(result.predicted_residuals[:, 0]).mean()),
         }
+        if result.correction_probability is not None:
+            probabilities = result.correction_probability[:, 0]
+            labels = windows.correction_mask[:, 0]
+            summary.update({
+                "gate_brier": float(np.mean((probabilities - labels) ** 2)),
+                "gate_accuracy_at_0_5": float(np.mean((probabilities >= 0.5) == (labels >= 0.5))),
+                "correction_probability_mean": float(probabilities.mean()),
+            })
         summaries.append(summary)
         error = result.predicted_residuals - targets
         absolute_error_sum += float(np.abs(error).sum())
@@ -104,6 +112,8 @@ def main() -> int:
                 "predicted_residual_rad": result.predicted_residuals[index, 0].tolist(),
                 "target_residual_rad": targets[index, 0].tolist(),
                 "latent_variance": float(result.latent_variance[index]),
+                **({"correction_probability": float(result.correction_probability[index, 0])}
+                   if result.correction_probability is not None else {}),
             })
 
     total_windows = sum(item["windows"] for item in summaries)
@@ -114,6 +124,7 @@ def main() -> int:
         "mode": "stochastic_prior" if args.stochastic else "deterministic_prior",
         "deployment": "offline_and_simulation_only",
         "target_semantics": runtime.target_semantics,
+        "command_semantics": runtime.command_semantics,
         "metric_space": "residual_rad",
         "aggregate": {
             "episodes": len(summaries),

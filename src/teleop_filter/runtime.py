@@ -20,6 +20,7 @@ class TrajectoryFilterPrediction:
     predicted_actions: np.ndarray
     predicted_residuals: np.ndarray
     latent_variance: np.ndarray
+    correction_probability: np.ndarray | None = None
 
 
 class TrajectoryFilterRuntime:
@@ -36,6 +37,7 @@ class TrajectoryFilterRuntime:
         self.normalization = checkpoint["normalization"]
         self.visual_encoder = checkpoint.get("visual_encoder")
         self.target_semantics = checkpoint.get("target_semantics", "residual")
+        self.command_semantics = checkpoint.get("command_semantics", "master_joint_raw")
         if self.target_semantics not in {"residual", "synthetic_smoke_residual", "recorded_expert_action"}:
             raise ValueError(f"unsupported target semantics: {self.target_semantics}")
         if self.config.visual_dim:
@@ -112,4 +114,5 @@ class TrajectoryFilterRuntime:
             predicted_actions=predicted_actions.cpu().numpy(),
             predicted_residuals=predicted_residuals.cpu().numpy(),
             latent_variance=outputs["latent_variance"].cpu().numpy(),
+            correction_probability=None if outputs.get("correction_probability") is None else outputs["correction_probability"].cpu().numpy(),
         )

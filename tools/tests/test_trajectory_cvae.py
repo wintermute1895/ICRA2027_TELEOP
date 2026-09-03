@@ -72,6 +72,27 @@ class TrajectoryCVAEModelTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             model.predict(commands, states)
 
+    def test_correction_gate_and_nominal_zero_loss(self):
+        config = TrajectoryFilterConfig(
+            action_dim=2, state_dim=2, history_length=3, horizon=1,
+            latent_dim=2, model_dim=8, num_heads=2, num_layers=1,
+            dropout=0.0, gate_enabled=True,
+        )
+        model = ConditionalTrajectoryVAE(config)
+        commands = torch.zeros(4, 3, 2)
+        states = torch.zeros(4, 3, 2)
+        targets = torch.zeros(4, 1, 2)
+        outputs = model(commands, states, targets)
+        losses = trajectory_vae_loss(
+            outputs, targets, correction_mask=torch.tensor([[0.0], [1.0], [0.0], [1.0]]),
+            gate_weight=0.5, zero_weight=0.1, raw_commands=torch.zeros(4, 1, 2),
+            target_mean=torch.zeros(1, 1, 2), target_std=torch.ones(1, 1, 2),
+        )
+        self.assertIn("gate", losses)
+        self.assertIn("zero_residual", losses)
+        self.assertTrue(torch.isfinite(losses["total"]))
+        self.assertEqual(tuple(model.predict(commands, states)["correction_probability"].shape), (4, 1))
+
     def test_checkpoint_runtime_normalizes_and_bounds(self):
         config = TrajectoryFilterConfig(
             action_dim=2, state_dim=2, history_length=3, horizon=1,

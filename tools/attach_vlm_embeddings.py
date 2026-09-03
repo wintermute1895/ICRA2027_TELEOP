@@ -48,6 +48,7 @@ def main() -> int:
     parser.add_argument("--model-revision", default="unspecified")
     parser.add_argument("--camera-id", action="append")
     parser.add_argument("--max-age-ms", type=float, default=100.0)
+    parser.add_argument("--drop-unmatched", action="store_true", help="drop boundary rows without a prior aligned embedding")
     args = parser.parse_args()
     if args.output.exists():
         raise SystemExit(f"refusing to overwrite output: {args.output}")
@@ -135,7 +136,7 @@ def main() -> int:
             "camera_embeddings": selected_meta,
         }
         output_rows.append(enriched)
-    if missing:
+    if missing and not args.drop_unmatched:
         raise SystemExit(
             f"{len(missing)} episode rows lack an aligned embedding for camera(s) "
             f"{camera_ids}; "
@@ -160,6 +161,7 @@ def main() -> int:
         "embedding_dim": sum(dimensions),
         "alignment": {"policy": "latest_not_after", "max_age_ms": args.max_age_ms},
         "rows": len(output_rows),
+        "excluded_rows": missing,
     }
     args.output.with_suffix(args.output.suffix + ".manifest.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8"

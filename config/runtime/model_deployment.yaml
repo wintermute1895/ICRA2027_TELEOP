@@ -1,0 +1,18 @@
+schema: robot_teleop.model-deployment/v1
+enabled: true
+mode: shadow
+source: teleop
+arm: right
+input_units: degrees
+fallback_topic: /right_arm_joint_control
+output_topic: /model_deployment/right_arm_joint_control
+candidate_topics:
+  filter: /teleop_filter/right_arm_joint_control
+  act: /act/right_arm_joint_control
+state_topic: /robot1/right_arm/joint_states
+diagnostics_topic: /model_deployment/diagnostics
+timeout_ms: 300
+max_delta_rad: 0.05
+max_step_rad: 0.05
+# Active mode is intentionally impossible without an explicit approval token.
+approval_token: ""

@@ -1,2 +1,4 @@
 # Offline dataset conversion and learned-filter training.
 lerobot==0.4.4
+# Training rounds request TensorBoard event logging by default.
+tensorboard>=2.14,<3

@@ -22,6 +22,7 @@ class TrajectoryFilterConfig:
     num_heads: int = 4
     num_layers: int = 3
     dropout: float = 0.1
+    gate_enabled: bool = False
 
     def validate(self) -> None:
         integer_fields = (
@@ -60,6 +61,7 @@ class ConditionalTrajectoryVAE(nn.Module):
         )
         self.history_encoder = nn.TransformerEncoder(layer, num_layers=config.num_layers)
         self.history_norm = nn.LayerNorm(config.model_dim)
+        self.gate_head = nn.Linear(config.model_dim, 1) if config.gate_enabled else None
         self.prior = nn.Linear(config.model_dim, 2 * config.latent_dim)
         self.posterior = nn.Sequential(
             nn.Linear(config.model_dim + config.horizon * config.action_dim, 2 * config.model_dim),
@@ -96,7 +98,15 @@ class ConditionalTrajectoryVAE(nn.Module):
                 raise ValueError("visual embeddings are required and must align with the history")
             parts.append(visual)
         tokens = self.input_projection(torch.cat(parts, dim=-1)) + self.position
-        encoded = self.history_encoder(tokens)
+        # Enforce strict left-to-right temporal attention.  Without this mask
+        # the Transformer encoder is bidirectional inside the history window,
+        # which is inconsistent with online filtering and leaks later history
+        # positions into earlier representations during training.
+        causal_mask = torch.triu(
+            torch.ones(cfg.history_length, cfg.history_length, device=tokens.device, dtype=torch.bool),
+            diagonal=1,
+        )
+        encoded = self.history_encoder(tokens, mask=causal_mask)
         return self.history_norm(encoded[:, -1])
 
     @staticmethod
@@ -133,6 +143,7 @@ class ConditionalTrajectoryVAE(nn.Module):
             "prior_log_variance": prior_log_variance,
             "posterior_mean": posterior_mean,
             "posterior_log_variance": posterior_log_variance,
+            "gate_logits": self.gate_head(history).view(-1, 1) if self.gate_head is not None else None,
         }
 
     @torch.no_grad()
@@ -151,11 +162,14 @@ class ConditionalTrajectoryVAE(nn.Module):
         prediction = self.decoder(torch.cat([history, latent], dim=-1)).view(
             -1, self.config.horizon, self.config.action_dim
         )
+        gate_logits = self.gate_head(history).view(-1, 1) if self.gate_head is not None else None
         return {
             "prediction": prediction,
             "prior_mean": prior_mean,
             "prior_log_variance": prior_log_variance,
             "latent_variance": torch.exp(prior_log_variance).mean(dim=-1),
+            "gate_logits": gate_logits,
+            "correction_probability": torch.sigmoid(gate_logits) if gate_logits is not None else None,
         }
 
 
@@ -179,8 +193,14 @@ def trajectory_vae_loss(
     beta_kl: float = 1e-3,
     smoothness_weight: float = 1e-2,
     reconstruction_weights: Tensor | None = None,
+    correction_mask: Tensor | None = None,
+    gate_weight: float = 0.0,
+    zero_weight: float = 0.0,
+    raw_commands: Tensor | None = None,
+    target_mean: Tensor | None = None,
+    target_std: Tensor | None = None,
 ) -> dict[str, Tensor]:
-    if beta_kl < 0.0 or smoothness_weight < 0.0:
+    if beta_kl < 0.0 or smoothness_weight < 0.0 or gate_weight < 0.0 or zero_weight < 0.0:
         raise ValueError("loss weights must be non-negative")
     prediction = outputs["prediction"]
     if reconstruction_weights is None:
@@ -198,8 +218,25 @@ def trajectory_vae_loss(
         outputs["prior_mean"], outputs["prior_log_variance"],
     ).mean()
     smoothness = prediction.diff(dim=1).square().mean() if prediction.shape[1] > 1 else prediction.new_zeros(())
-    total = reconstruction + beta_kl * kl + smoothness_weight * smoothness
-    return {"total": total, "reconstruction": reconstruction, "kl": kl, "smoothness": smoothness}
+    gate = prediction.new_zeros(())
+    if gate_weight and outputs.get("gate_logits") is not None:
+        if correction_mask is None:
+            raise ValueError("correction_mask is required when gate_weight is non-zero")
+        labels = correction_mask.to(dtype=prediction.dtype)
+        logits = outputs["gate_logits"]
+        if logits.shape != labels.shape:
+            logits = logits.expand_as(labels)
+        gate = F.binary_cross_entropy_with_logits(logits, labels)
+    zero = prediction.new_zeros(())
+    if zero_weight:
+        if correction_mask is None or raw_commands is None or target_mean is None or target_std is None:
+            raise ValueError("raw_commands, target statistics and correction_mask are required for zero-residual loss")
+        predicted_physical = prediction * target_std + target_mean
+        residual = predicted_physical - raw_commands.to(dtype=prediction.dtype)
+        nominal = (1.0 - correction_mask.to(dtype=prediction.dtype)).unsqueeze(-1)
+        zero = (residual.abs() * nominal).sum() / nominal.expand_as(residual).sum().clamp_min(1e-6)
+    total = reconstruction + beta_kl * kl + smoothness_weight * smoothness + gate_weight * gate + zero_weight * zero
+    return {"total": total, "reconstruction": reconstruction, "kl": kl, "smoothness": smoothness, "gate": gate, "zero_residual": zero}
 
 
 def bounded_residual_command(

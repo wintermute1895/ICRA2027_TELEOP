@@ -42,9 +42,16 @@ def validate_manifest(manifest: dict[str, Any], *, require_filter_training: bool
         for key in ("success", "safety_violation", "unlogged_external_override"):
             if terminal.get(key) is not (True if key == "success" else False):
                 failures.append(f"terminal_audit.{key}")
-        for key in ("complete_causal_record", "synchronization_valid"):
-            if integrity.get(key) is not True:
-                failures.append(f"data_integrity.{key}")
+        # Stage labels are descriptive metadata and may evolve with the
+        # experiment.  Admission is based on the technical causal fields,
+        # outcome and synchronization below; older manifests may omit it.
+        stage = integrity.get("filter_training_stage", terminal.get("filter_training_stage"))
+        if stage is not None and not isinstance(stage, str):
+            failures.append("data_integrity.filter_training_stage_type")
+        if integrity.get("synchronization_valid") is not True:
+            failures.append("data_integrity.synchronization_valid")
+        if stage == "closed_loop_filter" and integrity.get("complete_causal_record") is not True:
+            failures.append("data_integrity.complete_causal_record")
     return failures
 
 

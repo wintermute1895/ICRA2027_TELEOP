@@ -72,6 +72,8 @@ def topics(arms: list[str], cameras: list[str], robot_ns: str, teleop_ns: str) -
             f"{teleop_ns}/{arm}/master_joint_raw",
             f"{teleop_ns}/{arm}/master_joint_filtered",
             f"{teleop_ns}/{arm}/mapped_joint_command",
+            f"/model_deployment/{arm}_arm_joint_control",
+            "/model_deployment/diagnostics",
             f"{robot_ns}/{arm}_arm/joint_states",
             f"{robot_ns}/{arm}_arm/vendor_command",
             f"{robot_ns}/{arm}_arm/pose_states",
@@ -89,7 +91,7 @@ def topics(arms: list[str], cameras: list[str], robot_ns: str, teleop_ns: str) -
             f"{camera}/depth/camera_info",
         ]
     result += ["/tf", "/tf_static"]
-    return result
+    return list(dict.fromkeys(result))
 
 
 def write_capture_manifest(run_dir: Path, args: argparse.Namespace, topic_list: list[str]) -> None:
@@ -112,6 +114,9 @@ def write_capture_manifest(run_dir: Path, args: argparse.Namespace, topic_list: 
             "condition_id": args.condition_id,
             "operator_id": args.operator_id,
             "task_id": args.task_id,
+            "task_revision": getattr(args, "task_revision", None),
+            "task_bundle": getattr(args, "task_bundle", None),
+            "task_bundle_sha256": getattr(args, "task_bundle_sha256", None),
         },
         "tactile": {
             "availability": "unavailable",
@@ -452,6 +457,9 @@ def main() -> int:
     parser.add_argument("--annotation-state", type=Path)
     parser.add_argument("--event-publisher-python", default="/usr/bin/python3")
     parser.add_argument("--task-id", default="unspecified")
+    parser.add_argument("--task-revision", default=None)
+    parser.add_argument("--task-bundle", default=None)
+    parser.add_argument("--task-bundle-sha256", default=None)
     parser.add_argument("--robot-ns", default="/robot1")
     parser.add_argument("--teleop-ns", default="/teleop")
     parser.add_argument("--camera-profile", default="640x480x15")

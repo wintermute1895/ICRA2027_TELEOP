@@ -43,6 +43,9 @@ for name in ("torch", "cv2", "numpy"):
     if importlib.util.find_spec(name) is None:
         raise SystemExit(f"required dependency missing after install: {name}")
     print(f"[PASS] {name} import available")
+if importlib.util.find_spec("tensorboard") is None:
+    raise SystemExit("tensorboard import failed; reinstall requirements-training.txt")
+print(f"[PASS] tensorboard {metadata.version('tensorboard')} imported")
 PY
 
 echo "[DONE] LeRobot installation completed in $ENV_PREFIX"

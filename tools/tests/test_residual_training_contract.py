@@ -55,6 +55,7 @@ class ResidualTrainingContractTest(unittest.TestCase):
                 path, history_length=3, horizon=1, context_dim=0, correction_loss_weight=2.0
             )
             self.assertEqual(windows.target_semantics, "recorded_expert_action")
+            self.assertEqual(windows.command_semantics, "master_joint_raw")
             self.assertEqual(windows.targets.shape, (5, 1, 2))
             self.assertEqual(windows.correction_weights[:, 0, 0].tolist(), [3.0, 3.0, 1.0, 1.0, 1.0])
 

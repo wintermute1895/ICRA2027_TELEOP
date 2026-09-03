@@ -9,10 +9,13 @@ model:
   dropout: 0.1
   context_dim: 0
   visual_dim: 1536 # two SigLIP2-base image embeddings, 768d per camera, concat in camera order
+  gate_enabled: true
 loss:
   beta_kl: 0.001
   smoothness_weight: 0.01
   correction_weight: 2.0
+  gate_weight: 0.5
+  zero_weight: 0.05
 data:
   allow_synthetic_smoke: false
 runtime:
@@ -23,6 +26,7 @@ runtime:
 semantics:
   prior: learned_conditional_prior_from_past_commands_states_and_frozen_vlm_embedding
   posterior: training_only_conditioned_on_explicit_expert_action_target
-  target: explicit_expert_action_target_rad_from_correction_segment; runtime_residual_is_predicted_action_minus_raw
+  target: explicit_expert_action_target_rad_from_nominal_and_correction_segments; residual_is_deployment_composition_only
+  gate: correction_probability_supervised_by_human_correction_mask
   visual_encoder: two_frozen_siglip2_base_768d_embeddings_concatenated_in_camera_order
   quality_claim: reconstruction_and_kl_are_model_diagnostics_not_ground_truth_human_quality

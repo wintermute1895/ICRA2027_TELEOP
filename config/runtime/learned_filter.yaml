@@ -1,0 +1,29 @@
+schema: robot_teleop.learned-filter-runtime/v1
+enabled: false
+
+# Promote a checkpoint only after held-out evaluation. Fill both fields, then
+# set enabled=true. Only checkpoints trained in LinkerTA master-joint space are
+# accepted by the online worker.
+checkpoint: ""
+checkpoint_sha256: ""
+device: cuda
+socket: /tmp/teleop_learned_filter.sock
+
+model_cache: /media/ilex/Cyan_data/ICRA2027_MODELS/huggingface
+inference_hz: 5.0
+input_timeout_ms: 300.0
+residual_blend: 0.10
+max_residual_rad: 0.01
+
+arm: right
+master_input_topic: /right_arm_joint_control
+master_output_topic: /teleop_filter/right_arm_joint_control
+state_topic: /robot1/right_arm/joint_states
+raw_observation_topic: /teleop_filter/right/master_joint_raw_rad
+filtered_observation_topic: /teleop_filter/right/master_joint_filtered_rad
+diagnostics_topic: /teleop_filter/right/diagnostics
+cameras:
+  - id: main_rgb
+    topic: /camera/camera/color/image_raw
+  - id: auxiliary_rgb
+    topic: /camera2/camera/color/image_raw

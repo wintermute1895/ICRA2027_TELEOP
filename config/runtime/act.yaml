@@ -1,0 +1,18 @@
+schema: robot_teleop.act-runtime/v1
+enabled: false
+checkpoint: ""
+checkpoint_sha256: ""
+device: cuda
+socket: /tmp/teleop_act.sock
+inference_hz: 10.0
+input_timeout_ms: 300.0
+action_units: radians
+output_topic: /act/right_arm_joint_control
+state_topic: /robot1/right_arm/joint_states
+diagnostics_topic: /act/right/diagnostics
+state_key: observation.state
+# Keys must match the feature names used when the ACT dataset was trained.
+camera_keys:
+  observation.images.main_rgb: /camera/camera/color/image_raw
+  observation.images.auxiliary_rgb: /camera2/camera/color/image_raw
+dataset_stats: ""

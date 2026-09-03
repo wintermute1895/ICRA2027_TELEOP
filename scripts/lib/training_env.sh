@@ -22,6 +22,13 @@ resolve_training_env_prefix() {
   printf '%s/envs/%s\n' "$base" "$name"
 }
 
+training_python_has_tensorboard() {
+  local prefix
+  prefix="$(resolve_training_env_prefix)" || return 1
+  [[ -x "$prefix/bin/python" ]] || return 1
+  "$prefix/bin/python" -c 'import torch.utils.tensorboard' >/dev/null 2>&1
+}
+
 resolve_conda_bin() {
   if [[ -n "${CONDA_BIN:-}" && -x "$CONDA_BIN" ]]; then
     printf '%s\n' "$CONDA_BIN"

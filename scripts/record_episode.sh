@@ -73,6 +73,11 @@ for arm in "${ARM_LIST[@]}"; do
     "${TELEOP_NAMESPACE}/${arm}/master_joint_raw"
     "${TELEOP_NAMESPACE}/${arm}/master_joint_filtered"
     "${TELEOP_NAMESPACE}/${arm}/mapped_joint_command"
+    "/model_deployment/${arm}_arm_joint_control"
+    "/model_deployment/diagnostics"
+    "/teleop_filter/${arm}/master_joint_raw_rad"
+    "/teleop_filter/${arm}/master_joint_filtered_rad"
+    "/teleop_filter/${arm}/diagnostics"
     "${ROBOT_STATE_NAMESPACE}/${arm}_arm/joint_states"
     "${ROBOT_STATE_NAMESPACE}/${arm}_arm/vendor_command"
     "${ROBOT_STATE_NAMESPACE}/${arm}_arm/pose_states"
@@ -114,6 +119,9 @@ TOPICS+=(
   /tf
   /tf_static
 )
+# Keep the topic list deterministic and avoid duplicate subscriptions when
+# multiple arms share a diagnostics topic.
+mapfile -t TOPICS < <(printf '%s\n' "${TOPICS[@]}" | awk '!seen[$0]++')
 
 "$SYSTEM_PYTHON" - "$ARTIFACT_DIR/teleop_capture_manifest.json" "$DURATION" "$CAMERA_NAMESPACE" "$COMPRESSION_MODE" "$COMPRESSION_FORMAT" "${TOPICS[@]}" <<'PY'
 import json
@@ -208,6 +216,10 @@ payload = {
         "master_joint_raw": f"{teleop_namespace}/left/master_joint_raw,{teleop_namespace}/right/master_joint_raw",
         "master_joint_filtered": f"{teleop_namespace}/left/master_joint_filtered,{teleop_namespace}/right/master_joint_filtered",
         "mapped_joint_command": f"{teleop_namespace}/left/mapped_joint_command,{teleop_namespace}/right/mapped_joint_command",
+        "model_deployment_output": "/model_deployment/left_arm_joint_control,/model_deployment/right_arm_joint_control",
+        "model_deployment_diagnostics": "/model_deployment/diagnostics",
+        "learned_filter_raw": "/teleop_filter/left/master_joint_raw_rad,/teleop_filter/right/master_joint_raw_rad",
+        "learned_filter_output": "/teleop_filter/left/master_joint_filtered_rad,/teleop_filter/right/master_joint_filtered_rad",
         "robot_joint_state": f"{robot_state_namespace}/left_arm/joint_states,{robot_state_namespace}/right_arm/joint_states",
         "controller_command": f"{robot_state_namespace}/left_arm/vendor_command,{robot_state_namespace}/right_arm/vendor_command",
         "tcp_pose": f"{robot_state_namespace}/left_arm/pose_states,{robot_state_namespace}/right_arm/pose_states",

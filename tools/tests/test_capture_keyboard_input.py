@@ -11,6 +11,7 @@ from pathlib import Path
 
 from tools.capture_episode import classify_input
 from tools.capture_episode import write_terminal_audit
+from tools.capture_episode import topics
 
 
 class CaptureKeyboardInputTest(unittest.TestCase):
@@ -46,6 +47,11 @@ class CaptureKeyboardInputTest(unittest.TestCase):
     def test_capture_manifest_does_not_hardcode_manual_mode(self):
         source = (Path(__file__).resolve().parents[2] / "tools/capture_episode.py").read_text(encoding="utf-8")
         self.assertNotIn('"capture_mode": "manual"', source)
+
+    def test_capture_topics_include_deployment_output_without_duplicates(self):
+        result = topics(["left", "right"], ["/camera/camera", "/camera2/camera"], "/robot1", "/teleop")
+        self.assertIn("/model_deployment/right_arm_joint_control", result)
+        self.assertEqual(len(result), len(set(result)))
 
     def test_rosbag_has_no_tty_and_digit_does_not_stop_episode(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

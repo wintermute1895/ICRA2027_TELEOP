@@ -9,7 +9,7 @@ EPISODE=""
 OUTPUT_DIR=""
 MODEL_ID="${VLM_MODEL_ID:-google/siglip2-base-patch16-224}"
 REVISION="${VLM_MODEL_REVISION:-main}"
-DEFAULT_SIGLIP_CACHE="/media/${USER:-$(id -un)}/Seagate Hub/ICRA2027_DATA_TASK2/vlm_cache"
+DEFAULT_SIGLIP_CACHE="/media/${USER:-$(id -un)}/Cyan_data/ICRA2027_MODELS/huggingface"
 if [[ -d "/media/${USER:-$(id -un)}/Seagate Hub/ICRA2027_DATA_TASK2" ]]; then
   DEFAULT_VLM_CACHE="$DEFAULT_SIGLIP_CACHE"
 else
@@ -19,6 +19,7 @@ CACHE_DIR="${VLM_CACHE_DIR:-$DEFAULT_VLM_CACHE}"
 DEVICE="${VLM_DEVICE:-cuda}"
 BATCH_SIZE="${VLM_BATCH_SIZE:-32}"
 MAX_AGE_MS="${VLM_MAX_AGE_MS:-100.0}"
+DROP_UNMATCHED=0
 ALLOW_NETWORK=0
 CAMERA_IDS=()
 FRAME_INDEXES=()
@@ -39,6 +40,7 @@ Options:
   --device DEVICE             Default: cuda
   --batch-size N              Default: 32
   --max-age-ms N              Maximum timestamp alignment age (default: 100)
+  --drop-unmatched             Drop boundary rows with no prior aligned embedding
   --allow-network             Permit transformers network access (offline by default)
 EOF
 }
@@ -60,6 +62,7 @@ while (($#)); do
     --device) DEVICE="${2:-}"; shift 2 ;;
     --batch-size) BATCH_SIZE="${2:-}"; shift 2 ;;
     --max-age-ms) MAX_AGE_MS="${2:-}"; shift 2 ;;
+    --drop-unmatched) DROP_UNMATCHED=1; shift ;;
     --allow-network) ALLOW_NETWORK=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) usage; echo "[FATAL] unknown option: $1" >&2; exit 2 ;;
@@ -105,6 +108,7 @@ attach=(
   --episode "$EPISODE" --embeddings "$EMBEDDINGS" --output "$FILTER_VIEW"
   --model-id "$MODEL_ID" --model-revision "$REVISION" --max-age-ms "$MAX_AGE_MS"
 )
+if ((DROP_UNMATCHED)); then attach+=(--drop-unmatched); fi
 for camera_id in "${CAMERA_IDS[@]}"; do attach+=(--camera-id "$camera_id"); done
 
 echo "[2/2] timestamp alignment and filter-view contract"

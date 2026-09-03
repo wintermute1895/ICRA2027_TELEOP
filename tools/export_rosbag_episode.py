@@ -119,8 +119,10 @@ def main() -> int:
         raise SystemExit("--camera-id count must match camera namespaces")
     teleop_ns = opt.teleop_namespace.rstrip("/")
     state_topic = f"{robot_ns}/{opt.arm}_arm/joint_states"
-    master_raw_topic = f"{teleop_ns}/{opt.arm}/master_joint_raw"
-    master_filtered_topic = f"{teleop_ns}/{opt.arm}/master_joint_filtered"
+    filter_raw_topic = f"/teleop_filter/{opt.arm}/master_joint_raw_rad"
+    filter_output_topic = f"/teleop_filter/{opt.arm}/master_joint_filtered_rad"
+    historical_raw_topic = f"{teleop_ns}/{opt.arm}/master_joint_raw"
+    historical_filtered_topic = f"{teleop_ns}/{opt.arm}/master_joint_filtered"
     command_topic = f"{teleop_ns}/{opt.arm}/mapped_joint_command"
     vendor_command_topic = f"{robot_ns}/{opt.arm}_arm/vendor_command"
     tcp_pose_topic = f"{robot_ns}/{opt.arm}_arm/pose_states"
@@ -134,6 +136,8 @@ def main() -> int:
     sim_context_topic = f"{robot_ns}/{opt.arm}_arm/filter_context"
     reader, temporary, compression_mode = open_reader(opt.bag)
     topic_types = {item.name: item.type for item in reader.get_all_topics_and_types()}
+    master_raw_topic = filter_raw_topic if filter_raw_topic in topic_types else historical_raw_topic
+    master_filtered_topic = filter_output_topic if filter_output_topic in topic_types else historical_filtered_topic
     message_types: dict[str, Any] = {}
     required = (state_topic, master_raw_topic, master_filtered_topic, command_topic, vendor_command_topic, tcp_pose_topic, rgb_topic, depth_topic)
     missing = [topic for topic in required if topic not in topic_types]

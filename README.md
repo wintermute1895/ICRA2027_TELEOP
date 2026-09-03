@@ -38,6 +38,16 @@ bash scripts/start_capture_session.sh \
 
 ## Data conversion
 
+本项目的 raw evidence、派生数据和训练输出可迁移到外置盘。先运行
+`skills/external-disk-rw/scripts/mount_cyan_data_rw.sh`，再执行：
+
+```bash
+bash scripts/migrate_project_data_to_external.sh
+```
+
+脚本默认只复制并校验 `evidence/`，确认无误后如需删除本地副本再显式添加
+`--delete-source`。源码、Git、第三方 SDK、虚拟环境和模型权重不会迁移。
+
 The rosbag2 run is the immutable capture record. Canonical data is the stable
 audit/interchange layer, while LeRobot is a replaceable training projection.
 One production command performs all projections and writes an official local
@@ -101,11 +111,39 @@ partial embedding coverage is rejected.
 
 ## Learned filter
 
+推荐使用 round 配置作为唯一训练入口：
+
+```bash
+bash scripts/start_filter_training.sh \
+  config/filters/coldstart_episode1_vlm_v1.yaml
+```
+
+该入口会先确认 `/media/ilex/Cyan_data` 确实挂载为可写的外置盘，再启动
+`teleop-train` GPU 环境；外置盘丢失或只读时会在训练前停止。
+
+训练完成后可在本机启动只读可视化页面：
+
+```bash
+python tools/serve_filter_dashboard.py \
+  --round runs/filter/round_001
+# 浏览器打开 http://127.0.0.1:8765/
+```
+
+该页面只读取 `training_report.json`、`evaluation_report.json` 和
+`predictions.jsonl`，不连接 ROS、不发布控制命令。底层脚本仍保留用于单元测试和
+调试，但正式实验应记录 `round_manifest.json`。
+
 The paper-model implementation is simulator-independent and lives in
 `src/teleop_filter/`. Its first version is a conditional trajectory VAE with a
 Transformer history encoder, learned conditional prior, training-only
-posterior, KL regularization, and bounded residual composition. It is currently
-authorized only for offline evaluation and simulation.
+posterior, correction gate, KL regularization, nominal zero-residual regularization,
+and bounded residual composition. Residual composition is only the deployment
+mechanism; the model is trained on nominal and corrective expert-action windows.
+It is currently
+authorized only for offline evaluation and simulation. An independent ROS2
+adapter is available for shadow/runtime integration between LinkerTA and the
+bridge. It is disabled by default and requires a pinned checkpoint, shadow
+validation, bounded correction, safety projection, and explicit approval.
 
 ```bash
 PYTHONPATH=src conda run -n teleop-train python \
@@ -136,12 +174,48 @@ episode contract):
 python tools/build_correction_segment_view.py \
   --episode canonical/filter_training.jsonl \
   --events artifacts/audit_events.jsonl \
-  --expert-action-field controller_command_rad \
+  --expert-action-field master_joint_raw \
   --output derived/correction_view.jsonl
 ```
 
-训练和评估只接受明确准入的 filter-training JSONL。推理输出经过有界残差组合，当前仍
-只允许离线与仿真使用，不能直接发布到真实机器人控制话题。
+训练和评估只接受明确准入的 filter-training JSONL。推理输出经过有界残差组合；真机部署
+必须经过 runtime 配置中的 checkpoint/hash 晋级，并且只能通过 supervisor -> bridge 边界发布。
+
+## ACT / filter deployment
+
+ACT 和 learned filter 都只能发布 candidate。统一监督层
+`tools/model_deployment_supervisor.py` 负责 shadow/active 选择、超时、维度、
+NaN、幅度和步长检查；bridge 只订阅 `/model_deployment/right_arm_joint_control`，
+继续负责单位映射、One-Euro、限位、首次 MoveJ 和 armed gate。默认配置是 shadow：
+
+```bash
+bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml --shadow
+```
+
+ACT 的 GPU worker 与 ROS2 adapter 分离，启动方式和 filter 相同，详见
+`docs/engineering/MODEL_DEPLOYMENT.md`。当前没有任何模型被声明为真机安全可用；
+active 之前必须完成 held-out 评估、shadow 运行和人工安全确认。
+
+完整 rollout（录制、部署、评测）使用统一入口：
+
+```bash
+bash scripts/start_model_rollout.sh --config config/runtime/rollout.yaml --shadow \
+  --record-dir /media/ilex/Cyan_data/ICRA2027_TELEOP_DATA/rollouts/<timestamp>
+# Ctrl-C 停止后：
+bash scripts/evaluate_model_rollout.sh \
+  --bag /media/ilex/Cyan_data/ICRA2027_TELEOP_DATA/rollouts/<timestamp>
+```
+
+评测是只读的 rosbag 导出和轨迹质量检查，不会自动把 review 结果当成成功，也不会解除真机 armed gate。
+
+模型生成后可直接晋级为一次性 runtime 配置，不必改共享 YAML：
+
+```bash
+bash scripts/promote_model_checkpoint.sh --kind act \
+  --checkpoint /path/to/policy --output /media/ilex/Cyan_data/ICRA2027_TELEOP/config/act-promoted.yaml
+bash scripts/start_model_rollout.sh --source act \
+  --act-config /media/ilex/Cyan_data/ICRA2027_TELEOP/config/act-promoted.yaml --shadow
+```
 
 ## Standalone USB-C insertion scene
 

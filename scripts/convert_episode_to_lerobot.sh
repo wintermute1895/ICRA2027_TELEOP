@@ -15,6 +15,7 @@ TASK_FAMILY="precision_alignment"
 SUCCESS_SPEC="precision_alignment_v1"
 TASK_TEXT="precision alignment"
 REPO_ID="local/icra2027-teleop"
+ACTION_CONTRACT="arm7"
 
 usage() {
   cat >&2 <<'EOF'
@@ -31,6 +32,7 @@ Options:
   --success-spec ID       success specification version
   --task-text TEXT        natural-language LeRobot task
   --repo-id ID            local LeRobot repository id
+  --action-contract NAME  arm7 (default) or arm7_hand6 exploratory contract
 
 The source rosbag and terminal audit are read-only. The command refuses to
 overwrite output and refuses policy projection when the real audit does not
@@ -51,6 +53,7 @@ while (($#)); do
     --success-spec) SUCCESS_SPEC="${2:-}"; shift 2 ;;
     --task-text) TASK_TEXT="${2:-}"; shift 2 ;;
     --repo-id) REPO_ID="${2:-}"; shift 2 ;;
+    --action-contract) ACTION_CONTRACT="${2:-}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) usage; echo "unknown option: $1" >&2; exit 2 ;;
   esac
@@ -177,6 +180,7 @@ echo "[5/5] ACT projection -> official LeRobot v3"
 HF_HOME="$OUTPUT_DIR/cache/huggingface" HF_DATASETS_CACHE="$OUTPUT_DIR/cache/huggingface/datasets" \
 PYTHONPATH="$ROOT_DIR/tools" "$TRAIN_PYTHON" "$ROOT_DIR/tools/act_jsonl_to_lerobot.py" \
   --input-jsonl "$ACT_DIR/episode_000000.jsonl" --output-dir "$LEROBOT_DIR" \
-  --repo-id "$REPO_ID" --task "$TASK_TEXT"
+  --repo-id "$REPO_ID" --task "$TASK_TEXT" --action-contract "$ACTION_CONTRACT" \
+  --contract-config "$ROOT_DIR/config/act/action_contracts.yaml"
 
 echo "[DONE] official LeRobot dataset: $LEROBOT_DIR"

@@ -23,9 +23,11 @@ stall: boolean or null
 misaligned: boolean or null
 recovery: boolean or null
 success_visual: boolean or null
+correction_active: boolean or null
 confidence: number from 0 to 1
 notes: short evidence-based string
-Use null when the image does not support a judgment. Do not infer force, contact,
+Use null when the image does not support a judgment. Set correction_active only
+when visible fine adjustment is supported by the scene; otherwise use null. Do not infer force, contact,
 operator intent, or hidden state from the image."""
 
 
