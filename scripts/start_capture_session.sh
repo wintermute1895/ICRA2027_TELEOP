@@ -1,7 +1,32 @@
 #!/usr/bin/env bash
-# One-command, tmux-based robot teleoperation capture launcher.
+# One-command robot teleoperation capture launcher.  Default backend is the
+# foreground Python supervisor; pass --manager=gui (or use start_capture_gui.sh)
+# for the Python/Tk manager.  tmux remains available with --manager=tmux.
 # Safe by default: the teleop bridge is started with armed=false.
 set -Eeuo pipefail
+
+# Some hosts have a corrupted/stale default tmux socket under /tmp/tmux-$UID.
+# Use a project-specific server name so capture startup is independent of that
+# global socket.  Attach with: tmux -L teleop_capture_socket attach -t <session>.
+TMUX_SERVER_NAME="${TELEOP_TMUX_SERVER_NAME:-teleop_capture_socket}"
+TMUX_DEBUG="${TELEOP_TMUX_DEBUG:-0}"
+TMUX_DEBUG_DIR=""
+TMUX_BIN="${TELEOP_TMUX_BIN:-}"
+if [[ -z "$TMUX_BIN" && -x /usr/bin/tmux ]]; then
+  TMUX_BIN="/usr/bin/tmux"
+elif [[ -z "$TMUX_BIN" ]]; then
+  TMUX_BIN="$(command -v tmux || true)"
+fi
+tmux() {
+  # tmux -vv writes tmux-client-*.log and tmux-server-*.log into its current
+  # directory.  Keep optional diagnostics beside the evidence instead of the
+  # caller's shell directory.
+  if [[ "$TMUX_DEBUG" == "1" && -n "$TMUX_DEBUG_DIR" ]]; then
+    (cd "$TMUX_DEBUG_DIR" && "$TMUX_BIN" -vv -L "$TMUX_SERVER_NAME" "$@")
+  else
+    "$TMUX_BIN" -L "$TMUX_SERVER_NAME" "$@"
+  fi
+}
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # ROS 2 Jazzy and its Python extensions are installed against the system
@@ -10,6 +35,7 @@ SYSTEM_PYTHON="${SYSTEM_PYTHON:-/usr/bin/python3}"
 [[ -x "$SYSTEM_PYTHON" ]] || { echo "[FATAL] system Python not found: $SYSTEM_PYTHON" >&2; exit 2; }
 CONFIG_FILE="${CAPTURE_CONFIG:-$ROOT_DIR/config/capture_session.env}"
 DATA_ROOT="${CAPTURE_DATA_ROOT:-}"
+MANAGER="${CAPTURE_MANAGER:-python}"
 # Resolve the requested configuration before applying defaults. Supporting
 # both --config=PATH and --config PATH avoids option-order-dependent behavior.
 ARGS=("$@")
@@ -69,7 +95,9 @@ Options:
   --duration-s SEC               timed episode duration / metadata field (default: 30)
   --episodes N                   number of episodes; 0 keeps the recorder ready until q (default: 2)
   --manual-segments              recorder window: Enter=start, Enter=stop/save, q=end session
+  --manager=MODE                 python|gui|tmux process backend (default: python)
   --session NAME                 tmux session name (default: teleop_capture)
+  --tmux-debug                   write tmux server/client diagnostics to evidence/system/tmux_debug
   --no-preview                   do not open rqt_image_view
   --camera-serial SERIAL         RealSense serial (default: 261722075670)
   --second-camera-serial SERIAL  optional second RealSense serial
@@ -143,7 +171,9 @@ for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
     --duration-s=*) DURATION_S="${arg#*=}" ;;
     --episodes=*) EPISODES="${arg#*=}" ;;
     --manual-segments) CAPTURE_MODE="manual" ;;
+    --manager=*) MANAGER="${arg#*=}" ;;
     --session=*) SESSION="${arg#*=}" ;;
+    --tmux-debug) TMUX_DEBUG=1 ;;
     --no-preview) PREVIEW=0 ;;
     --camera-serial=*) CAMERA_SERIAL="${arg#*=}" ;;
     --second-camera-serial=*) SECOND_CAMERA_SERIAL="${arg#*=}" ;;
@@ -166,9 +196,12 @@ for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
 done
 
 [[ "$DURATION_S" =~ ^[1-9][0-9]*$ ]] || die "--duration-s must be a positive integer"
+[[ "$TMUX_DEBUG" == 0 || "$TMUX_DEBUG" == 1 ]] || die "TELEOP_TMUX_DEBUG must be 0 or 1"
 [[ "$EPISODES" =~ ^[0-9]+$ ]] || die "--episodes must be a non-negative integer"
+[[ "$MANAGER" == "tmux" || "$MANAGER" == "python" || "$MANAGER" == "gui" ]] || die "--manager must be tmux, python, or gui"
 [[ "$WIDTH" =~ ^[1-9][0-9]*$ && "$HEIGHT" =~ ^[1-9][0-9]*$ && "$FPS" =~ ^[1-9][0-9]*$ ]] || die "camera width, height and fps must be positive integers"
 (( ${#SESSION} <= 40 )) || die "tmux session name is too long"
+[[ "$SESSION" =~ ^[A-Za-z0-9._-]+$ ]] || die "--session may contain only letters, digits, '.', '_' or '-'"
 [[ -f "$EXPERIMENT_PROFILE" ]] || die "experiment profile not found: $EXPERIMENT_PROFILE"
 [[ "$CONDITION_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--condition contains unsupported characters"
 [[ "$OPERATOR_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--operator-id contains unsupported characters"
@@ -239,7 +272,9 @@ else
   log "SAFE OBSERVATION MODE: teleop bridge will stay armed=false; no motion command reaches the robot."
 fi
 
-command -v tmux >/dev/null || die "tmux is not installed"
+if [[ "$MANAGER" == "tmux" ]]; then
+  [[ -n "$TMUX_BIN" && -x "$TMUX_BIN" ]] || die "tmux is not installed"
+fi
 ROS_SETUP=""
 for distro in "${ROS_DISTRO:-}" jazzy humble; do
   [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
@@ -258,8 +293,8 @@ set +u
 source "$ROOT_DIR/ros2_ws/install/setup.bash"
 set -u
 
-if tmux has-session -t "$SESSION" 2>/dev/null; then
-  die "tmux session already exists: $SESSION (use tmux attach -t $SESSION or choose --session=...)"
+if [[ "$MANAGER" == "tmux" ]] && tmux has-session -t "$SESSION" 2>/dev/null; then
+  die "tmux session already exists: $SESSION (use tmux -L $TMUX_SERVER_NAME attach -t $SESSION or choose --session=...)"
 fi
 
 # Do not create a second driver, master, bridge, camera, preview, or recorder.
@@ -337,15 +372,23 @@ if command -v ping >/dev/null 2>&1; then
   ping -c 1 -W 1 "$ROBOT_IP" >/dev/null || die "robot IP is unreachable: $ROBOT_IP"
 fi
 
-FREE_KB="$(df -Pk "$ROOT_DIR/evidence" | awk 'NR==2 {print $4}')"
-(( FREE_KB > 8*1024*1024 )) || die "less than 8 GiB free under evidence filesystem"
+# Check capacity on the filesystem that will actually receive this run.  The
+# previous check always inspected the repository checkout, which can be nearly
+# full even when --data-root points at a spacious external disk.
+RUN_ROOT="${RUNEVIDENCE_ROOT:-$ROOT_DIR/evidence/teleop}"
+[[ -n "$DATA_ROOT" ]] && RUN_ROOT="$DATA_ROOT"
+SPACE_ROOT="$RUN_ROOT"
+if [[ ! -e "$SPACE_ROOT" ]]; then
+  SPACE_ROOT="$(dirname "$SPACE_ROOT")"
+fi
+FREE_KB="$(df -Pk "$SPACE_ROOT" | awk 'NR==2 {print $4}')"
+[[ "$FREE_KB" =~ ^[0-9]+$ ]] || die "cannot determine free space for $SPACE_ROOT"
+(( FREE_KB > 8*1024*1024 )) || die "less than 8 GiB free under data filesystem: $SPACE_ROOT"
 
 CONFIG="$ROOT_DIR/ros2_ws/src/teleop_control_bridge/config/hardware_teleop.yaml"
 grep -Eq 'enable_joint_limits:[[:space:]]*true' "$CONFIG" || die "joint limits are not enabled in hardware_teleop.yaml"
 grep -Eq 'enable_one_euro_filter:[[:space:]]*true' "$CONFIG" || die "One-Euro filter is not enabled in hardware_teleop.yaml"
 
-RUN_ROOT="${RUNEVIDENCE_ROOT:-$ROOT_DIR/evidence/teleop}"
-[[ -n "$DATA_ROOT" ]] && RUN_ROOT="$DATA_ROOT"
 RUNEVIDENCE_BIN="${RUNEVIDENCE_BIN:-$(command -v runevidence || true)}"
 if [[ -z "$RUNEVIDENCE_BIN" && -x "$ROOT_DIR/.venv/runevidence/bin/runevidence" ]]; then
   RUNEVIDENCE_BIN="$ROOT_DIR/.venv/runevidence/bin/runevidence"
@@ -361,14 +404,64 @@ if (( PREVIEW )); then
 fi
 mkdir -p "$RUN_ROOT"
 [[ -w "$RUN_ROOT" ]] || die "data root is not writable: $RUN_ROOT"
+if [[ "$TMUX_DEBUG" == "1" ]]; then
+  TMUX_DEBUG_DIR="$RUN_ROOT/system/tmux_debug/${SESSION}-$(date -u +%Y%m%dT%H%M%SZ)"
+  mkdir -p "$TMUX_DEBUG_DIR"
+  log "tmux verbose diagnostics: $TMUX_DEBUG_DIR"
+fi
 export ROS_LOG_DIR="$RUN_ROOT/system/ros_logs"
 mkdir -p "$ROS_LOG_DIR"
 ARMED_ARG="false"
 if (( REAL )); then ARMED_ARG="true"; fi
 
+if [[ "$MANAGER" != "tmux" ]]; then
+  [[ "$MANAGER" == "gui" && -z "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ]] && die "--manager=gui requires a graphical session (DISPLAY/WAYLAND_DISPLAY is empty)"
+  ANNOTATION_STATE="$RUN_ROOT/.annotation_state.json"
+  export TELEOP_CAP_ROOT_DIR="$ROOT_DIR"
+  export TELEOP_CAP_RUN_ROOT="$RUN_ROOT"
+  export TELEOP_CAP_SESSION="$SESSION"
+  export TELEOP_CAP_REAL="$REAL"
+  export TELEOP_CAP_LEFT_ENABLED="$LEFT_ENABLED"
+  export TELEOP_CAP_RIGHT_ENABLED="$RIGHT_ENABLED"
+  export TELEOP_CAP_CAMERA_SERIAL="$CAMERA_SERIAL"
+  export TELEOP_CAP_CAMERA_NAMESPACE="$CAMERA_NAMESPACE"
+  export TELEOP_CAP_SECOND_CAMERA_SERIAL="$SECOND_CAMERA_SERIAL"
+  export TELEOP_CAP_SECOND_CAMERA_NAMESPACE="$SECOND_CAMERA_NAMESPACE"
+  export TELEOP_CAP_WIDTH="$WIDTH"
+  export TELEOP_CAP_HEIGHT="$HEIGHT"
+  export TELEOP_CAP_FPS="$FPS"
+  export TELEOP_CAP_PREVIEW="$PREVIEW"
+  export TELEOP_CAP_HAND_SDK="$HAND_SDK"
+  export TELEOP_CAP_LEFT_HAND_CAN="$LEFT_HAND_CAN"
+  export TELEOP_CAP_RIGHT_HAND_CAN="$RIGHT_HAND_CAN"
+  export TELEOP_CAP_LEFT_TOUCH="$LEFT_TOUCH"
+  export TELEOP_CAP_RIGHT_TOUCH="$RIGHT_TOUCH"
+  export TELEOP_CAP_ARMS="$ARMS"
+  export TELEOP_CAP_CAPTURE_MODE="$CAPTURE_MODE"
+  export TELEOP_CAP_EPISODES="$EPISODES"
+  export TELEOP_CAP_DURATION_S="$DURATION_S"
+  export TELEOP_CAP_EXPERIMENT_ID="$EXPERIMENT_ID"
+  export TELEOP_CAP_CONDITION_ID="$CONDITION_ID"
+  export TELEOP_CAP_OPERATOR_ID="$OPERATOR_ID"
+  export TELEOP_CAP_AUDITOR_ID="$AUDITOR_ID"
+  export TELEOP_CAP_TASK_ID="$TASK_ID"
+  export TELEOP_CAP_EXPERIMENT_PROFILE="$EXPERIMENT_PROFILE"
+  export TELEOP_CAP_EXPERIMENT_MANIFEST="$EXPERIMENT_MANIFEST"
+  export TELEOP_CAP_SYSTEM_PYTHON="$SYSTEM_PYTHON"
+  export TELEOP_CAP_RUNEVIDENCE_PYTHON="$RUNEVIDENCE_PYTHON"
+  export TELEOP_CAP_RUNEVIDENCE_BIN="$RUNEVIDENCE_BIN"
+  export TELEOP_CAP_EVENT_PUBLISHER_PYTHON="$SYSTEM_PYTHON"
+  export TELEOP_CAP_ANNOTATION_STATE="$ANNOTATION_STATE"
+  export TELEOP_CAP_ROBOT_IP="$ROBOT_IP"
+  log "manager=$MANAGER python=$SYSTEM_PYTHON state_dir=$RUN_ROOT/system/supervisor"
+  exec "$SYSTEM_PYTHON" "$ROOT_DIR/tools/capture_manager.py" "$MANAGER"
+fi
+
 launch_cmd() {
   local title="$1"; shift
-  tmux new-window -t "$SESSION" -n "$title" "bash -lc 'set +u; source \"$ROS_SETUP\"; source \"$ROOT_DIR/ros2_ws/install/setup.bash\"; set -u; export ROS_LOG_DIR=\"$ROS_LOG_DIR\"; $*; exec bash'"
+  if ! tmux new-window -t "$SESSION" -n "$title" "bash -lc 'set +u; source \"$ROS_SETUP\"; source \"$ROOT_DIR/ros2_ws/install/setup.bash\"; set -u; export ROS_LOG_DIR=\"$ROS_LOG_DIR\"; $*; exec bash'"; then
+    die "tmux could not create window '$title'; inspect ${TMUX_DEBUG_DIR:-the current directory} for tmux-*.log"
+  fi
 }
 
 wait_for_topic() {
@@ -403,6 +496,8 @@ wait_for_tactile_modality() {
 }
 
 tmux new-session -d -s "$SESSION" -n preflight "bash -lc 'echo robot teleoperation capture preflight passed; echo experiment=$EXPERIMENT_ID condition=$CONDITION_ID task=$TASK_ID operator=$OPERATOR_ID; echo mode=$([[ $REAL -eq 1 ]] && echo REAL_ARMED || echo SAFE_OBSERVATION); echo robot_ip=$ROBOT_IP; echo camera=$CAMERA_SERIAL ${WIDTH}x${HEIGHT}@${FPS}; exec bash'"
+sleep 0.2
+tmux has-session -t "$SESSION" || die "tmux server exited immediately; inspect ${TMUX_DEBUG_DIR:-the current directory} for tmux-server-*.log"
 # A tmux server can outlive a previous desktop session.  Explicitly refresh
 # GUI variables so viewers use the current display/authentication context.
 for gui_var in DISPLAY XAUTHORITY XDG_RUNTIME_DIR WAYLAND_DISPLAY; do
@@ -491,8 +586,8 @@ launch_cmd recorder "$RECORDER_ENV \"$RUNEVIDENCE_PYTHON\" \"$ROOT_DIR/tools/cap
 
 tmux select-window -t "$SESSION:preflight"
 log "tmux session started: $SESSION"
-log "attach: tmux attach -t $SESSION"
-log "safe stop: tmux kill-session -t $SESSION (does not power off robot)"
+log "attach: $TMUX_BIN -L $TMUX_SERVER_NAME attach -t $SESSION"
+log "safe stop: $TMUX_BIN -L $TMUX_SERVER_NAME kill-session -t $SESSION (does not power off robot)"
 log "Recorder waits for Enter before each episode; mode=$CAPTURE_MODE; output: $RUN_ROOT"
 log "RGB previews: one window per configured camera; closed automatically with tmux session"
 log "Same recorder window: Enter starts/stops; digit keys 1-9/0 annotate immediately"
