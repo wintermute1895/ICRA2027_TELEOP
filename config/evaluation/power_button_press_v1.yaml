@@ -1,0 +1,10 @@
+schema: robot_teleop.evaluation-profile/v1
+evaluation_id: power_button_press_v1
+recording_eligibility: config/experiments/data_quality_gate.yaml
+task_outcome:
+  task_profile: config/tasks/power_button_press_v1/task.yaml
+  labels: [success, failure_mode, recovery_success, intervention]
+  success_requires: [button_actuated, stable_end_state]
+learning_utility:
+  retain_corrective_segments: true
+  retain_failure_segments: true

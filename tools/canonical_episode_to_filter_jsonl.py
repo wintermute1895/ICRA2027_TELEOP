@@ -59,8 +59,11 @@ def admitted(manifest: dict[str, Any]) -> bool:
         and terminal.get("success") is True
         and terminal.get("safety_violation") is False
         and terminal.get("unlogged_external_override") is False
-        and integrity.get("complete_causal_record") is True
         and integrity.get("synchronization_valid") is True
+        # ``filter_training_stage`` is provenance, not a stable semantic enum.
+        # Older manifests without it remain admissible when technical fields
+        # prove this is a synchronized successful A_action episode.
+        and (integrity.get("filter_training_stage") is None or isinstance(integrity.get("filter_training_stage"), str))
     )
 
 
@@ -109,7 +112,7 @@ def main() -> int:
         projected = get(command, "safety_projected.value", "execution.controller_command")
         state = get(control, "robot.q_rad")
         controller = get(control, "execution.controller_command")
-        if not all(isinstance(item, list) for item in (raw, filtered, projected, state)):
+        if not all(isinstance(item, list) for item in (raw, state)):
             continue
         if not isinstance(controller, list):
             continue
@@ -119,13 +122,20 @@ def main() -> int:
             "arm": manifest.get("configuration", {}).get("parameters", {}).get(
                 "arm", manifest.get("configuration", {}).get("arm", "unknown")
             ), "joint_names": joint_names,
-            "master_joint_raw": raw, "filter_output_action": filtered,
-            "mapped_joint_command_rad": projected,
+            "master_joint_raw": raw,
             "controller_command_rad": controller,
             "executed_joint_command_rad": get(control, "execution.observed_action"),
             "gripper_state": get(control, "gripper_state"),
             "robot_joint_state_rad": state, "success": True,
         }
+        if isinstance(filtered, list):
+            row["filter_output_action"] = filtered
+        if isinstance(projected, list):
+            row["mapped_joint_command_rad"] = projected
+        # The learned layer runs before the bridge, so both history and target
+        # stay in LinkerTA master-joint coordinates.
+        row["expert_action_target_rad"] = raw
+        row["action_target_source"] = "recorded_expert_action"
         expert_action_target = get(
             control,
             "execution.expert_action_target_rad",

@@ -74,6 +74,11 @@ class HandPresetControllerTest(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_l10_adapter_uses_checked_in_sdk_root(self):
+        source = (Path(__file__).resolve().parents[2] / "tools/hand_gesture_recorder/adapters.py").read_text(encoding="utf-8")
+        self.assertIn("third_party", source)
+        self.assertIn("LinkerHand.linker_hand_api", source)
+
 
 if __name__ == "__main__":
     unittest.main()

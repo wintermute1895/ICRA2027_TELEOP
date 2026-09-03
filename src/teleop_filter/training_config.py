@@ -15,9 +15,11 @@ class LossConfig:
     beta_kl: float
     smoothness_weight: float
     correction_weight: float
+    gate_weight: float = 0.0
+    zero_weight: float = 0.0
 
     def validate(self) -> None:
-        if min(self.beta_kl, self.smoothness_weight, self.correction_weight) < 0.0:
+        if min(self.beta_kl, self.smoothness_weight, self.correction_weight, self.gate_weight, self.zero_weight) < 0.0:
             raise ValueError("loss weights must be non-negative")
 
 
@@ -56,6 +58,8 @@ class FilterTrainingConfig:
                 beta_kl=float(loss.get("beta_kl", 1e-3)),
                 smoothness_weight=float(loss.get("smoothness_weight", 1e-2)),
                 correction_weight=float(loss.get("correction_weight", 1.0)),
+                gate_weight=float(loss.get("gate_weight", 0.0)),
+                zero_weight=float(loss.get("zero_weight", 0.0)),
             ),
             data=DataConfig(bool((payload.get("data") or {}).get("allow_synthetic_smoke", False))),
             runtime=dict(runtime),
@@ -102,4 +106,5 @@ class FilterTrainingConfig:
             num_heads=int(self.model["num_heads"]),
             num_layers=int(self.model["num_layers"]),
             dropout=float(self.model["dropout"]),
+            gate_enabled=bool(self.model.get("gate_enabled", False)),
         )

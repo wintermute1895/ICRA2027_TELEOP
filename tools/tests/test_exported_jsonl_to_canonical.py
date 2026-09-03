@@ -84,8 +84,8 @@ class ExportedJsonlCanonicalTest(unittest.TestCase):
                 "--source", "real", "--task-id", "precision_alignment", "--terminal-audit", str(audit),
             ], text=True, capture_output=True, check=True)
             manifest = json.loads((root / "canonical/episode.manifest.json").read_text(encoding="utf-8"))
-            self.assertEqual(manifest["intended_uses"], ["policy_training"])
-            self.assertEqual(manifest["terminal_audit"]["buffer"], "A_audit")
+            self.assertEqual(manifest["intended_uses"], ["filter_training", "policy_training"])
+            self.assertEqual(manifest["terminal_audit"]["buffer"], "A_action")
             self.assertFalse(manifest["data_integrity"]["complete_causal_record"])
             self.assertTrue(manifest["data_integrity"]["policy_training_admitted"])
 

@@ -48,6 +48,8 @@ def generate_launch_description():
     launch_linkerta = LaunchConfiguration("launch_linkerta")
     enable_left_arm = LaunchConfiguration("enable_left_arm")
     enable_right_arm = LaunchConfiguration("enable_right_arm")
+    master_left_topic = LaunchConfiguration("master_left_topic")
+    master_right_topic = LaunchConfiguration("master_right_topic")
     
     # 打印配置信息
     print(f"[hardware_teleop.launch.py] 从臂配置:")
@@ -96,6 +98,8 @@ def generate_launch_description():
             {"armed": ParameterValue(LaunchConfiguration("armed"), value_type=bool)},
             {"enable_left_arm": ParameterValue(enable_left_arm, value_type=bool)},
             {"enable_right_arm": ParameterValue(enable_right_arm, value_type=bool)},
+            {"master_left_topic": master_left_topic},
+            {"master_right_topic": master_right_topic},
         ]
     )
 
@@ -117,6 +121,8 @@ def generate_launch_description():
                               description="Explicitly allow commands to reach the robot"),
         DeclareLaunchArgument("enable_left_arm", default_value="true"),
         DeclareLaunchArgument("enable_right_arm", default_value="true"),
+        DeclareLaunchArgument("master_left_topic", default_value=str(bridge_params["master_left_topic"])),
+        DeclareLaunchArgument("master_right_topic", default_value=str(bridge_params["master_right_topic"])),
         *driver_nodes,          # 所有从臂驱动节点
         linkerta_launch,        # 主臂节点
         bridge_launch,          # mapping/filter/safety bridge

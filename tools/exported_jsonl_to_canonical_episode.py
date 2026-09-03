@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Materialize an exported ROS bag arm stream as teleop_episode/v0.1.
 
-This adapter is intentionally conservative.  A raw capture is audit-only until
-an explicit terminal audit is supplied and every filter-training causal field
-is present.  In particular, a controller command is never relabelled as an
-observed action.
+An explicit terminal audit is required for training admission. Cold-start
+filter data requires synchronized master action and robot state; closed-loop
+captures additionally report whether every command stage was recorded.
 """
 from __future__ import annotations
 
@@ -54,6 +53,12 @@ def policy_row_complete(row: dict[str, Any]) -> bool:
     )) and isinstance(row.get("rgb"), dict)
 
 
+def cold_start_filter_row_complete(row: dict[str, Any]) -> bool:
+    return all(isinstance(row.get(key), list) and row[key] for key in (
+        "master_joint_raw", "robot_joint_state_rad",
+    ))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--export-jsonl", type=Path, required=True)
@@ -94,6 +99,8 @@ def main() -> int:
         timestamp = int(row["header_stamp_ns"])
         controller = row.get("controller_command_rad")
         observed = row.get("executed_joint_command_rad")
+        filter_output = row.get("master_joint_filtered_rad")
+        safety_projected = row.get("mapped_joint_command_rad")
         control_rows.append({
             "timestamp_ns": timestamp,
             "robot": {"joint_names": joint_names, "q_rad": row.get("robot_joint_state_rad"), "ee_pose_B": row.get("tcp_pose_base"), "ee_pose_frame": row.get("tcp_pose_frame")},
@@ -104,8 +111,8 @@ def main() -> int:
         command_rows.append({
             "timestamp_ns": timestamp,
             "raw_teleop": {"value": row.get("master_joint_raw"), "availability": "available" if row.get("master_joint_raw") else "unavailable", "unavailable_reason": None if row.get("master_joint_raw") else "missing_from_bag"},
-            "filter_output": {"value": row.get("master_joint_filtered_rad"), "availability": "available" if row.get("master_joint_filtered_rad") else "unavailable", "unavailable_reason": None if row.get("master_joint_filtered_rad") else "missing_from_bag"},
-            "safety_projected": {"value": row.get("mapped_joint_command_rad"), "availability": "available" if row.get("mapped_joint_command_rad") else "unavailable", "unavailable_reason": None if row.get("mapped_joint_command_rad") else "missing_from_bag"},
+            "filter_output": {"value": filter_output, "availability": "available" if filter_output else "unavailable", "unavailable_reason": None if filter_output else "missing_from_bag"},
+            "safety_projected": {"value": safety_projected, "availability": "available" if safety_projected else "unavailable", "unavailable_reason": None if safety_projected else "missing_from_bag"},
             "controller_command_ref": timestamp,
             "controller_command": controller,
             "gripper_state": row.get("gripper_state"),
@@ -173,9 +180,17 @@ def main() -> int:
         "safety_projected": row.get("mapped_joint_command_rad"), "controller_command": row.get("controller_command_rad"),
         "robot_state": row.get("robot_joint_state_rad"),
     }) for row in rows)
-    causal_complete = causal_rows == len(rows)
+    # Presence of command-stage fields is not proof that a learned filter was
+    # in the control loop.  Cold-start captures commonly contain rule-filter
+    # or compatibility fields, but their expert target must remain independent
+    # of the learned model.  Only an explicitly learned collection mode can
+    # claim a complete learned causal record.
+    learned_causal_mode = args.collection_mode in {"teleop_learned", "replay"}
+    causal_complete = learned_causal_mode and causal_rows == len(rows)
     policy_rows = sum(policy_row_complete(row) for row in rows)
     policy_complete_ratio = policy_rows / len(rows)
+    filter_rows = sum(cold_start_filter_row_complete(row) for row in rows)
+    filter_complete_ratio = filter_rows / len(rows)
     # Geometry context and observed action are optional extensions.  The core
     # flywheel records command stages, measured state, outcome, and safety.
     context_complete = len(context_rows) == len(rows)
@@ -186,15 +201,20 @@ def main() -> int:
     )
     policy_admitted = outcome_admitted and policy_complete_ratio >= args.min_policy_complete_ratio
     failed_gates = []
+    deferred_gates = []
     if not causal_complete:
-        failed_gates.append("incomplete_causal_record")
+        deferred_gates.append("incomplete_causal_record")
     if audit.get("success") is not True:
         failed_gates.append("terminal_not_success")
     if audit.get("safety_violation") is not False:
         failed_gates.append("safety_violation")
     if audit.get("unlogged_external_override") is not False:
         failed_gates.append("unlogged_external_override")
-    filter_admitted = not failed_gates
+    # Cold-start demonstrations intentionally have no learned-filter output.
+    # Recorded expert/controller actions are sufficient to train the first
+    # residual filter; the stricter causal gate is for closed-loop rounds.
+    cold_start_admitted = outcome_admitted and filter_complete_ratio >= args.min_policy_complete_ratio
+    filter_admitted = cold_start_admitted
     intended_uses = []
     if filter_admitted:
         intended_uses.append("filter_training")
@@ -202,7 +222,8 @@ def main() -> int:
         intended_uses.append("policy_training")
     if not intended_uses:
         intended_uses.append("audit_only")
-    audit.update({"buffer": "A_action" if filter_admitted else "A_audit", "admission_rule_version": "A_action/v0.1", "failed_gates": failed_gates})
+    audit.update({"buffer": "A_action" if filter_admitted else "A_audit", "admission_rule_version": "A_action/v0.2", "failed_gates": failed_gates, "deferred_gates": deferred_gates,
+                  "filter_training_stage": "cold_start_expert" if filter_admitted and not causal_complete else ("closed_loop_filter" if filter_admitted else None)})
     manifest = {
         "schema_version": "teleop_episode/v0.1", "episode_id": episode_id, "source": args.source,
         "collection_mode": args.collection_mode, "intended_uses": intended_uses,
@@ -223,13 +244,22 @@ def main() -> int:
         },
         "terminal_audit": audit,
         "data_integrity": {
-            "synchronization_valid": causal_complete or policy_complete_ratio >= args.min_policy_complete_ratio,
+            "synchronization_valid": (
+                causal_complete
+                or filter_complete_ratio >= args.min_policy_complete_ratio
+                or policy_complete_ratio >= args.min_policy_complete_ratio
+            ),
             "complete_causal_record": causal_complete,
             "causal_complete_rows": causal_rows,
+            "filter_complete_rows": filter_rows,
+            "filter_complete_ratio": filter_complete_ratio,
             "policy_complete_rows": policy_rows,
             "policy_complete_ratio": policy_complete_ratio,
             "policy_minimum_complete_ratio": args.min_policy_complete_ratio,
             "policy_training_admitted": policy_admitted,
+            "filter_training_admitted": filter_admitted,
+            "filter_training_stage": "cold_start_expert" if filter_admitted and not causal_complete else ("closed_loop_filter" if filter_admitted else None),
+            "deferred_gates": deferred_gates,
             "validator_report_ref": "validator_report.json",
         },
         "provenance": {"code_revision": git_revision(Path(__file__).resolve().parents[1]), "adapter_version": ADAPTER_VERSION, "source_dataset_or_run": str(args.export_jsonl.resolve()), "content_sha256": hashlib.sha256(args.export_jsonl.read_bytes()).hexdigest()},

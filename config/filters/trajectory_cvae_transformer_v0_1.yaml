@@ -9,6 +9,7 @@ model:
   dropout: 0.1
   context_dim: 0
   visual_dim: 0 # set to the frozen VLM embedding width for task-aware training
+  gate_enabled: false
 loss:
   beta_kl: 0.001
   smoothness_weight: 0.01

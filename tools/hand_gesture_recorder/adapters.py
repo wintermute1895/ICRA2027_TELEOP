@@ -22,8 +22,11 @@ class L10Hand:
     name, joint_count, minimum, maximum = "L10", 10, 0.0, 255.0
     def __init__(self, side="left", can="can0"):
         root = __import__("pathlib").Path(__file__).resolve().parents[2]
-        sys.path.insert(0, str(root / "LinkerHand"))
-        from linker_hand_api import LinkerHandApi
+        sdk_root = root / "third_party" / "linkerhand_ros2_sdk" / "linker_hand_ros2_sdk" / "linker_hand_ros2_sdk"
+        if not sdk_root.is_dir():
+            raise RuntimeError(f"LinkerHand SDK source not found: {sdk_root}")
+        sys.path.insert(0, str(sdk_root))
+        from LinkerHand.linker_hand_api import LinkerHandApi
         self.hand = LinkerHandApi(hand_type=side, hand_joint="L10", can=can)
     def read(self): return [float(v) for v in self.hand.get_state()]
     def write(self, values): self.hand.finger_move([int(round(v)) for v in values])

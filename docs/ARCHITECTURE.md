@@ -91,14 +91,27 @@ future action chunk only during training. KL therefore regularizes two learned
 conditional distributions; it is not a hand-authored definition of a good
 trajectory or proof of a fixed low-dimensional manifold.
 
-The current learned model is `offline_and_simulation_only`. A future ROS adapter
-must run shadow evaluation first, publish diagnostics on separate topics, apply
-bounded correction and safety projection, and must never replace the hardware
-command topic merely by enabling a config flag.
+The current learned model is `offline_and_simulation_only`. ACT and learned
+filter adapters publish candidates to the shared `model_deployment_supervisor`;
+they never connect directly to `teleop_control_bridge`. The supervisor is
+shadow by default and requires pinned checkpoints, bounded correction, shadow
+evaluation and explicit approval before active selection. Warmup, stale inputs,
+invalid values and worker errors fall back to LinkerTA. The bridge and vendor
+SDK remain unchanged.
 
 `src/teleop_filter/runtime.py` 负责版本化 checkpoint 加载、训练集统计归一化、先验推理
 和有界残差组合；`tools/evaluate_trajectory_filter.py` 只读生成预测与误差报告。该运行时
 不导入 ROS 或具体仿真器，因此 MuJoCo 和未来其他 simulator adapter 共享同一模型语义。
+
+The current task-aware model is correction-aware: it predicts an expert action
+and, when enabled in the versioned model config, a correction probability. The
+training view keeps nominal and corrective windows together. Corrective windows
+receive higher action weight and gate supervision; nominal windows receive a
+small zero-residual regularizer. At deployment, residual composition is gated:
+`u_out = SafetyProjector(u_raw + alpha * p(correction) * (u_expert - u_raw))`.
+This gate is only as meaningful as the recorded target: a correction interval
+with `expert_action_target_rad == master_joint_raw` teaches timing but cannot
+teach a non-zero corrective action.
 
 任务飞轮的视觉支路由 `tools/encode_images_with_vlm.py` 和
 `tools/attach_vlm_embeddings.py` 固定下来：外部 VLM 对解码图像生成冻结 embedding，

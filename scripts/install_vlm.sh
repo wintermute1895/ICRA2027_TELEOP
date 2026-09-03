@@ -7,7 +7,7 @@ source "$ROOT_DIR/scripts/lib/training_env.sh"
 ENV_NAME="${VLM_ENV_NAME:-teleop-train}"
 MODEL_ID="${VLM_MODEL_ID:-google/siglip2-base-patch16-224}"
 MODEL_REVISION="${VLM_MODEL_REVISION:-main}"
-DEFAULT_SIGLIP_CACHE="/media/${USER:-$(id -un)}/Seagate Hub/ICRA2027_DATA_TASK2/vlm_cache"
+DEFAULT_SIGLIP_CACHE="/media/${USER:-$(id -un)}/Cyan_data/ICRA2027_MODELS/huggingface"
 if [[ -d "/media/${USER:-$(id -un)}/Seagate Hub/ICRA2027_DATA_TASK2" ]]; then
   DEFAULT_VLM_CACHE="$DEFAULT_SIGLIP_CACHE"
 else

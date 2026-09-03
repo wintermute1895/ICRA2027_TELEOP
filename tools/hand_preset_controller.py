@@ -185,11 +185,14 @@ def main(argv: list[str] | None = None) -> int:
     command_pub = node.create_publisher(JointState, command_topic, 10) if args.execute else None
     gripper_state_pub = node.create_publisher(UInt8, gripper_topic, 10)
     joint_state_pub = node.create_publisher(JointState, state_topic, 10) if args.backend == "direct-o6" else None
-    latest_state: list[JointState] = []
+    latest_state: JointState | None = None
     state_subscription = None
     if args.backend == "ros":
+        def on_state(msg: JointState) -> None:
+            nonlocal latest_state
+            latest_state = msg
         state_subscription = node.create_subscription(
-            JointState, state_topic, lambda msg: latest_state.append(msg), 10
+            JointState, state_topic, on_state, 10
         )
     cycle = config["cycle"]
     presets = config["presets"]
@@ -285,19 +288,19 @@ def main(argv: list[str] | None = None) -> int:
             return
         if not latest_state:
             deadline = time.monotonic() + float(config["state_timeout_s"])
-            while time.monotonic() < deadline and rclpy.ok() and not latest_state:
+            while time.monotonic() < deadline and rclpy.ok() and latest_state is None:
                 rclpy.spin_once(node, timeout_sec=0.05)
-        if not latest_state:
+        if latest_state is None:
             print(f"\n[HAND] no state received on {state_topic}; command skipped", flush=True)
             return
         # Vendor feedback may contain passive/derived channels (the installed
         # O6 reports 11 state values while accepting 6-value commands).  The
         # command vector is validated against the configured preset; state
         # length is intentionally not required to match it.
-        if not latest_state[-1].position:
+        if not latest_state.position:
             print(f"\n[HAND] empty state on {state_topic}; command skipped", flush=True)
             return
-        if not any(math.isfinite(float(value)) and float(value) >= 0.0 for value in latest_state[-1].position):
+        if not any(math.isfinite(float(value)) and float(value) >= 0.0 for value in latest_state.position):
             print(f"\n[HAND] state on {state_topic} contains no valid position; command skipped", flush=True)
             return
         end = time.monotonic() + float(config["hold_seconds"])

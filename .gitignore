@@ -39,3 +39,5 @@ ros2_ws/log/
 build/
 install/
 paper/build/
+paper/**/build/
+paper/**/.venv/

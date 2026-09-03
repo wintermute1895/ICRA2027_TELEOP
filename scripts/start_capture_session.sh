@@ -46,6 +46,10 @@ CONDITION_ID="unassigned"
 OPERATOR_ID="anonymous"
 AUDITOR_ID="auditor_01"
 TASK_ID="unspecified"
+TASK_PROFILE=""
+TASK_BUNDLE_ID=""
+TASK_BUNDLE_REVISION=""
+TASK_BUNDLE_SHA256=""
 EXPERIMENT_MANIFEST=""
 HAND_SDK=0
 LEFT_HAND_CAN="can0"
@@ -53,6 +57,8 @@ RIGHT_HAND_CAN="can1"
 LEFT_TOUCH="false"
 RIGHT_TOUCH="false"
 ARMS="left,right"
+LEARNED_FILTER_CONFIG=""
+MODEL_DEPLOYMENT_CONFIG="$ROOT_DIR/config/runtime/model_deployment.yaml"
 
 usage() {
   cat >&2 <<'EOF'
@@ -79,6 +85,7 @@ Options:
   --operator-id=ID               de-identified operator ID
   --auditor-id=ID                second-person keyboard auditor ID
   --task-id=ID                   task/fixture identifier
+  --task-profile PATH            versioned task bundle (preferred task selector)
   --experiment-manifest PATH     immutable manifest from tools/resolve_experiment_manifest.py
   --hand-sdk                     start LinkerHand SDK for state/tactile recording (hands remain disarmed)
   --left-hand-can=CAN            left hand CAN interface (default: can0)
@@ -112,6 +119,7 @@ done
 [[ -n "${CAPTURE_WIDTH:-}" ]] && WIDTH="$CAPTURE_WIDTH"
 [[ -n "${CAPTURE_HEIGHT:-}" ]] && HEIGHT="$CAPTURE_HEIGHT"
 [[ -n "${CAPTURE_FPS:-}" ]] && FPS="$CAPTURE_FPS"
+[[ -n "${CAPTURE_TASK_PROFILE:-}" ]] && TASK_PROFILE="$CAPTURE_TASK_PROFILE"
 [[ -n "${CAPTURE_EXPERIMENT_PROFILE:-}" ]] && EXPERIMENT_PROFILE="$CAPTURE_EXPERIMENT_PROFILE"
 [[ -n "${CAPTURE_CONDITION_ID:-}" ]] && CONDITION_ID="$CAPTURE_CONDITION_ID"
 [[ -n "${CAPTURE_TASK_ID:-}" ]] && TASK_ID="$CAPTURE_TASK_ID"
@@ -126,10 +134,19 @@ done
 [[ "${CAPTURE_LEFT_TOUCH:-false}" == true ]] && LEFT_TOUCH="true"
 [[ "${CAPTURE_RIGHT_TOUCH:-false}" == true ]] && RIGHT_TOUCH="true"
 [[ -n "${CAPTURE_DATA_ROOT:-}" ]] && DATA_ROOT="$CAPTURE_DATA_ROOT"
+[[ -n "${CAPTURE_LEARNED_FILTER_CONFIG:-}" ]] && LEARNED_FILTER_CONFIG="$CAPTURE_LEARNED_FILTER_CONFIG"
+[[ -n "${CAPTURE_MODEL_DEPLOYMENT_CONFIG:-}" ]] && MODEL_DEPLOYMENT_CONFIG="$CAPTURE_MODEL_DEPLOYMENT_CONFIG"
 [[ "$EXPERIMENT_PROFILE" == /* ]] || EXPERIMENT_PROFILE="$ROOT_DIR/$EXPERIMENT_PROFILE"
 if [[ -n "$EXPERIMENT_MANIFEST" && "$EXPERIMENT_MANIFEST" != /* ]]; then
   EXPERIMENT_MANIFEST="$ROOT_DIR/$EXPERIMENT_MANIFEST"
 fi
+if [[ -n "$TASK_PROFILE" && "$TASK_PROFILE" != /* ]]; then
+  TASK_PROFILE="$ROOT_DIR/$TASK_PROFILE"
+fi
+if [[ -n "$LEARNED_FILTER_CONFIG" && "$LEARNED_FILTER_CONFIG" != /* ]]; then
+  LEARNED_FILTER_CONFIG="$ROOT_DIR/$LEARNED_FILTER_CONFIG"
+fi
+if [[ "$MODEL_DEPLOYMENT_CONFIG" != /* ]]; then MODEL_DEPLOYMENT_CONFIG="$ROOT_DIR/$MODEL_DEPLOYMENT_CONFIG"; fi
 
 for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
   arg="${ARGS[arg_index]}"
@@ -153,6 +170,7 @@ for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
     --operator-id=*) OPERATOR_ID="${arg#*=}" ;;
     --auditor-id=*) AUDITOR_ID="${arg#*=}" ;;
     --task-id=*) TASK_ID="${arg#*=}" ;;
+    --task-profile=*) TASK_PROFILE="${arg#*=}" ;;
     --experiment-manifest=*) EXPERIMENT_MANIFEST="${arg#*=}" ;;
     --hand-sdk) HAND_SDK=1 ;;
     --left-hand-can=*) LEFT_HAND_CAN="${arg#*=}" ;;
@@ -165,11 +183,29 @@ for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
   esac
 done
 
+if [[ -n "$TASK_PROFILE" && "$TASK_PROFILE" != /* ]]; then
+  TASK_PROFILE="$ROOT_DIR/$TASK_PROFILE"
+fi
+
 [[ "$DURATION_S" =~ ^[1-9][0-9]*$ ]] || die "--duration-s must be a positive integer"
 [[ "$EPISODES" =~ ^[0-9]+$ ]] || die "--episodes must be a non-negative integer"
 [[ "$WIDTH" =~ ^[1-9][0-9]*$ && "$HEIGHT" =~ ^[1-9][0-9]*$ && "$FPS" =~ ^[1-9][0-9]*$ ]] || die "camera width, height and fps must be positive integers"
 (( ${#SESSION} <= 40 )) || die "tmux session name is too long"
 [[ -f "$EXPERIMENT_PROFILE" ]] || die "experiment profile not found: $EXPERIMENT_PROFILE"
+if [[ -n "$TASK_PROFILE" ]]; then
+  [[ -f "$TASK_PROFILE" || -d "$TASK_PROFILE" ]] || die "task profile not found: $TASK_PROFILE"
+  TASK_BUNDLE_JSON="$($SYSTEM_PYTHON "$ROOT_DIR/tools/resolve_task_bundle.py" --task "$TASK_PROFILE")" || die "invalid task bundle: $TASK_PROFILE"
+  read -r TASK_BUNDLE_ID TASK_BUNDLE_REVISION < <(printf '%s\n' "$TASK_BUNDLE_JSON" | "$SYSTEM_PYTHON" -c 'import json,sys; value=json.load(sys.stdin); print(value["task_id"], value["task_revision"])')
+  if [[ "$TASK_ID" != "unspecified" && "$TASK_ID" != "$TASK_BUNDLE_ID" ]]; then
+    die "CAPTURE_TASK_ID ($TASK_ID) disagrees with task bundle ($TASK_BUNDLE_ID)"
+  fi
+  TASK_ID="$TASK_BUNDLE_ID"
+fi
+TASK_REVISION=""
+if [[ -n "$TASK_PROFILE" ]]; then
+  TASK_REVISION="$TASK_BUNDLE_REVISION"
+  TASK_BUNDLE_SHA256="$(printf '%s\n' "$TASK_BUNDLE_JSON" | "$SYSTEM_PYTHON" -c 'import json,sys; print(json.load(sys.stdin)["task_bundle_sha256"])')"
+fi
 [[ "$CONDITION_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--condition contains unsupported characters"
 [[ "$OPERATOR_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--operator-id contains unsupported characters"
 [[ "$AUDITOR_ID" =~ ^[A-Za-z0-9._-]+$ ]] || die "--auditor-id contains unsupported characters"
@@ -209,6 +245,9 @@ PY
 )
   EXPERIMENT_ID="$MANIFEST_EXPERIMENT_ID"
   CONDITION_ID="$MANIFEST_CONDITION_ID"
+  if [[ -n "$TASK_PROFILE" && "$MANIFEST_TASK_ID" != "$TASK_BUNDLE_ID" ]]; then
+    die "experiment manifest task_id ($MANIFEST_TASK_ID) disagrees with task bundle ($TASK_BUNDLE_ID)"
+  fi
   TASK_ID="$MANIFEST_TASK_ID"
   OPERATOR_ID="$MANIFEST_OPERATOR_ID"
 fi
@@ -273,6 +312,9 @@ PROCESS_CHECKS=(
   "rqt_image_view|(^|/)rqt_image_view([[:space:]]|$)"
   "ros2 bag record|(^|/)ros2[[:space:]]+bag[[:space:]]+record([[:space:]]|$)"
   "RunEvidence capture|(^|/)runevidence[[:space:]]+run([[:space:]]|$)"
+  "model deployment supervisor|model_deployment_supervisor.py"
+  "learned filter worker|learned_filter_worker.py"
+  "ACT adapter|act_ros_adapter.py"
 )
 for check in "${PROCESS_CHECKS[@]}"; do
   label="${check%%|*}"
@@ -337,15 +379,18 @@ if command -v ping >/dev/null 2>&1; then
   ping -c 1 -W 1 "$ROBOT_IP" >/dev/null || die "robot IP is unreachable: $ROBOT_IP"
 fi
 
-FREE_KB="$(df -Pk "$ROOT_DIR/evidence" | awk 'NR==2 {print $4}')"
-(( FREE_KB > 8*1024*1024 )) || die "less than 8 GiB free under evidence filesystem"
-
 CONFIG="$ROOT_DIR/ros2_ws/src/teleop_control_bridge/config/hardware_teleop.yaml"
 grep -Eq 'enable_joint_limits:[[:space:]]*true' "$CONFIG" || die "joint limits are not enabled in hardware_teleop.yaml"
 grep -Eq 'enable_one_euro_filter:[[:space:]]*true' "$CONFIG" || die "One-Euro filter is not enabled in hardware_teleop.yaml"
 
 RUN_ROOT="${RUNEVIDENCE_ROOT:-$ROOT_DIR/evidence/teleop}"
 [[ -n "$DATA_ROOT" ]] && RUN_ROOT="$DATA_ROOT"
+if [[ ! -d "$RUN_ROOT" ]]; then
+  mkdir -p "$RUN_ROOT" 2>/dev/null || die "capture data root is not writable: $RUN_ROOT (check external disk mount; use CAPTURE_DATA_ROOT to override)"
+fi
+[[ -w "$RUN_ROOT" ]] || die "capture data root is not writable: $RUN_ROOT (disk may be mounted read-only)"
+FREE_KB="$(df -Pk "$RUN_ROOT" | awk 'NR==2 {print $4}')"
+(( FREE_KB > 8*1024*1024 )) || die "less than 8 GiB free under capture data filesystem"
 RUNEVIDENCE_BIN="${RUNEVIDENCE_BIN:-$(command -v runevidence || true)}"
 if [[ -z "$RUNEVIDENCE_BIN" && -x "$ROOT_DIR/.venv/runevidence/bin/runevidence" ]]; then
   RUNEVIDENCE_BIN="$ROOT_DIR/.venv/runevidence/bin/runevidence"
@@ -432,13 +477,46 @@ if [[ -n "$SECOND_CAMERA_SERIAL" ]]; then
   CAMERA_NAMESPACES+=",$SECOND_CAMERA_NAMESPACE"
 fi
 export CAMERA_NAMESPACES
-launch_cmd teleop "ros2 launch teleop_control_bridge hardware_teleop.launch.py launch_driver:=false armed:=$ARMED_ARG enable_left_arm:=$([[ $LEFT_ENABLED -eq 1 ]] && echo true || echo false) enable_right_arm:=$([[ $RIGHT_ENABLED -eq 1 ]] && echo true || echo false)"
+MASTER_LEFT_TOPIC=/left_arm_joint_control
+MASTER_RIGHT_TOPIC=/right_arm_joint_control
+MODEL_SOURCE=teleop
+MODEL_CANDIDATE_ARGS=""
+if [[ -n "$LEARNED_FILTER_CONFIG" ]]; then
+  [[ -f "$LEARNED_FILTER_CONFIG" ]] || die "learned-filter config not found: $LEARNED_FILTER_CONFIG"
+  read -r FILTER_ARM FILTER_OUTPUT_TOPIC < <("$SYSTEM_PYTHON" - "$LEARNED_FILTER_CONFIG" <<'PY'
+import sys, yaml
+config = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+if config.get("enabled") is not True:
+    raise SystemExit("learned filter config is not enabled")
+print(config["arm"], config["master_output_topic"])
+PY
+  )
+  case "$FILTER_ARM" in
+    left) : ;;
+    right) : ;;
+    *) die "learned-filter arm must be left or right: $FILTER_ARM" ;;
+  esac
+  MODEL_SOURCE=filter
+  MODEL_CANDIDATE_ARGS="--filter-config=\"$LEARNED_FILTER_CONFIG\""
+fi
+[[ -f "$MODEL_DEPLOYMENT_CONFIG" ]] || die "model deployment config not found: $MODEL_DEPLOYMENT_CONFIG"
+"$SYSTEM_PYTHON" - "$MODEL_DEPLOYMENT_CONFIG" <<'PY' || die "model deployment config must have enabled: true"
+import sys, yaml
+config = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+if config.get("enabled") is not True:
+    raise SystemExit(1)
+PY
+launch_cmd deployment "bash \"$ROOT_DIR/scripts/start_model_deployment.sh\" \"$MODEL_DEPLOYMENT_CONFIG\" --shadow --source=$MODEL_SOURCE $MODEL_CANDIDATE_ARGS"
+MASTER_LEFT_TOPIC=/left_arm_joint_control
+if (( RIGHT_ENABLED )); then MASTER_RIGHT_TOPIC=/model_deployment/right_arm_joint_control; fi
+launch_cmd teleop "ros2 launch teleop_control_bridge hardware_teleop.launch.py launch_driver:=false armed:=$ARMED_ARG enable_left_arm:=$([[ $LEFT_ENABLED -eq 1 ]] && echo true || echo false) enable_right_arm:=$([[ $RIGHT_ENABLED -eq 1 ]] && echo true || echo false) master_left_topic:=$MASTER_LEFT_TOPIC master_right_topic:=$MASTER_RIGHT_TOPIC"
 if (( LEFT_ENABLED )); then
   wait_for_topic /left_arm_joint_control 20
   wait_for_topic /teleop/left/mapped_joint_command 20
 fi
 if (( RIGHT_ENABLED )); then
   wait_for_topic /right_arm_joint_control 20
+  wait_for_topic /model_deployment/right_arm_joint_control 20
   wait_for_topic /teleop/right/mapped_joint_command 20
 fi
 if (( HAND_SDK )); then
@@ -482,8 +560,8 @@ launch_cmd sync "\"$SYSTEM_PYTHON\" \"$ROOT_DIR/tools/diagnose_time_sync.py\" --
 # exported later in this launcher. Pass the resolved camera list explicitly so the
 # recorder always captures every camera that passed preflight.
 ANNOTATION_STATE="$RUN_ROOT/.annotation_state.json"
-RECORDER_ENV="export CAMERA_NAMESPACES=\"$CAMERA_NAMESPACES\"; export TELEOP_CAPTURE_DURATION_S=$DURATION_S; export TELEOP_CAPTURE_MODE=$CAPTURE_MODE; export TELEOP_CAPTURE_EPISODES=$EPISODES; export TELEOP_CAPTURE_ARMS=$ARMS; export TELEOP_TACTILE_ENABLED=$([[ \"$LEFT_TOUCH\" == true || \"$RIGHT_TOUCH\" == true ]] && echo true || echo false); export TELEOP_HARDWARE_COMMANDS_ENABLED=$([[ $REAL -eq 1 ]] && echo true || echo false); export TELEOP_EXPERIMENT_ID=$EXPERIMENT_ID; export TELEOP_CONDITION_ID=$CONDITION_ID; export TELEOP_OPERATOR_ID=$OPERATOR_ID; export TELEOP_AUDITOR_ID=$AUDITOR_ID; export TELEOP_TASK_ID=$TASK_ID; export TELEOP_EXPERIMENT_PROFILE=$EXPERIMENT_PROFILE; export TELEOP_EXPERIMENT_MANIFEST=\"$EXPERIMENT_MANIFEST\"; export RUNEVIDENCE_BAG_COMPRESSION_MODE=file; export RUNEVIDENCE_BAG_COMPRESSION_FORMAT=zstd; export RUNEVIDENCE_ROOT=\"$RUN_ROOT\"; export RUNEVIDENCE_BIN=\"$RUNEVIDENCE_BIN\";"
-RECORDER_ARGS="--runs-root \"$RUN_ROOT\" --episodes \"$EPISODES\" --arms \"$ARMS\" --cameras \"$CAMERA_NAMESPACES\" --experiment-id \"$EXPERIMENT_ID\" --condition-id \"$CONDITION_ID\" --operator-id \"$OPERATOR_ID\" --auditor-id \"$AUDITOR_ID\" --annotation-state \"$ANNOTATION_STATE\" --event-publisher-python \"$SYSTEM_PYTHON\" --task-id \"$TASK_ID\" --camera-profile \"${WIDTH}x${HEIGHT}x${FPS}\""
+RECORDER_ENV="export CAMERA_NAMESPACES=\"$CAMERA_NAMESPACES\"; export TELEOP_CAPTURE_DURATION_S=$DURATION_S; export TELEOP_CAPTURE_MODE=$CAPTURE_MODE; export TELEOP_CAPTURE_EPISODES=$EPISODES; export TELEOP_CAPTURE_ARMS=$ARMS; export TELEOP_TACTILE_ENABLED=$([[ \"$LEFT_TOUCH\" == true || \"$RIGHT_TOUCH\" == true ]] && echo true || echo false); export TELEOP_HARDWARE_COMMANDS_ENABLED=$([[ $REAL -eq 1 ]] && echo true || echo false); export TELEOP_EXPERIMENT_ID=$EXPERIMENT_ID; export TELEOP_CONDITION_ID=$CONDITION_ID; export TELEOP_OPERATOR_ID=$OPERATOR_ID; export TELEOP_AUDITOR_ID=$AUDITOR_ID; export TELEOP_TASK_ID=$TASK_ID; export TELEOP_TASK_REVISION=$TASK_REVISION; export TELEOP_TASK_BUNDLE=$TASK_PROFILE; export TELEOP_TASK_BUNDLE_SHA256=$TASK_BUNDLE_SHA256; export TELEOP_EXPERIMENT_PROFILE=$EXPERIMENT_PROFILE; export TELEOP_EXPERIMENT_MANIFEST=\"$EXPERIMENT_MANIFEST\"; export RUNEVIDENCE_BAG_COMPRESSION_MODE=file; export RUNEVIDENCE_BAG_COMPRESSION_FORMAT=zstd; export RUNEVIDENCE_ROOT=\"$RUN_ROOT\"; export RUNEVIDENCE_BIN=\"$RUNEVIDENCE_BIN\";"
+RECORDER_ARGS="--runs-root \"$RUN_ROOT\" --episodes \"$EPISODES\" --arms \"$ARMS\" --cameras \"$CAMERA_NAMESPACES\" --experiment-id \"$EXPERIMENT_ID\" --condition-id \"$CONDITION_ID\" --operator-id \"$OPERATOR_ID\" --auditor-id \"$AUDITOR_ID\" --annotation-state \"$ANNOTATION_STATE\" --event-publisher-python \"$SYSTEM_PYTHON\" --task-id \"$TASK_ID\" --task-revision \"$TASK_REVISION\" --task-bundle \"$TASK_PROFILE\" --task-bundle-sha256 \"$TASK_BUNDLE_SHA256\" --camera-profile \"${WIDTH}x${HEIGHT}x${FPS}\""
 if [[ "$CAPTURE_MODE" == "timed" ]]; then
   RECORDER_ARGS+=" --auto-start --max-duration \"$DURATION_S\""
 fi
