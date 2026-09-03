@@ -1,0 +1,14 @@
+schema: robot_teleop.act-action-contracts/v1
+
+# The primary policy contract is the 7 right-arm joint positions.  The 13D
+# arm+hand contract is retained for exploratory runs and compatibility with
+# the existing O6 dataset.
+contracts:
+  arm7:
+    state_indices: [0, 1, 2, 3, 4, 5, 6]
+    action_indices: [0, 1, 2, 3, 4, 5, 6]
+    joint_names: [right_arm_joint_1, right_arm_joint_2, right_arm_joint_3, right_arm_joint_4, right_arm_joint_5, right_arm_joint_6, right_arm_joint_7]
+  arm7_hand6:
+    state_indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    action_indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    joint_names: [right_arm_joint_1, right_arm_joint_2, right_arm_joint_3, right_arm_joint_4, right_arm_joint_5, right_arm_joint_6, right_arm_joint_7, hand_1, hand_2, hand_3, hand_4, hand_5, hand_6]

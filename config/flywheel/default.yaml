@@ -29,6 +29,9 @@ vlm:
 
 training:
   enabled: true
+  # Main policy contract. Use arm7_hand6 only for exploratory O6 runs.
+  action_contract: arm7
+  exploratory_action_contracts: [arm7_hand6]
   model_config: config/filters/trajectory_cvae_transformer_v0_2_vlm.yaml
   model_config_no_vlm: config/filters/trajectory_cvae_transformer_v0_1.yaml
   device: cuda

@@ -9,6 +9,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import yaml
 from lerobot.datasets.lerobot_dataset import LeRobotDataset
 
 
@@ -32,6 +33,8 @@ def main() -> int:
     parser.add_argument("--task", default="precision alignment")
     parser.add_argument("--robot-type", default="linker_a7")
     parser.add_argument("--fps", type=int, help="fixed dataset rate; inferred from timestamps by default")
+    parser.add_argument("--action-contract", default="auto", choices=["auto", "arm7", "arm7_hand6"])
+    parser.add_argument("--contract-config", type=Path, default=Path("config/act/action_contracts.yaml"))
     args = parser.parse_args()
 
     rows = read_rows(args.input_jsonl)
@@ -46,6 +49,23 @@ def main() -> int:
         raise SystemExit("first row lacks non-empty observation.state or action")
     if len(state) != len(action):
         raise SystemExit("state/action dimensions differ")
+
+    if args.action_contract == "auto":
+        state_indices = list(range(len(state)))
+        action_indices = list(range(len(action)))
+        joint_names = [f"joint_{index + 1}" for index in state_indices]
+    else:
+        contracts = yaml.safe_load(args.contract_config.read_text(encoding="utf-8"))[
+            "contracts"
+        ]
+        contract = contracts[args.action_contract]
+        state_indices = list(contract["state_indices"])
+        action_indices = list(contract["action_indices"])
+        joint_names = list(contract["joint_names"])
+        if len(state_indices) != len(action_indices) or len(joint_names) != len(state_indices):
+            raise SystemExit(f"invalid action contract: {args.action_contract}")
+        if max(state_indices, default=-1) >= len(state) or max(action_indices, default=-1) >= len(action):
+            raise SystemExit(f"{args.action_contract} requires dimensions not present in input")
     image_keys = sorted(key for key in rows[0] if key.startswith("observation.images."))
     if not image_keys:
         raise SystemExit("input projection has no observation.images.* field")
@@ -57,8 +77,7 @@ def main() -> int:
             raise SystemExit(f"cannot read image for {key}: {rows[0][key]}")
         first_images[key] = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-    dimension = len(state)
-    joint_names = [f"joint_{index + 1}" for index in range(dimension)]
+    dimension = len(state_indices)
     features = {
         "observation.state": {"dtype": "float32", "shape": (dimension,), "names": joint_names},
         "action": {"dtype": "float32", "shape": (dimension,), "names": joint_names},
@@ -85,8 +104,8 @@ def main() -> int:
     )
     for index, row in enumerate(rows):
         frame = {
-            "observation.state": np.asarray(row.get("observation.state"), dtype=np.float32),
-            "action": np.asarray(row.get("action"), dtype=np.float32),
+            "observation.state": np.asarray(row.get("observation.state"), dtype=np.float32)[state_indices],
+            "action": np.asarray(row.get("action"), dtype=np.float32)[action_indices],
             "task": args.task,
         }
         for key in image_keys:
