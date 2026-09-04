@@ -61,6 +61,7 @@ ARMS="left,right"
 LEARNED_FILTER_CONFIG=""
 MODEL_DEPLOYMENT_CONFIG="$ROOT_DIR/config/runtime/model_deployment.yaml"
 LAUNCH_MODE="${CAPTURE_LAUNCH_MODE:-tmux}"
+PID_FILE=""
 
 usage() {
   cat >&2 <<'EOF'
@@ -415,6 +416,15 @@ mkdir -p "$RUN_ROOT"
 [[ -w "$RUN_ROOT" ]] || die "data root is not writable: $RUN_ROOT"
 export ROS_LOG_DIR="$RUN_ROOT/system/ros_logs"
 mkdir -p "$ROS_LOG_DIR"
+PID_FILE="$RUN_ROOT/.capture_processes.$$.pid"
+if [[ "$LAUNCH_MODE" == "direct" ]]; then
+  : > "$PID_FILE"
+  cleanup_direct() {
+    for pid in "${LAUNCHED_PIDS[@]:-}"; do kill -INT "$pid" 2>/dev/null || true; done
+    rm -f "$PID_FILE"
+  }
+  trap cleanup_direct EXIT INT TERM
+fi
 ARMED_ARG="false"
 if (( REAL )); then ARMED_ARG="true"; fi
 
@@ -426,6 +436,7 @@ launch_cmd() {
   else
     bash -lc "set +u; source '$ROS_SETUP'; source '$ROOT_DIR/ros2_ws/install/setup.bash'; set -u; export ROS_LOG_DIR='$ROS_LOG_DIR'; $*" &
     LAUNCHED_PIDS+=("$!")
+    printf '%s\n' "$!" >> "$PID_FILE"
   fi
 }
 

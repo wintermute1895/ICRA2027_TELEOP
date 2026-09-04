@@ -2,6 +2,21 @@
 set -Eeuo pipefail
 
 SESSION="${1:-teleop_capture}"
+DATA_ROOT="${CAPTURE_DATA_ROOT:-/media/ilex/Cyan_data/ICRA2027_TELEOP_DATA}"
+direct_found=0
+for file in "$DATA_ROOT"/.capture_processes.*.pid; do
+  [[ -f "$file" ]] || continue
+  direct_found=1
+  echo "Stopping direct capture processes from $file"
+  while read -r pid; do
+    [[ "$pid" =~ ^[0-9]+$ ]] && kill -INT "$pid" 2>/dev/null || true
+  done < "$file"
+  rm -f "$file"
+done
+if (( direct_found )); then
+  echo "Direct capture processes stopped. Existing evidence files were not removed."
+  exit 0
+fi
 if ! command -v tmux >/dev/null 2>&1; then
   echo "tmux is not installed" >&2
   exit 2
