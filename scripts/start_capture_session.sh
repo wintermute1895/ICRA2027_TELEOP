@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# One-command, tmux-based robot teleoperation capture launcher.
+# One-command robot teleoperation capture launcher. Supports tmux windows or
+# direct background processes; the recorder remains a normal Python TTY app.
 # Safe by default: the teleop bridge is started with armed=false.
 set -Eeuo pipefail
 
@@ -59,6 +60,7 @@ RIGHT_TOUCH="false"
 ARMS="left,right"
 LEARNED_FILTER_CONFIG=""
 MODEL_DEPLOYMENT_CONFIG="$ROOT_DIR/config/runtime/model_deployment.yaml"
+LAUNCH_MODE="${CAPTURE_LAUNCH_MODE:-tmux}"
 
 usage() {
   cat >&2 <<'EOF'
@@ -76,6 +78,7 @@ Options:
   --episodes N                   number of episodes; 0 keeps the recorder ready until q (default: 2)
   --manual-segments              recorder window: Enter=start, Enter=stop/save, q=end session
   --session NAME                 tmux session name (default: teleop_capture)
+  --launch-mode MODE             tmux (default) or direct
   --no-preview                   do not open rqt_image_view
   --camera-serial SERIAL         RealSense serial (default: 261722075670)
   --second-camera-serial SERIAL  optional second RealSense serial
@@ -161,6 +164,7 @@ for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
     --episodes=*) EPISODES="${arg#*=}" ;;
     --manual-segments) CAPTURE_MODE="manual" ;;
     --session=*) SESSION="${arg#*=}" ;;
+    --launch-mode=*) LAUNCH_MODE="${arg#*=}" ;;
     --no-preview) PREVIEW=0 ;;
     --camera-serial=*) CAMERA_SERIAL="${arg#*=}" ;;
     --second-camera-serial=*) SECOND_CAMERA_SERIAL="${arg#*=}" ;;
@@ -191,6 +195,7 @@ fi
 [[ "$EPISODES" =~ ^[0-9]+$ ]] || die "--episodes must be a non-negative integer"
 [[ "$WIDTH" =~ ^[1-9][0-9]*$ && "$HEIGHT" =~ ^[1-9][0-9]*$ && "$FPS" =~ ^[1-9][0-9]*$ ]] || die "camera width, height and fps must be positive integers"
 (( ${#SESSION} <= 40 )) || die "tmux session name is too long"
+[[ "$LAUNCH_MODE" == "tmux" || "$LAUNCH_MODE" == "direct" ]] || die "--launch-mode must be tmux or direct"
 [[ -f "$EXPERIMENT_PROFILE" ]] || die "experiment profile not found: $EXPERIMENT_PROFILE"
 if [[ -n "$TASK_PROFILE" ]]; then
   [[ -f "$TASK_PROFILE" || -d "$TASK_PROFILE" ]] || die "task profile not found: $TASK_PROFILE"
@@ -278,7 +283,9 @@ else
   log "SAFE OBSERVATION MODE: teleop bridge will stay armed=false; no motion command reaches the robot."
 fi
 
-command -v tmux >/dev/null || die "tmux is not installed"
+if [[ "$LAUNCH_MODE" == "tmux" ]]; then
+  command -v tmux >/dev/null || die "tmux is not installed"
+fi
 ROS_SETUP=""
 for distro in "${ROS_DISTRO:-}" jazzy humble; do
   [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
@@ -297,7 +304,7 @@ set +u
 source "$ROOT_DIR/ros2_ws/install/setup.bash"
 set -u
 
-if tmux has-session -t "$SESSION" 2>/dev/null; then
+if [[ "$LAUNCH_MODE" == "tmux" ]] && tmux has-session -t "$SESSION" 2>/dev/null; then
   die "tmux session already exists: $SESSION (use tmux attach -t $SESSION or choose --session=...)"
 fi
 
@@ -411,9 +418,15 @@ mkdir -p "$ROS_LOG_DIR"
 ARMED_ARG="false"
 if (( REAL )); then ARMED_ARG="true"; fi
 
+LAUNCHED_PIDS=()
 launch_cmd() {
   local title="$1"; shift
-  tmux new-window -t "$SESSION" -n "$title" "bash -lc 'set +u; source \"$ROS_SETUP\"; source \"$ROOT_DIR/ros2_ws/install/setup.bash\"; set -u; export ROS_LOG_DIR=\"$ROS_LOG_DIR\"; $*; exec bash'"
+  if [[ "$LAUNCH_MODE" == "tmux" ]]; then
+    tmux new-window -t "$SESSION" -n "$title" "bash -lc 'set +u; source \"$ROS_SETUP\"; source \"$ROOT_DIR/ros2_ws/install/setup.bash\"; set -u; export ROS_LOG_DIR=\"$ROS_LOG_DIR\"; $*; exec bash'"
+  else
+    bash -lc "set +u; source '$ROS_SETUP'; source '$ROOT_DIR/ros2_ws/install/setup.bash'; set -u; export ROS_LOG_DIR='$ROS_LOG_DIR'; $*" &
+    LAUNCHED_PIDS+=("$!")
+  fi
 }
 
 wait_for_topic() {
@@ -447,16 +460,20 @@ wait_for_tactile_modality() {
   die "no supported tactile modality appeared for $arm within ${timeout_s}s"
 }
 
-tmux new-session -d -s "$SESSION" -n preflight "bash -lc 'echo robot teleoperation capture preflight passed; echo experiment=$EXPERIMENT_ID condition=$CONDITION_ID task=$TASK_ID operator=$OPERATOR_ID; echo mode=$([[ $REAL -eq 1 ]] && echo REAL_ARMED || echo SAFE_OBSERVATION); echo robot_ip=$ROBOT_IP; echo camera=$CAMERA_SERIAL ${WIDTH}x${HEIGHT}@${FPS}; exec bash'"
+if [[ "$LAUNCH_MODE" == "tmux" ]]; then
+  tmux new-session -d -s "$SESSION" -n preflight "bash -lc 'echo robot teleoperation capture preflight passed; echo experiment=$EXPERIMENT_ID condition=$CONDITION_ID task=$TASK_ID operator=$OPERATOR_ID; echo mode=$([[ $REAL -eq 1 ]] && echo REAL_ARMED || echo SAFE_OBSERVATION); echo robot_ip=$ROBOT_IP; echo camera=$CAMERA_SERIAL ${WIDTH}x${HEIGHT}@${FPS}; exec bash'"
+fi
 # A tmux server can outlive a previous desktop session.  Explicitly refresh
 # GUI variables so viewers use the current display/authentication context.
-for gui_var in DISPLAY XAUTHORITY XDG_RUNTIME_DIR WAYLAND_DISPLAY; do
-  if [[ -n "${!gui_var:-}" ]]; then
-    tmux set-environment -t "$SESSION" "$gui_var" "${!gui_var}"
-  else
-    tmux set-environment -t "$SESSION" -r "$gui_var" 2>/dev/null || true
-  fi
-done
+if [[ "$LAUNCH_MODE" == "tmux" ]]; then
+  for gui_var in DISPLAY XAUTHORITY XDG_RUNTIME_DIR WAYLAND_DISPLAY; do
+    if [[ -n "${!gui_var:-}" ]]; then
+      tmux set-environment -t "$SESSION" "$gui_var" "${!gui_var}"
+    else
+      tmux set-environment -t "$SESSION" -r "$gui_var" 2>/dev/null || true
+    fi
+  done
+fi
 launch_cmd driver "ros2 launch lbot_driver lbot_start_driver.launch.py"
 if (( LEFT_ENABLED )); then wait_for_topic /robot1/left_arm/joint_states 20; fi
 if (( RIGHT_ENABLED )); then wait_for_topic /robot1/right_arm/joint_states 20; fi
@@ -569,12 +586,24 @@ RECORDER_ARGS="--runs-root \"$RUN_ROOT\" --episodes \"$EPISODES\" --arms \"$ARMS
 if [[ "$CAPTURE_MODE" == "timed" ]]; then
   RECORDER_ARGS+=" --auto-start --max-duration \"$DURATION_S\""
 fi
-launch_cmd recorder "$RECORDER_ENV \"$RUNEVIDENCE_PYTHON\" \"$ROOT_DIR/tools/capture_episode.py\" $RECORDER_ARGS; exec bash"
+if [[ "$LAUNCH_MODE" == "tmux" ]]; then
+  launch_cmd recorder "$RECORDER_ENV \"$RUNEVIDENCE_PYTHON\" \"$ROOT_DIR/tools/capture_episode.py\" $RECORDER_ARGS; exec bash"
+else
+  # Keep the recorder in the caller's terminal so manual Enter/digit input is
+  # unambiguous. Other ROS processes remain in the background and are cleaned
+  # up by stop_capture_session.sh.
+  eval "$RECORDER_ENV \"$RUNEVIDENCE_PYTHON\" \"$ROOT_DIR/tools/capture_episode.py\" $RECORDER_ARGS"
+fi
 
-tmux select-window -t "$SESSION:preflight"
-log "tmux session started: $SESSION"
-log "attach: tmux attach -t $SESSION"
-log "safe stop: tmux kill-session -t $SESSION (does not power off robot)"
+if [[ "$LAUNCH_MODE" == "tmux" ]]; then
+  tmux select-window -t "$SESSION:preflight"
+  log "tmux session started: $SESSION"
+  log "attach: tmux attach -t $SESSION"
+  log "safe stop: tmux kill-session -t $SESSION (does not power off robot)"
+else
+  log "direct processes started: ${LAUNCHED_PIDS[*]}"
+  log "safe stop: bash $ROOT_DIR/scripts/stop_capture_session.sh"
+fi
 log "Recorder waits for Enter before each episode; mode=$CAPTURE_MODE; output: $RUN_ROOT"
 log "RGB previews: one window per configured camera; closed automatically with tmux session"
 log "Same recorder window: Enter starts/stops; digit keys 1-9/0 annotate immediately"
