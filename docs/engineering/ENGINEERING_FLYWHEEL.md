@@ -76,7 +76,8 @@ publishes ROS commands and never accesses hardware.
 
 ## Human gates
 
-- Review terminal success/failure and correction intervals.
+- Review terminal success/failure and correction intervals. Treat recovery as
+  optional audit notes, not a separate training class or admission gate.
 - Hold out episodes before checkpoint promotion.
 - Enable a promoted runtime config explicitly for a later capture.
 - Keep physical E-stop and real-hardware confirmation outside automation.
