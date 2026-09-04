@@ -126,7 +126,11 @@ def main() -> int:
         raise SystemExit("active deployment requires --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT")
     rclpy.init()
     node = ModelDeploymentSupervisor(config, mode_override=mode, source_override=args.source)
-    node.get_logger().info("deployment supervisor: mode=%s source=%s output=%s", mode, node.source, config["output_topic"])
+    # rclpy's RcutilsLogger accepts one already-formatted message; it does
+    # not implement the stdlib logger's printf-style positional arguments.
+    node.get_logger().info(
+        f"deployment supervisor: mode={mode} source={node.source} output={config['output_topic']}"
+    )
     try:
         rclpy.spin(node)
     finally:
