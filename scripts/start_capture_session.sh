@@ -586,16 +586,18 @@ PY
   MODEL_SOURCE=filter
   MODEL_CANDIDATE_ARGS="--filter-config=\"$LEARNED_FILTER_CONFIG\""
 fi
-[[ -f "$MODEL_DEPLOYMENT_CONFIG" ]] || die "model deployment config not found: $MODEL_DEPLOYMENT_CONFIG"
-"$SYSTEM_PYTHON" - "$MODEL_DEPLOYMENT_CONFIG" <<'PY' || die "model deployment config must have enabled: true"
+if [[ "$MODEL_SOURCE" != teleop ]]; then
+  [[ -f "$MODEL_DEPLOYMENT_CONFIG" ]] || die "model deployment config not found: $MODEL_DEPLOYMENT_CONFIG"
+  "$SYSTEM_PYTHON" - "$MODEL_DEPLOYMENT_CONFIG" <<'PY' || die "model deployment config must have enabled: true"
 import sys, yaml
 config = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
 if config.get("enabled") is not True:
     raise SystemExit(1)
 PY
-launch_cmd deployment "bash \"$ROOT_DIR/scripts/start_model_deployment.sh\" \"$MODEL_DEPLOYMENT_CONFIG\" --shadow --source=$MODEL_SOURCE $MODEL_CANDIDATE_ARGS"
+  launch_cmd deployment "bash \"$ROOT_DIR/scripts/start_model_deployment.sh\" \"$MODEL_DEPLOYMENT_CONFIG\" --shadow --source=$MODEL_SOURCE $MODEL_CANDIDATE_ARGS"
+fi
 MASTER_LEFT_TOPIC=/left_arm_joint_control
-if (( RIGHT_ENABLED )); then MASTER_RIGHT_TOPIC=/model_deployment/right_arm_joint_control; fi
+if (( RIGHT_ENABLED )) && [[ "$MODEL_SOURCE" != teleop ]]; then MASTER_RIGHT_TOPIC=/model_deployment/right_arm_joint_control; fi
 launch_cmd teleop "ros2 launch teleop_control_bridge hardware_teleop.launch.py launch_driver:=false armed:=$ARMED_ARG enable_left_arm:=$([[ $LEFT_ENABLED -eq 1 ]] && echo true || echo false) enable_right_arm:=$([[ $RIGHT_ENABLED -eq 1 ]] && echo true || echo false) master_left_topic:=$MASTER_LEFT_TOPIC master_right_topic:=$MASTER_RIGHT_TOPIC"
 if (( LEFT_ENABLED )); then
   wait_for_topic /left_arm_joint_control 20
@@ -603,7 +605,9 @@ if (( LEFT_ENABLED )); then
 fi
 if (( RIGHT_ENABLED )); then
   wait_for_topic /right_arm_joint_control 20
-  wait_for_topic /model_deployment/right_arm_joint_control 20
+  if [[ "$MODEL_SOURCE" != teleop ]]; then
+    wait_for_topic /model_deployment/right_arm_joint_control 20
+  fi
   wait_for_topic /teleop/right/mapped_joint_command 20
 fi
 if (( HAND_SDK )); then
