@@ -1,0 +1,51 @@
+schema: robot_teleop.rollout/v1
+arm: right
+# One-time real-machine ACT test; do not reuse for unattended operation.
+source: act
+deployment_config: config/runtime/model_deployment_active_test.yaml
+act_config: config/runtime/act-button-A.yaml
+filter_config: config/runtime/learned_filter.yaml
+hardware:
+  launch_driver: true
+  launch_linkerta: true
+  enable_left_arm: false
+  enable_right_arm: true
+  master_left_topic: /left_arm_joint_control
+  master_right_topic: /model_deployment/right_arm_joint_control
+cameras:
+  - id: main_rgb
+    serial: 261722075670
+    namespace: /camera/camera
+    width: 640
+    height: 480
+    fps: 15
+  - id: auxiliary_rgb
+    serial: 327122074150
+    namespace: /camera2/camera
+    width: 640
+    height: 480
+    fps: 15
+recording:
+  enabled: true
+  output_root: /media/fanshihao/Seagate Hub/ICRA2027/act_rollouts
+  topics:
+    - /right_arm_joint_control
+    - /model_deployment/right_arm_joint_control
+    - /model_deployment/diagnostics
+    - /act/right_arm_joint_control
+    - /act/right/diagnostics
+    - /teleop_filter/right_arm_joint_control
+    - /teleop_filter/right/diagnostics
+    - /teleop/right/master_joint_raw
+    - /teleop/right/master_joint_filtered
+    - /teleop/right/mapped_joint_command
+    - /robot1/right_arm/joint_states
+    - /robot1/right_arm/pose_states
+    - /robot1/right_arm/vendor_command
+    - /camera/camera/color/image_raw
+    - /camera/camera/aligned_depth_to_color/image_raw
+    - /camera2/camera/color/image_raw
+    - /camera2/camera/aligned_depth_to_color/image_raw
+evaluation:
+  max_camera_age_ms: 100.0
+  max_command_age_ms: 100.0

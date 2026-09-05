@@ -5,8 +5,28 @@ set -Eeuo pipefail
 # capture recorder. The controller reuses the O6 backend proven by
 # hand_gesture_player.py and is the only CAN owner.
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SYSTEM_PYTHON="${SYSTEM_PYTHON:-/usr/bin/python3}"
-ROS_SETUP="${ROS_SETUP:-/opt/ros/jazzy/setup.bash}"
+# The direct O6 backend needs the Python CAN dependency, which is installed in
+# the active teleop environment on this machine.  Fall back to the system ROS
+# interpreter when no Conda environment is active.
+if [[ -n "${SYSTEM_PYTHON:-}" ]]; then
+  SYSTEM_PYTHON="$SYSTEM_PYTHON"
+elif [[ -n "${CONDA_PREFIX:-}" && -x "$CONDA_PREFIX/bin/python" ]]; then
+  SYSTEM_PYTHON="$CONDA_PREFIX/bin/python"
+else
+  SYSTEM_PYTHON="/usr/bin/python3"
+fi
+# Prefer an explicitly supplied setup file; otherwise select an installed ROS
+# distribution.  This host uses Humble, while the old default assumed Jazzy.
+if [[ -n "${ROS_SETUP:-}" ]]; then
+  ROS_SETUP="$ROS_SETUP"
+else
+  ROS_SETUP=""
+  for distro in "${ROS_DISTRO:-}" humble jazzy; do
+    [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
+    ROS_SETUP="/opt/ros/$distro/setup.bash"
+    break
+  done
+fi
 WORKSPACE_SETUP="${WORKSPACE_SETUP:-${ROOT_DIR}/ros2_ws/install/setup.bash}"
 CONFIG_FILE="${HAND_CONTROL_CONFIG:-$ROOT_DIR/config/hands/o6_control.env}"
 ARM="right"
@@ -81,6 +101,7 @@ done
 [[ "$MODEL" == "O6" ]] || { echo "the supplied right-hand preset config is O6; use a separate vetted config for another model" >&2; exit 2; }
 [[ "$CAN_INTERFACE" == auto || "$CAN_INTERFACE" =~ ^[A-Za-z0-9._-]+$ ]] || { echo "invalid CAN interface" >&2; exit 2; }
 [[ -f "$PRESET_CONFIG" ]] || { echo "hand preset config not found: $PRESET_CONFIG" >&2; exit 2; }
+[[ -n "$ROS_SETUP" && -f "$ROS_SETUP" ]] || { echo "ROS2 setup file not found; set ROS_SETUP=/opt/ros/<distro>/setup.bash" >&2; exit 2; }
 (( ESTOP_READY )) && [[ "$CONFIRM" == "I_UNDERSTAND_REAL_HAND" ]] || {
   echo "real hand control requires --physical-estop-ready and --confirm=I_UNDERSTAND_REAL_HAND" >&2
   exit 2
@@ -90,7 +111,7 @@ set +u
 source "$ROS_SETUP"
 source "$WORKSPACE_SETUP"
 set -u
-LINKERTA_SAMPLE="$(timeout 5s ros2 topic echo --once --qos-durability transient_local /linkerta/can_interface 2>/dev/null || true)"
+LINKERTA_SAMPLE="$(timeout 5s ros2 topic echo --once /linkerta/can_interface 2>/dev/null || true)"
 LINKERTA_CAN="$(parse_ros_string_data <<<"$LINKERTA_SAMPLE" || true)"
 if [[ "$CAN_INTERFACE" == auto ]]; then
   CANDIDATES=()

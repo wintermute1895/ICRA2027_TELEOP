@@ -1,0 +1,26 @@
+schema: robot_teleop.model-deployment/v1
+enabled: true
+mode: active
+source: act
+arm: right
+input_units: degrees
+# ACT-only deployment: LinkerTA / teleoperation frames are never forwarded to
+# the bridge.  WAITING_FOR_MODEL suppresses every robot command until the first
+# accepted ACT candidate; the measured robot state is the safety reference.
+active_model_control: true
+fallback_topic: /right_arm_joint_control
+output_topic: /model_deployment/right_arm_joint_control
+candidate_topics:
+  filter: /teleop_filter/right_arm_joint_control
+  act: /act/right_arm_joint_control
+state_topic: /robot1/right_arm/joint_states
+diagnostics_topic: /model_deployment/diagnostics
+timeout_ms: 2000
+# One-time active test limits: accept ACT outputs so the model can actually
+# take over. Keep E-stop reachable and record every run for review.
+max_delta_rad: 0.6
+max_step_rad: 0.6
+# Ramp the accepted model target at about 11.5 deg/s instead of jumping.
+max_step_rate_rad_s: 0.2
+# Active mode is still impossible without the CLI confirmation token.
+approval_token: ""

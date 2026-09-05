@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-ROS_SETUP="${ROS_SETUP:-/opt/ros/jazzy/setup.bash}"
+ROS_SETUP="${ROS_SETUP:-}"
+if [[ -z "$ROS_SETUP" ]]; then
+  for distro in "${ROS_DISTRO:-}" jazzy humble; do
+    [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
+    ROS_SETUP="/opt/ros/$distro/setup.bash"
+    break
+  done
+fi
 [[ -f "$ROS_SETUP" ]] || { echo "[FATAL] ROS setup not found: $ROS_SETUP" >&2; exit 2; }
 (( $# > 0 )) || { echo "usage: $0 <command> [args...]" >&2; exit 2; }
 

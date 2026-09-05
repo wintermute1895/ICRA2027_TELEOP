@@ -18,7 +18,16 @@ resolve_training_env_prefix() {
   [[ -x "$conda_bin" ]] || return 1
   local base name
   base="$($conda_bin info --base)" || return 1
-  name="${LEROBOT_ENV_NAME:-teleop-train}"
+  name="${LEROBOT_ENV_NAME:-}"
+  if [[ -z "$name" ]]; then
+    # Prefer the dedicated training env when present; otherwise fall back to
+    # the teleop env that may have been provisioned for local ACT deployment.
+    if [[ -d "$base/envs/teleop-train" ]]; then
+      name="teleop-train"
+    else
+      name="teleop"
+    fi
+  fi
   printf '%s/envs/%s\n' "$base" "$name"
 }
 

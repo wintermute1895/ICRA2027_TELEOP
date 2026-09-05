@@ -266,7 +266,7 @@ def main(argv: list[str] | None = None) -> int:
         expected = len(preset["positions"])
         message = JointState()
         message.header.stamp = node.get_clock().now().to_msg()
-        message.position = list(preset["positions"])
+        message.position = [float(value) for value in preset["positions"]]
         message.velocity = [float(config.get("speed", 40.0))] * expected
         message.effort = [float(config.get("force", 40.0))] * expected
         if direct_hand is not None:

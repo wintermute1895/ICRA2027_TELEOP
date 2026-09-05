@@ -3,7 +3,14 @@
 # are launched by their own environment-aware adapters.
 set -Eeuo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ROS_SETUP="${ROS_SETUP:-/opt/ros/jazzy/setup.bash}"
+ROS_SETUP="${ROS_SETUP:-}"
+if [[ -z "$ROS_SETUP" ]]; then
+  for distro in "${ROS_DISTRO:-}" jazzy humble; do
+    [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
+    ROS_SETUP="/opt/ros/$distro/setup.bash"
+    break
+  done
+fi
 [[ -f "$ROS_SETUP" ]] || { echo "[FATAL] ROS setup not found: $ROS_SETUP" >&2; exit 2; }
 [[ -f "$ROOT_DIR/ros2_ws/install/setup.bash" ]] || { echo "[FATAL] ROS workspace is not built; run scripts/build_ros2_workspace.sh" >&2; exit 2; }
 unset AMENT_PREFIX_PATH COLCON_PREFIX_PATH CMAKE_PREFIX_PATH PYTHONPATH

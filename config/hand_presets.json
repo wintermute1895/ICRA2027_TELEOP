@@ -19,7 +19,10 @@
         {"name": "gesture_0_open", "gesture_id": 0, "gripper_state": 0},
         {"name": "gesture_1_grasp", "gesture_id": 1, "gripper_state": 1},
         {"name": "gesture_2_grasp", "gesture_id": 2, "gripper_state": 1},
-        {"name": "gesture_3_grasp", "gesture_id": 3, "gripper_state": 1}
+        {"name": "gesture_3_grasp", "gesture_id": 3, "gripper_state": 1},
+        {"name": "gesture_4_grasp", "gesture_id": 4, "gripper_state": 1},
+        {"name": "gesture_0_open_buffer", "gesture_id": 0, "gripper_state": 0},
+        {"name": "gesture_5_screwdriver", "gesture_id": 5, "gripper_state": 1}
       ]
     }
   }
