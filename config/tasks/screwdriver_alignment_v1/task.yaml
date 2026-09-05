@@ -1,0 +1,19 @@
+schema: robot_teleop.task-bundle/v1
+# Hand-held screwdriver alignment: the operator grips a screwdriver with the
+# right O6 hand, approaches the screw, and aligns the screwdriver tip to the
+# screw head. Alignment (not screw driving) is the success criterion.
+task_id: screwdriver_alignment_v1
+task_revision: screwdriver_alignment_v1
+task_family: contact_rich_precision_assembly_v1
+task_kind: concrete_scenario
+template: config
+annotation_profile: config/common/annotation_keys_v1.yaml
+evaluation_profile: config/evaluation/screwdriver_alignment_v1.yaml
+safety_profile: config/safety/precision_assembly_v1.yaml
+hand_profile: config/hands/o6.yaml
+capture_contract:
+  required_cameras: [main_rgb, auxiliary_rgb]
+  camera_profile: 640x480@15
+  require_depth: true
+  manual_segments: true
+phase_order: [approach, align, verify, recover]

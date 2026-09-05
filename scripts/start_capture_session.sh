@@ -637,7 +637,8 @@ if (( PREVIEW )); then
     # independent of both viewers.
     launch_cmd preview_rgb1 "exec \"$SYSTEM_PYTHON\" \"$RQT_IMAGE_VIEW_EXEC\" \"${CAMERA_NAMESPACE%/}/color/image_raw\""
     if [[ -n "$SECOND_CAMERA_SERIAL" ]]; then
-      launch_cmd preview_rgb2 "exec \"$SYSTEM_PYTHON\" \"$RQT_IMAGE_VIEW_EXEC\" \"${SECOND_CAMERA_NAMESPACE%/}/color/image_raw\""
+      launch_cmd preview_rgb2_flip "\"$SYSTEM_PYTHON\" \"$ROOT_DIR/tools/camera_image_hflip.py\" --source \"${SECOND_CAMERA_NAMESPACE%/}/color/image_raw\" --target \"${SECOND_CAMERA_NAMESPACE%/}/color/image_raw_mirrored\""
+      launch_cmd preview_rgb2 "exec \"$SYSTEM_PYTHON\" \"$RQT_IMAGE_VIEW_EXEC\" \"${SECOND_CAMERA_NAMESPACE%/}/color/image_raw_mirrored\""
     fi
   else
     log "WARN: DISPLAY is empty; camera preview window skipped"

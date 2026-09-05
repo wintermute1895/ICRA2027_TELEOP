@@ -177,6 +177,9 @@ private:
 
     // 心跳计数器（连续失败次数）
     int heartbeat_fail_count_ = 0;
+
+    // Diagnostics counter for the right-arm Follow SDK calls.
+    uint64_t right_follow_call_count_ = 0;
 };
 
 // 左臂服务节点 - 负责左臂所有服务

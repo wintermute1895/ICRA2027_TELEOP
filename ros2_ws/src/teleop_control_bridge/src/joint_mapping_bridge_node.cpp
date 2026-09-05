@@ -18,7 +18,9 @@
 #include <cmath>
 #include <algorithm>
 #include <functional>
+#include <iomanip>
 #include <map>
+#include <sstream>
 #include <vector>
 
 class OneEuroFilter
@@ -68,6 +70,53 @@ private:
     double dx_hat_{0.0};
 };
 
+// Right-arm startup gate for ACT/model active rollouts.  The left arm keeps
+// the legacy ``require_first_move_service`` behavior so the existing two-arm
+// teleoperation path is unchanged.
+enum class RightStartupStage
+{
+    kPending,          // first model frame not handled yet
+    kMoveJInProgress,  // required mode: Initial MoveJ in flight
+    kFollowing,        // normal MODE_FOLLOW after a valid start
+    kAborted           // fail-safe: no follow will be sent
+};
+
+struct MeasuredSnapshot
+{
+    bool valid{false};
+    rclcpp::Time receipt_time;
+    std::vector<double> joints_rad;
+};
+
+namespace
+{
+
+std::string format_joints(const std::vector<float>& values, int precision = 4)
+{
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(precision) << "[";
+    for (size_t i = 0; i < values.size(); ++i) {
+        if (i) stream << ", ";
+        stream << values[i];
+    }
+    stream << "]";
+    return stream.str();
+}
+
+std::string format_joints(const std::vector<double>& values, int precision = 4)
+{
+    std::ostringstream stream;
+    stream << std::fixed << std::setprecision(precision) << "[";
+    for (size_t i = 0; i < values.size(); ++i) {
+        if (i) stream << ", ";
+        stream << values[i];
+    }
+    stream << "]";
+    return stream.str();
+}
+
+}  // namespace
+
 class TeleopBridgeNode : public rclcpp::Node
 {
 public:
@@ -86,6 +135,13 @@ public:
                 "/" + ns + "/left_arm/joint_follow", 10);
             right_follow_pubs_[ns] = this->create_publisher<lbot_arm_interfaces::msg::FollowJoint>(
                 "/" + ns + "/right_arm/joint_follow", 10);
+            if (enable_right_arm_) {
+                right_state_subs_[ns] = this->create_subscription<sensor_msgs::msg::JointState>(
+                    "/" + ns + "/right_arm/joint_states", 10,
+                    [this, ns](const sensor_msgs::msg::JointState::SharedPtr msg) {
+                        right_measured_callback(ns, msg);
+                    });
+            }
 
             // 创建 MoveJ 服务客户端（用于首次平滑移动）
             left_movej_clients_[ns] = this->create_client<lbot_arm_interfaces::srv::MoveJ>(
@@ -98,6 +154,9 @@ public:
             right_first_move_done_[ns] = false;
             left_first_move_in_progress_[ns] = false;
             right_first_move_in_progress_[ns] = false;
+            right_startup_stage_[ns] = RightStartupStage::kPending;
+            right_startup_audited_[ns] = false;
+            right_follow_sequence_[ns] = 0;
             
             RCLCPP_INFO(this->get_logger(), "Created publishers and clients for namespace: %s", ns.c_str());
         }
@@ -150,6 +209,9 @@ private:
         // Hardware keeps the initial MoveJ gate by default. Simulation-only
         // launches may disable it because no hardware service is present.
         this->declare_parameter<bool>("require_first_move_service", true);
+        this->declare_parameter<std::string>("initial_movej_mode", "");
+        this->declare_parameter<double>("first_command_max_delta_rad", 0.0);
+        this->declare_parameter<double>("measured_state_max_age_s", 5.0);
         
         // 使能配置
         this->declare_parameter<bool>("enable_left_arm", true);
@@ -215,6 +277,26 @@ private:
         first_move_speed_ = this->get_parameter("first_move_speed").as_double();
         first_move_acce_ = this->get_parameter("first_move_acce").as_double();
         require_first_move_service_ = this->get_parameter("require_first_move_service").as_bool();
+        const std::string configured_mode =
+            this->get_parameter("initial_movej_mode").as_string();
+        if (configured_mode.empty()) {
+            // Legacy launches keep their existing behavior: the bool parameter
+            // decides whether the first frame triggers Initial MoveJ.
+            initial_movej_mode_ = require_first_move_service_ ? "required" : "bypass";
+        } else if (configured_mode == "required" || configured_mode == "bypass") {
+            initial_movej_mode_ = configured_mode;
+        } else {
+            throw std::runtime_error("initial_movej_mode must be 'required' or 'bypass'");
+        }
+        // Simulation launches disable the service gate and do not configure
+        // the modern mode; keep that legacy path identical (no measured-state
+        // dependency, immediate Follow).
+        right_modern_gate_ = !configured_mode.empty() || require_first_move_service_;
+        first_command_max_delta_rad_ = this->get_parameter("first_command_max_delta_rad").as_double();
+        measured_state_max_age_s_ = this->get_parameter("measured_state_max_age_s").as_double();
+        if (first_command_max_delta_rad_ < 0.0 || measured_state_max_age_s_ <= 0.0) {
+            throw std::runtime_error("invalid startup safety parameters");
+        }
         
         enable_left_arm_ = this->get_parameter("enable_left_arm").as_bool();
         enable_right_arm_ = this->get_parameter("enable_right_arm").as_bool();
@@ -308,7 +390,11 @@ private:
         RCLCPP_INFO(this->get_logger(), "Right arm enabled:  %s", enable_right_arm_ ? "true" : "false");
         RCLCPP_INFO(this->get_logger(), "Joint limits:       %s", enable_joint_limits_ ? "enabled" : "disabled");
         RCLCPP_INFO(this->get_logger(), "Motion armed:       %s", armed_ ? "YES" : "NO");
-        RCLCPP_INFO(this->get_logger(), "Initial MoveJ gate: %s", require_first_move_service_ ? "REQUIRED" : "BYPASSED (simulation only)");
+        RCLCPP_INFO(this->get_logger(), "Initial MoveJ mode: %s (right arm; first model frame)",
+                    initial_movej_mode_.c_str());
+        RCLCPP_INFO(this->get_logger(), "First-command max delta: %.4f rad (bypass fail-safe)",
+                    first_command_max_delta_rad_);
+        RCLCPP_INFO(this->get_logger(), "Measured-state max age: %.2f s", measured_state_max_age_s_);
         RCLCPP_INFO(this->get_logger(), "One Euro filter:    %s (min=%.3fHz beta=%.3f d=%.3fHz)",
                     enable_one_euro_filter_ ? "enabled" : "disabled",
                     one_euro_min_cutoff_hz_, one_euro_beta_, one_euro_derivative_cutoff_hz_);
@@ -486,6 +572,39 @@ private:
         }
     }
 
+    // Cache the most recent measured right-arm state in controller joint
+    // order.  This is used for the first-model-frame delta audit and by the
+    // bypass fail-safe; it never changes the FollowJoint command itself.
+    void right_measured_callback(
+        const std::string& ns,
+        const sensor_msgs::msg::JointState::SharedPtr msg)
+    {
+        if (!msg || msg->position.size() < 7) return;
+        bool finite = true;
+        for (double value : msg->position) finite = finite && std::isfinite(value);
+        if (!finite) return;
+        // Driver connection can briefly publish an all-zero placeholder before
+        // the controller stream is available.
+        double max_abs = 0.0;
+        for (size_t i = 0; i < 7; ++i) max_abs = std::max(max_abs, std::abs(msg->position[i]));
+        if (max_abs < 1e-9) return;
+        MeasuredSnapshot snapshot;
+        snapshot.valid = true;
+        snapshot.receipt_time = this->get_clock()->now();
+        snapshot.joints_rad.assign(msg->position.begin(), msg->position.begin() + 7);
+        right_measured_[ns] = snapshot;
+    }
+
+    bool fresh_measured(const std::string& ns, MeasuredSnapshot& out)
+    {
+        auto it = right_measured_.find(ns);
+        if (it == right_measured_.end() || !it->second.valid) return false;
+        const double age_s = (this->get_clock()->now() - it->second.receipt_time).seconds();
+        if (age_s < 0.0 || age_s > measured_state_max_age_s_) return false;
+        out = it->second;
+        return true;
+    }
+
     void right_joint_callback(const sensor_msgs::msg::JointState::SharedPtr msg)
     {
         if (!enable_right_arm_ || msg->position.empty()) return;
@@ -500,28 +619,133 @@ private:
         right_mapped_pub_->publish(observation(*msg, std::vector<double>(joints.begin(), joints.end()), "right"));
         if (!safe || !armed_) return;
 
-        // 向所有从臂发送
         for (const auto& ns : slave_namespaces_) {
-            // 首次运动：使用 MoveJ 服务平滑移动到初始位置
-            if (!right_first_move_done_[ns]) {
-                if (!require_first_move_service_) {
-                    right_first_move_done_[ns] = true;
+            RightStartupStage stage = right_startup_stage_[ns];
+            if (stage == RightStartupStage::kAborted) continue;
+
+            MeasuredSnapshot measured;
+            const bool has_measured = fresh_measured(ns, measured);
+            std::vector<double> per_joint_delta(7, 0.0);
+            double max_abs_delta = -1.0;
+            if (has_measured) {
+                for (size_t i = 0; i < 7; ++i) {
+                    per_joint_delta[i] = static_cast<double>(joints[i]) - measured.joints_rad[i];
+                    max_abs_delta = std::max(max_abs_delta, std::abs(per_joint_delta[i]));
                 }
-            }
-            if (!right_first_move_done_[ns]) {
-                if (right_first_move_in_progress_[ns]) {
-                    continue;
-                }
-                right_first_move_in_progress_[ns] = true;
-                call_movej_service_async(right_movej_clients_[ns], joints, "right_arm", ns,
-                    [this, ns](bool success) {
-                        right_first_move_done_[ns] = success;
-                        right_first_move_in_progress_[ns] = false;
-                    });
-                continue;
             }
 
-            // 正常跟随模式
+            if (stage == RightStartupStage::kPending) {
+                // Startup audit is logged once per namespace on the first
+                // model frame, then the gate takes its configured branch.
+                if (!right_startup_audited_[ns]) {
+                    right_startup_audited_[ns] = true;
+                    RCLCPP_INFO(
+                        this->get_logger(),
+                        "[BRIDGE] first model frame ns=%s target_source=MODEL "
+                        "q_model_slave_rad=%s measured_available=%d "
+                        "q_robot_measured_rad=%s per_joint_error=%s max_abs_error=%s",
+                        ns.c_str(),
+                        format_joints(joints).c_str(),
+                        has_measured ? 1 : 0,
+                        has_measured ? format_joints(measured.joints_rad).c_str() : "n/a",
+                        has_measured ? format_joints(per_joint_delta, 6).c_str() : "n/a",
+                        has_measured ? std::to_string(max_abs_delta).c_str() : "n/a");
+                }
+
+                if (!right_modern_gate_) {
+                    // Legacy simulation-only path: no MoveJ service exists, no
+                    // measured-state dependency; enter Follow immediately.
+                    right_startup_stage_[ns] = RightStartupStage::kFollowing;
+                    RCLCPP_INFO(
+                        this->get_logger(),
+                        "[BRIDGE] Initial MoveJ BYPASSED (legacy sim) entering FOLLOW directly "
+                        "(ns=%s)", ns.c_str());
+                    stage = RightStartupStage::kFollowing;
+                } else if (initial_movej_mode_ == "bypass") {
+                    if (!has_measured) {
+                        RCLCPP_WARN_THROTTLE(
+                            this->get_logger(), *this->get_clock(), 1000,
+                            "[BRIDGE] bypass waits for measured state before FOLLOW "
+                            "(ns=%s)", ns.c_str());
+                        continue;
+                    }
+                    if (first_command_max_delta_rad_ <= 0.0) {
+                        right_startup_stage_[ns] = RightStartupStage::kAborted;
+                        RCLCPP_ERROR(
+                            this->get_logger(),
+                            "[BRIDGE] FAILSAFE bypass misconfigured: "
+                            "first_command_max_delta_rad must be > 0 (ns=%s)",
+                            ns.c_str());
+                        continue;
+                    }
+                    if (max_abs_delta > first_command_max_delta_rad_) {
+                        right_startup_stage_[ns] = RightStartupStage::kAborted;
+                        RCLCPP_ERROR(
+                            this->get_logger(),
+                            "[BRIDGE] FAILSAFE bypass aborted: first model frame is %.4f rad "
+                            "from measured pose (limit %.4f rad, ns=%s) target=%s measured=%s",
+                            max_abs_delta, first_command_max_delta_rad_, ns.c_str(),
+                            format_joints(joints).c_str(),
+                            format_joints(measured.joints_rad).c_str());
+                        continue;
+                    }
+                    right_startup_stage_[ns] = RightStartupStage::kFollowing;
+                    RCLCPP_INFO(
+                        this->get_logger(),
+                        "[BRIDGE] Initial MoveJ BYPASSED entering FOLLOW directly "
+                        "(ns=%s max_abs_error=%.4f rad)", ns.c_str(), max_abs_delta);
+                    stage = RightStartupStage::kFollowing;
+                } else {
+                    right_startup_stage_[ns] = RightStartupStage::kMoveJInProgress;
+                    RCLCPP_INFO(
+                        this->get_logger(),
+                        "[BRIDGE] Initial MoveJ START target_source=MODEL ns=%s "
+                        "target_slave_rad=%s measured_available=%d %s",
+                        ns.c_str(),
+                        format_joints(joints).c_str(),
+                        has_measured ? 1 : 0,
+                        has_measured
+                            ? ("max_abs_error=" + std::to_string(max_abs_delta)).c_str()
+                            : "max_abs_error=n/a");
+                    call_movej_service_async(
+                        right_movej_clients_[ns], joints, "right_arm", ns,
+                        [this, ns](bool success) {
+                            right_first_move_done_[ns] = success;
+                            right_first_move_in_progress_[ns] = false;
+                            if (success) {
+                                right_startup_stage_[ns] = RightStartupStage::kFollowing;
+                                RCLCPP_INFO(
+                                    this->get_logger(),
+                                    "[BRIDGE] Initial MoveJ COMPLETE "
+                                    "sdk/controller result=success ns=%s", ns.c_str());
+                            } else {
+                                // Keep PENDING so the next frame may retry; this
+                                // matches the legacy MoveJ retry behavior.
+                                right_startup_stage_[ns] = RightStartupStage::kPending;
+                                RCLCPP_ERROR(
+                                    this->get_logger(),
+                                    "[BRIDGE] Initial MoveJ COMPLETE "
+                                    "sdk/controller result=failed ns=%s", ns.c_str());
+                            }
+                        });
+                    continue;
+                }
+            }
+
+            if (stage == RightStartupStage::kMoveJInProgress) continue;
+            if (stage == RightStartupStage::kFollowing) {
+                const uint64_t sequence = ++right_follow_sequence_[ns];
+                RCLCPP_INFO_THROTTLE(
+                    this->get_logger(), *this->get_clock(), 1000,
+                    "[BRIDGE] follow_sequence=%lu target_slave_rad=%s "
+                    "measured_available=%d measured_rad=%s target_minus_measured=%s",
+                    static_cast<unsigned long>(sequence),
+                    format_joints(joints).c_str(),
+                    has_measured ? 1 : 0,
+                    has_measured ? format_joints(measured.joints_rad).c_str() : "n/a",
+                    has_measured ? format_joints(per_joint_delta, 6).c_str() : "n/a");
+            }
+
             auto follow_msg = lbot_arm_interfaces::msg::FollowJoint();
             follow_msg.joints = joints;
             follow_msg.follow = follow_mode_;
@@ -545,6 +769,10 @@ private:
     double first_move_speed_;
     double first_move_acce_;
     bool require_first_move_service_;
+    std::string initial_movej_mode_;
+    double first_command_max_delta_rad_;
+    double measured_state_max_age_s_;
+    bool right_modern_gate_;
     
     bool enable_left_arm_;
     bool enable_right_arm_;
@@ -554,6 +782,11 @@ private:
     std::map<std::string, bool> right_first_move_done_;
     std::map<std::string, bool> left_first_move_in_progress_;
     std::map<std::string, bool> right_first_move_in_progress_;
+    std::map<std::string, RightStartupStage> right_startup_stage_;
+    std::map<std::string, MeasuredSnapshot> right_measured_;
+    std::map<std::string, bool> right_startup_audited_;
+    std::map<std::string, uint64_t> right_follow_sequence_;
+    std::map<std::string, rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr> right_state_subs_;
     
     std::vector<int> left_joint_mapping_;
     std::vector<int> right_joint_mapping_;

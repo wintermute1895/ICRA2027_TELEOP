@@ -323,6 +323,7 @@ class CaptureSession:
             config.run_root / "system" / "supervisor" / f"{config.session}-{utc_stamp()}"
         )
         self.logs_dir = self.state_dir / "logs"
+        self.ros_log_dir = self.state_dir / "ros_logs"
         self.state_path = self.state_dir / "session_state.json"
         self.marker_path = Path(f"/tmp/teleop_capture_supervisor_{config.session}-{os.getuid()}.json")
         self.state_lock = threading.Lock()
@@ -392,7 +393,9 @@ class CaptureSession:
             self.components[name] = component
         self._write_state()
         if component.process.poll() is not None:
-            raise RuntimeError(f"{name} exited during startup with code {component.process.returncode}")
+            if required:
+                raise RuntimeError(f"{name} exited during startup with code {component.process.returncode}")
+            self.emit(f"WARN: optional {name} exited during startup with code {component.process.returncode}")
         return component
 
     def _check_required_alive(self) -> None:
@@ -512,6 +515,11 @@ class CaptureSession:
     def start_background_components(self) -> bool:
         config = self.config
         self.state_dir.mkdir(parents=True, exist_ok=True)
+        # Keep each launch under this session's own ROS log directory.  Writing
+        # into one long-lived <data>/system/ros_logs directory can exhaust the
+        # FAT directory entry space even when the disk has free bytes.
+        self.ros_log_dir.mkdir(parents=True, exist_ok=True)
+        os.environ["ROS_LOG_DIR"] = str(self.ros_log_dir)
         self.emit(
             "REAL_MODE_ARMED=" + ("true" if config.real else "false")
             + " session=" + config.session
@@ -654,12 +662,26 @@ class CaptureSession:
                             one_shot=True,
                         )
                         if config.second_camera_serial:
+                            mirror_topic = f"{config.second_camera_namespace.rstrip('/')}/color/image_raw_mirrored"
+                            self._start_component(
+                                "preview_rgb2_flip",
+                                [
+                                    config.system_python,
+                                    str(config.root_dir / "tools/camera_image_hflip.py"),
+                                    "--source",
+                                    f"{config.second_camera_namespace.rstrip('/')}/color/image_raw",
+                                    "--target",
+                                    mirror_topic,
+                                ],
+                                required=False,
+                                one_shot=False,
+                            )
                             self._start_component(
                                 "preview_rgb2",
                                 [
                                     config.system_python,
                                     executable,
-                                    f"{config.second_camera_namespace}/color/image_raw",
+                                    mirror_topic,
                                 ],
                                 required=False,
                                 one_shot=True,

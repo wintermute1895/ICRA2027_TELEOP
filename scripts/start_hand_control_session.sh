@@ -111,7 +111,7 @@ set +u
 source "$ROS_SETUP"
 source "$WORKSPACE_SETUP"
 set -u
-LINKERTA_SAMPLE="$(timeout 5s ros2 topic echo --once --qos-durability transient_local /linkerta/can_interface 2>/dev/null || true)"
+LINKERTA_SAMPLE="$(timeout 5s ros2 topic echo --once /linkerta/can_interface 2>/dev/null || true)"
 LINKERTA_CAN="$(parse_ros_string_data <<<"$LINKERTA_SAMPLE" || true)"
 if [[ "$CAN_INTERFACE" == auto ]]; then
   CANDIDATES=()

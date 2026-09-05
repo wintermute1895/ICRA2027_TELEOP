@@ -17,6 +17,10 @@ evidence/
 *.db3.zstd
 *.bag
 
+# Local model weights/artifacts stay on disk; deploy with a pinned config.
+/models/*
+!/models/README.md
+
 # Container and local runtime artifacts.
 .docker-build/
 .ros/

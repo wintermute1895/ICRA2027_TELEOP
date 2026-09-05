@@ -1,22 +1,23 @@
 schema: robot_teleop.act-runtime/v1
-enabled: false
-checkpoint: ""
-checkpoint_sha256: ""
+enabled: true
+checkpoint: /home/fanshihao/Desktop/dev/ICRA2027_TELEOP/models/act_button_A/checkpoints/last/pretrained_model
+checkpoint_sha256: f48e62ad4d7ff2ba80dad6e90935a98f4dc38ebd24a4db2a938a412711c0b2f4
 device: cuda
 socket: /tmp/teleop_act.sock
 inference_hz: 10.0
-input_timeout_ms: 300.0
+input_timeout_ms: 2000.0
 action_units: radians
 action_contract: arm7
 state_dim: 7
 action_dim: 7
-image_shape: [480, 640]
+image_shape:
+- 480
+- 640
 output_topic: /act/right_arm_joint_control
 state_topic: /robot1/right_arm/joint_states
 diagnostics_topic: /act/right/diagnostics
 state_key: observation.state
-# Keys must match the feature names used when the ACT dataset was trained.
 camera_keys:
   observation.images.main_rgb: /camera/camera/color/image_raw
   observation.images.auxiliary_rgb: /camera2/camera/color/image_raw
-dataset_stats: ""
+dataset_stats: /home/fanshihao/Desktop/dev/ICRA2027_TELEOP/models/act_button_A/stats.json
