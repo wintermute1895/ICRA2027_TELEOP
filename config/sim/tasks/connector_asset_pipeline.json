@@ -1,0 +1,13 @@
+{
+  "schema": "connector-asset-pipeline/v1",
+  "default_host": "ilex24-lan",
+  "remote_workspace": "/tmp/connector_asset_jobs",
+  "worker": "tools/connector_asset_worker.py",
+  "output_contract": {
+    "visual": "assets/tasks/connector_insertion/visual",
+    "collision": "assets/tasks/connector_insertion/collision",
+    "manifests": "assets/tasks/connector_insertion/manifests"
+  },
+  "gpu_stages": ["blender_import_cleanup", "coacd_collision_decomposition"],
+  "fallback": "parameterized_primitives"
+}

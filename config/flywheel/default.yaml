@@ -1,0 +1,44 @@
+schema: robot_teleop.flywheel-config/v1
+
+storage:
+  data_root: /media/ilex/Cyan_data/ICRA2027_TELEOP_DATA
+  run_root: /media/ilex/Cyan_data/ICRA2027_TELEOP/filter_runs
+  model_cache: /media/ilex/Cyan_data/ICRA2027_MODELS/huggingface
+
+processing:
+  derived_name: flywheel_v1
+  arm: right
+  source_domain: real
+  collection_mode: teleop_rule
+  expert_action_field: master_joint_raw
+  quality_gate: config/experiments/data_quality_gate.yaml
+  require_quality_pass: true
+  use_reviewed_events: true
+  camera_ids: [main_rgb, auxiliary_rgb]
+  max_camera_age_ms: 100.0
+
+vlm:
+  enabled: true
+  embedding_dim: 1536
+  model_id: google/siglip2-base-patch16-224
+  revision: 75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2
+  device: cuda
+  batch_size: 32
+  allow_network: false
+  drop_unmatched: true
+
+training:
+  enabled: true
+  # Main policy contract. Use arm7_hand6 only for exploratory O6 runs.
+  action_contract: arm7
+  exploratory_action_contracts: [arm7_hand6]
+  model_config: config/filters/trajectory_cvae_transformer_v0_2_vlm.yaml
+  model_config_no_vlm: config/filters/trajectory_cvae_transformer_v0_1.yaml
+  device: cuda
+  require_cuda: true
+  epochs: 50
+  batch_size: 128
+  validation_episodes: 1
+
+control:
+  deployment_config: config/runtime/learned_filter.yaml

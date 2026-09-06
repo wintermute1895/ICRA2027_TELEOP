@@ -1,0 +1,34 @@
+schema: robot_teleop.task-profile/v1
+task_id: contact_rich_precision_assembly_v1
+task_kind: abstract_family
+task_revision: contact_rich_precision_assembly_v1
+scope:
+  includes:
+    - A nominal geometric reference exists but may be locally wrong.
+    - The critical phase includes approach, alignment, contact, insertion or seating, and recovery.
+    - Local visual, geometric, or contact deviations require bounded corrective actions.
+    - Episodes can be evaluated by state, contact, and task-relative geometry.
+  excludes:
+    - Open-world navigation and long-horizon transport.
+    - Unconstrained general grasping without an assembly target.
+    - Pure force-only tasks without a usable task-relative geometric reference.
+    - Global replanning as the primary research variable.
+episode_phase_order: [approach, align, contact, seat_or_insert, verify, recover]
+observation_contract:
+  required: [rgb, depth, robot_state_rad, trajectory_phase, nominal_reference]
+  optional: [wrist_rgb, wrist_depth, contact_state, force_torque]
+command_contract:
+  nominal_reference: tcp_pose_delta
+  policy_residual: tcp_pose_delta
+  execution: nominal_reference + policy_residual -> safety_projection -> executed_command
+  arm_unit: rad
+recording_contract:
+  required_signals: [nominal_reference, human_command, policy_residual, command_before_safety, executed_command, robot_state, success, failure_mode, recovery_success, intervention]
+perturbation_dimensions: [target_pose, short_occlusion, camera_bias, contact_bias]
+outcome_contract:
+  success_requires: [task_relative_geometric_tolerance, nonpenetrating_contact, temporal_stability]
+  prohibit: [trajectory_smoothness_as_task_success, tcp_pose_only_success]
+learning_utility_contract:
+  retain_corrective_segments: true
+  retain_failure_segments: true
+  prohibit_filtering_by: [jerk, tracking_error]

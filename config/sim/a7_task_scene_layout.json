@@ -1,0 +1,9 @@
+{
+  "schema": "vist.mujoco-task-layout/v1",
+  "bodies": {
+    "task_table": {"pos": [0.78, 0.0, -0.44], "quat": [1, 0, 0, 0]},
+    "object_cube": {"pos": [0.64, -0.16, -0.36], "quat": [1, 0, 0, 0]},
+    "object_cylinder": {"pos": [0.80, 0.03, -0.35], "quat": [1, 0, 0, 0]},
+    "object_sphere": {"pos": [0.94, 0.17, -0.35], "quat": [1, 0, 0, 0]}
+  }
+}

@@ -1,0 +1,1904 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="a7_dual_arm_l10_hands_cameras">
+  <link name="world" />
+  <link name="Body_Base_link">
+    <inertial>
+      <origin xyz="-0.00222338943153113 -7.21477586634144E-07 0.290469759753077" rpy="0 0 0" />
+      <mass value="11.5498443972996" />
+      <inertia ixx="0.5885597835799" ixy="3.1554820713728E-09" ixz="-0.000471193074627488" iyy="0.58795222479349" iyz="4.94265597646443E-08" izz="0.468956501545227" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Body_Base_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Body_Base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="World_Base_Mount_Joint" type="fixed">
+    <parent link="world" />
+    <child link="Body_Base_link" />
+  </joint>
+  <link name="Left_Shoulder_Base_Link">
+    <inertial>
+      <origin xyz="2.39576381628158E-09 0.0659218361820017 -2.93705990639381E-08" rpy="0 0 0" />
+      <mass value="0.924033111595577" />
+      <inertia ixx="0.000808213882209898" ixy="3.59894954693013E-11" ixz="-8.08905421826288E-09" iyy="0.000931574847368187" iyz="-3.4664321606015E-10" izz="0.000673662555330586" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Shoulder_Base_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Shoulder_Base_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="Left_Shoulder_Pitch_Link">
+    <inertial>
+      <origin xyz="0.00054854355587839 0.0663441584679468 -4.15012326060449E-07" rpy="0 0 0" />
+      <mass value="1.03708373928272" />
+      <inertia ixx="0.000979917881977378" ixy="-4.19930467638723E-05" ixz="2.31327737820334E-11" iyy="0.000606132157414063" iyz="-4.38206813372292E-10" izz="0.000805446122113303" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Shoulder_Pitch_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Shoulder_Pitch_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Shoulder_Pitch_Joint" type="revolute">
+    <origin xyz="0 0.096 0" rpy="0 0 0" />
+    <parent link="Left_Shoulder_Base_Link" />
+    <child link="Left_Shoulder_Pitch_Link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-2.97" upper="1.05" effort="80" velocity="10" />
+  </joint>
+  <link name="Left_Shoulder_Roll_Link">
+    <inertial>
+      <origin xyz="-0.0328266103103039 -1.13122606414384E-05 -0.0818731842645899" rpy="0 0 0" />
+      <mass value="0.611930821491615" />
+      <inertia ixx="0.000491318005531021" ixy="6.18222684267692E-11" ixz="-5.06965158683244E-07" iyy="0.000474502799979439" iyz="-2.58696555442765E-08" izz="0.000257744883873199" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Shoulder_Roll_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Shoulder_Roll_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Shoulder_Roll_Joint" type="revolute">
+    <origin xyz="0.0328 0.075 0" rpy="0 0 0" />
+    <parent link="Left_Shoulder_Pitch_Link" />
+    <child link="Left_Shoulder_Roll_Link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-0.35" upper="3.49" effort="80" velocity="10" />
+  </joint>
+  <link name="Left_Shoulder_Yaw_Link">
+    <inertial>
+      <origin xyz="0.00682314676154193 -4.46512945422306E-05 -0.130199530724097" rpy="0 0 0" />
+      <mass value="0.600776606697813" />
+      <inertia ixx="0.000473916613527744" ixy="7.72324077414514E-08" ixz="5.90958237468834E-06" iyy="0.000448035733659396" iyz="1.79115600065077E-07" izz="0.000256235205802589" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Shoulder_Yaw_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Shoulder_Yaw_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Shoulder_Yaw_Joint" type="revolute">
+    <origin xyz="-0.0328 0 -0.12" rpy="0 0 0" />
+    <parent link="Left_Shoulder_Roll_Link" />
+    <child link="Left_Shoulder_Yaw_Link" />
+    <axis xyz="0 0 -1" />
+    <limit lower="-2.79" upper="2.79" effort="36" velocity="10" />
+  </joint>
+  <link name="Left_Elbow_Pitch_Link">
+    <inertial>
+      <origin xyz="-0.0090403654310206 0.032365117715688 -0.0740066379621661" rpy="0 0 0" />
+      <mass value="0.571822387207262" />
+      <inertia ixx="0.000373566335968375" ixy="-3.30108379286696E-08" ixz="-1.15594926282846E-05" iyy="0.000376125485331464" iyz="1.49444070657373E-07" izz="0.000228220814310663" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Elbow_Pitch_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Elbow_Pitch_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Elbow_Pitch_Joint" type="revolute">
+    <origin xyz="0.0095 -0.0325 -0.15" rpy="0 0 0" />
+    <parent link="Left_Shoulder_Yaw_Link" />
+    <child link="Left_Elbow_Pitch_Link" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-0.21" upper="2.355" effort="36" velocity="10" />
+  </joint>
+  <link name="Left_Wrist_Yaw_Link">
+    <inertial>
+      <origin xyz="3.69740452762102E-08 0.00647895756262068 -0.0555903355087713" rpy="0 0 0" />
+      <mass value="0.477607109369943" />
+      <inertia ixx="0.000252009679930231" ixy="2.56556791795388E-10" ixz="8.40673606830403E-10" iyy="0.000230774325731339" iyz="-1.45571201182614E-05" izz="0.000223888344087184" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Wrist_Yaw_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Wrist_Yaw_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Wrist_Yaw_Joint" type="revolute">
+    <origin xyz="-0.0095 0.0325 -0.11" rpy="0 0 0" />
+    <parent link="Left_Elbow_Pitch_Link" />
+    <child link="Left_Wrist_Yaw_Link" />
+    <axis xyz="0 0 -1" />
+    <limit lower="-2.79" upper="2.79" effort="36" velocity="10" />
+  </joint>
+  <link name="Left_Wrist_Pitch_Link">
+    <inertial>
+      <origin xyz="-0.00711282233334451 0.0182114323933808 -0.0596299986813169" rpy="0 0 0" />
+      <mass value="0.463906587613134" />
+      <inertia ixx="0.000227880683675111" ixy="-2.49113311913961E-06" ixz="5.38703832935156E-06" iyy="0.00026785366981276" iyz="7.22420737435019E-06" izz="0.000199800671841578" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Wrist_Pitch_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Wrist_Pitch_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Wrist_Roll_Joint" type="revolute">
+    <origin xyz="0 -0.022 -0.06" rpy="0 0 0" />
+    <parent link="Left_Wrist_Yaw_Link" />
+    <child link="Left_Wrist_Pitch_Link" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-1.57" upper="1.57" effort="36" velocity="10" />
+  </joint>
+  <link name="Left_Wrist_Roll_Link">
+    <inertial>
+      <origin xyz="-0.0072702259987953 2.82402962126227E-10 -0.0363234197668264" rpy="0 0 0" />
+      <mass value="0.0737528636640965" />
+      <inertia ixx="5.50396554373168E-05" ixy="-8.73979570437831E-14" ixz="-1.46653059719208E-05" iyy="5.80308714819392E-05" iyz="-4.48880508094499E-13" izz="4.14743760983864E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Wrist_Roll_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Left_Wrist_Roll_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Wrist_Pitch_Joint" type="revolute">
+    <origin xyz="0.0225 0.022 -0.064" rpy="0 0 0" />
+    <parent link="Left_Wrist_Pitch_Link" />
+    <child link="Left_Wrist_Roll_Link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-1.57" upper="1.57" effort="36" velocity="10" />
+  </joint>
+  <joint name="Left_Base_Mount_Joint" type="fixed">
+    <parent link="Body_Base_link" />
+    <child link="Left_Shoulder_Base_Link" />
+    <origin xyz="-0.023 0 1.217" rpy="0 0 0" />
+  </joint>
+  <link name="Right_Shoulder_Base_Link">
+    <inertial>
+      <origin xyz="-1.99267264776488E-09 -0.0659218361820058 3.30808307413832E-08" rpy="0 0 0" />
+      <mass value="0.924033111595576" />
+      <inertia ixx="0.000808213882214251" ixy="2.95678180150087E-11" ixz="8.08908965209071E-09" iyy="0.000931574847368185" iyz="-4.02248117355149E-10" izz="0.000673662555326232" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Shoulder_Base_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Shoulder_Base_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="Right_Shoulder_Pitch_Link">
+    <inertial>
+      <origin xyz="0.000550445937296118 -0.0663446867698749 3.85924345147615E-07" rpy="0 0 0" />
+      <mass value="1.03708373831885" />
+      <inertia ixx="0.000979917881985241" ixy="4.19930465301815E-05" ixz="-2.22495649895194E-11" iyy="0.0006061320567727" iyz="4.72594631084341E-10" izz="0.000805446222765678" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Shoulder_Pitch_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Shoulder_Pitch_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Shoulder_Pitch_Joint" type="revolute">
+    <origin xyz="0 -0.096 0" rpy="0 0 0" />
+    <parent link="Right_Shoulder_Base_Link" />
+    <child link="Right_Shoulder_Pitch_Link" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-1.05" upper="2.97" effort="80" velocity="10" />
+  </joint>
+  <link name="Right_Shoulder_Roll_Link">
+    <inertial>
+      <origin xyz="-0.0328494705864756 -5.65907654070941E-10 -0.0818728578417687" rpy="0 0 0" />
+      <mass value="0.61158472274931" />
+      <inertia ixx="0.000491306613863732" ixy="6.1822268286409E-11" ixz="-5.06965158681799E-07" iyy="0.000474492050561758" iyz="-2.5869655543651E-08" izz="0.000257742401525433" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Shoulder_Roll_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Shoulder_Roll_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Shoulder_Roll_Joint" type="revolute">
+    <origin xyz="0.0328 -0.075 0" rpy="0 0 0" />
+    <parent link="Right_Shoulder_Pitch_Link" />
+    <child link="Right_Shoulder_Roll_Link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-3.49" upper="0.35" effort="80" velocity="10" />
+  </joint>
+  <link name="Right_Shoulder_Yaw_Link">
+    <inertial>
+      <origin xyz="0.00682314676154521 -4.46512945424526E-05 -0.130199530724097" rpy="0 0 0" />
+      <mass value="0.600776606697812" />
+      <inertia ixx="0.000473916613527744" ixy="7.72324077414352E-08" ixz="5.90958237468826E-06" iyy="0.000448035733659395" iyz="1.79115600066026E-07" izz="0.000256235205802589" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Shoulder_Yaw_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Shoulder_Yaw_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Shoulder_Yaw_Joint" type="revolute">
+    <origin xyz="-0.0328 0 -0.12" rpy="0 0 0" />
+    <parent link="Right_Shoulder_Roll_Link" />
+    <child link="Right_Shoulder_Yaw_Link" />
+    <axis xyz="0 0 -1" />
+    <limit lower="-2.79" upper="2.79" effort="36" velocity="10" />
+  </joint>
+  <link name="Right_Elbow_Pitch_Link">
+    <inertial>
+      <origin xyz="-0.0090491523715236 0.0323897268652624 -0.0740069723660367" rpy="0 0 0" />
+      <mass value="0.571476288532121" />
+      <inertia ixx="0.000373555591273092" ixy="-3.30108376678752E-08" ixz="-1.15595088255074E-05" iyy="0.000376114093665451" iyz="1.49444083196836E-07" izz="0.00022821832724163" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Elbow_Pitch_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Elbow_Pitch_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Elbow_Pitch_Joint" type="revolute">
+    <origin xyz="0.0095 -0.0325 -0.15" rpy="0 0 0" />
+    <parent link="Right_Shoulder_Yaw_Link" />
+    <child link="Right_Elbow_Pitch_Link" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-0.21" upper="2.355" effort="36" velocity="10" />
+  </joint>
+  <link name="Right_Wrist_Yaw_Link">
+    <inertial>
+      <origin xyz="-3.68521239685251E-08 -0.0065016641372202 -0.0555925647837076" rpy="0 0 0" />
+      <mass value="0.47758723622525" />
+      <inertia ixx="0.000252124777274285" ixy="2.5638314061415E-10" ixz="-8.40240519042393E-10" iyy="0.00023075116324108" iyz="1.49094977439206E-05" izz="0.000224026583523099" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Wrist_Yaw_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Wrist_Yaw_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Wrist_Yaw_Joint" type="revolute">
+    <origin xyz="-0.0095 0.0325 -0.11" rpy="0 0 0" />
+    <parent link="Right_Elbow_Pitch_Link" />
+    <child link="Right_Wrist_Yaw_Link" />
+    <axis xyz="0 0 -1" />
+    <limit lower="-2.79" upper="2.79" effort="36" velocity="10" />
+  </joint>
+  <link name="Right_Wrist_Pitch_Link">
+    <inertial>
+      <origin xyz="-0.00712530104384592 -0.0182054860115446 -0.0596462537825272" rpy="0 0 0" />
+      <mass value="0.464091420162859" />
+      <inertia ixx="0.000228236803974143" ixy="2.40015869616491E-06" ixz="5.18112746327142E-06" iyy="0.000268369019194987" iyz="-7.34023927836005E-06" izz="0.000199899053944628" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Wrist_Pitch_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Wrist_Pitch_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Wrist_Roll_Joint" type="revolute">
+    <origin xyz="0 0.022 -0.06" rpy="0 0 0" />
+    <parent link="Right_Wrist_Yaw_Link" />
+    <child link="Right_Wrist_Pitch_Link" />
+    <axis xyz="0 1 0" />
+    <limit lower="-1.57" upper="1.57" effort="36" velocity="10" />
+  </joint>
+  <link name="Right_Wrist_Roll_Link">
+    <inertial>
+      <origin xyz="-0.00727022599879533 2.82407791596384E-10 -0.0363234197668277" rpy="0 0 0" />
+      <mass value="0.073752863664096" />
+      <inertia ixx="5.50396554373169E-05" ixy="-8.73979797649329E-14" ixz="-1.46653059719206E-05" iyy="5.8030871481939E-05" iyz="-4.48880576916881E-13" izz="4.14743760983857E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Wrist_Roll_Link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.890196078431372 0.890196078431372 0.913725490196078 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/combined_robot/meshes/arm/Right_Wrist_Roll_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Wrist_Pitch_Joint" type="revolute">
+    <origin xyz="0.0225 -0.022 -0.064" rpy="0 0 0" />
+    <parent link="Right_Wrist_Pitch_Link" />
+    <child link="Right_Wrist_Roll_Link" />
+    <axis xyz="1 0 0" />
+    <limit lower="-1.57" upper="1.57" effort="36" velocity="10" />
+  </joint>
+  <joint name="Right_Base_Mount_Joint" type="fixed">
+    <parent link="Body_Base_link" />
+    <child link="Right_Shoulder_Base_Link" />
+    <origin xyz="-0.023 0 1.217" rpy="0 0 0" />
+  </joint>
+  <link name="Left_Hand_hand_base_link">
+    <inertial>
+      <origin xyz="-0.00378861347427444 0.000820204450212636 0.0805686615687793" rpy="0 0 0" />
+      <mass value="0.103652479414282" />
+      <inertia ixx="0.000193076183439416" ixy="-1.28622350247984E-06" ixz="2.06064564158949E-07" iyy="0.00012926288517179" iyz="2.33887125852557E-06" izz="7.7154522927083E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/hand_base_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/hand_base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="Left_Hand_thumb_metacarpals_base1">
+    <inertial>
+      <origin xyz="0.0284774512174003 0.00319294525979458 0.000288805100279406" rpy="0 0 0" />
+      <mass value="0.00845816139945221" />
+      <inertia ixx="1.40261486759336E-06" ixy="-1.18203915023492E-07" ixz="-1.77734618116876E-08" iyy="9.82563502315962E-07" iyz="6.88489366314261E-08" izz="7.36187487063603E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/thumb_metacarpals_base1.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/thumb_metacarpals_base1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_thumb_cmc_roll" type="revolute">
+    <origin xyz="-0.013419 -0.012551 0.060602" rpy="0 0 0" />
+    <parent link="Left_Hand_hand_base_link" />
+    <child link="Left_Hand_thumb_metacarpals_base1" />
+    <axis xyz="-0.99996 0 -0.0087265" />
+    <limit lower="0" upper="1.1339" effort="100" velocity="1" />
+  </joint>
+  <link name="Left_Hand_thumb_metacarpals_base2">
+    <inertial>
+      <origin xyz="0.00183846579918134 -0.00587846426611621 -0.0015162158210808" rpy="0 0 0" />
+      <mass value="0.00244725578113259" />
+      <inertia ixx="1.15251315698557E-07" ixy="4.89370850547165E-09" ixz="2.66612542059565E-09" iyy="9.94309628765418E-08" iyz="3.10591576019106E-09" izz="6.87375869983625E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/thumb_metacarpals_base2.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/thumb_metacarpals_base2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_thumb_cmc_yaw" type="revolute">
+    <origin xyz="0.035797 0.00065879 0.00045944" rpy="0 0 0" />
+    <parent link="Left_Hand_thumb_metacarpals_base1" />
+    <child link="Left_Hand_thumb_metacarpals_base2" />
+    <axis xyz="-0.008517 -0.21782 0.97595" />
+    <limit lower="0" upper="1.9189" effort="100" velocity="1" />
+  </joint>
+  <link name="Left_Hand_thumb_metacarpals">
+    <inertial>
+      <origin xyz="0.00183662026125164 3.48962479811143E-06 0.0269904486748884" rpy="0 0 0" />
+      <mass value="0.01520120856034" />
+      <inertia ixx="2.9536990439562E-06" ixy="-4.54477085913726E-11" ixz="1.58082889158651E-07" iyy="3.8477051320862E-06" iyz="-4.17561402252793E-10" izz="1.32008356198982E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/thumb_metacarpals.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/thumb_metacarpals.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_thumb_cmc_pitch" type="revolute">
+    <origin xyz="0.0046051 -0.014383 -0.0051478" rpy="-0.16356 -1.1191 2.0038" />
+    <parent link="Left_Hand_thumb_metacarpals_base2" />
+    <child link="Left_Hand_thumb_metacarpals" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.5149" effort="0" velocity="0" />
+  </joint>
+  <link name="Left_Hand_thumb_proximal">
+    <inertial>
+      <origin xyz="0.0015926125860982 4.26589066317498E-06 0.0151572207811941" rpy="0 0 0" />
+      <mass value="0.00662223966318386" />
+      <inertia ixx="1.0152616293145E-06" ixy="6.75215818960843E-12" ixz="4.42240858300533E-08" iyy="9.10425093388008E-07" iyz="-2.56550662127861E-11" izz="4.47461802494835E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/thumb_proximal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/thumb_proximal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_thumb_mcp" type="revolute">
+    <origin xyz="0.0061722 0 0.047968" rpy="0 0 0" />
+    <parent link="Left_Hand_thumb_metacarpals" />
+    <child link="Left_Hand_thumb_proximal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.7152" effort="100" velocity="1" />
+    <mimic joint="Left_Hand_thumb_cmc_pitch" multiplier="1.3898" offset="0" />
+  </joint>
+  <link name="Left_Hand_thumb_distal">
+    <inertial>
+      <origin xyz="-0.00138804783940386 -1.95109829512208E-06 0.0115761271998154" rpy="0 0 0" />
+      <mass value="0.00512789958515099" />
+      <inertia ixx="3.30786354228455E-07" ixy="3.37981828718406E-10" ixz="1.04683577058069E-07" iyy="3.23607405408934E-07" iyz="1.24601619348998E-10" izz="2.48874162996129E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/thumb_distal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/thumb_distal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_thumb_ip" type="revolute">
+    <origin xyz="-0.00017064 0 0.038665" rpy="0 0 0" />
+    <parent link="Left_Hand_thumb_proximal" />
+    <child link="Left_Hand_thumb_distal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.7763" effort="100" velocity="1" />
+    <mimic joint="Left_Hand_thumb_cmc_pitch" multiplier="1.508" offset="0" />
+  </joint>
+  <link name="Left_Hand_index_metacarpals">
+    <inertial>
+      <origin xyz="-0.00152426817464821 6.05770268113925E-07 0.0106911596123391" rpy="0 0 0" />
+      <mass value="0.00388771277323252" />
+      <inertia ixx="1.87385239390143E-07" ixy="-1.50747799029618E-11" ixz="-1.3585152124314E-08" iyy="2.75278189614443E-07" iyz="-2.13460044424543E-11" izz="2.06630683818818E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/index_metacarpals.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/index_metacarpals.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_index_mcp_roll" type="revolute">
+    <origin xyz="-0.0021643 -0.026654 0.13253" rpy="0 0 0" />
+    <parent link="Left_Hand_hand_base_link" />
+    <child link="Left_Hand_index_metacarpals" />
+    <axis xyz="0.99996 0 0.0087265" />
+    <limit lower="0" upper="0.2181" effort="100" velocity="1" />
+  </joint>
+  <link name="Left_Hand_index_proximal">
+    <inertial>
+      <origin xyz="-0.00138261335013087 -2.0448073701218E-06 0.0182296115874793" rpy="0 0 0" />
+      <mass value="0.00316246721925245" />
+      <inertia ixx="3.56395782183238E-07" ixy="-1.519753847635E-11" ixz="4.33017644796655E-08" iyy="3.51905921291625E-07" iyz="1.08366129189436E-10" izz="1.41611972744247E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/index_proximal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/index_proximal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_index_mcp_pitch" type="revolute">
+    <origin xyz="0.0020763 0 0.015294" rpy="0 0 0" />
+    <parent link="Left_Hand_index_metacarpals" />
+    <child link="Left_Hand_index_proximal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.3607" effort="100" velocity="1" />
+  </joint>
+  <link name="Left_Hand_index_middle">
+    <inertial>
+      <origin xyz="-0.00259933527445673 2.18965318593556E-06 0.0110174750966451" rpy="0 0 0" />
+      <mass value="0.00283043922879456" />
+      <inertia ixx="2.60328600820399E-07" ixy="-5.78747075104944E-11" ixz="4.11785819343582E-08" iyy="2.3307752147835E-07" iyz="2.81942890795077E-11" izz="1.27252338208461E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/index_middle.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/index_middle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_index_pip" type="revolute">
+    <origin xyz="-0.0013807 0 0.035624" rpy="0 0 0" />
+    <parent link="Left_Hand_index_proximal" />
+    <child link="Left_Hand_index_middle" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.8317" effort="100" velocity="1" />
+    <mimic joint="Left_Hand_index_mcp_pitch" multiplier="1.3462" offset="0" />
+  </joint>
+  <link name="Left_Hand_index_distal">
+    <inertial>
+      <origin xyz="-0.000710517111010627 -4.75726794854636E-06 0.012145336450558" rpy="0 0 0" />
+      <mass value="0.00314452064297397" />
+      <inertia ixx="1.63317340328391E-07" ixy="-2.09419656935959E-11" ixz="4.33496816458187E-08" iyy="1.48361285562251E-07" iyz="1.96803996917722E-10" izz="9.85553531650042E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/index_distal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/index_distal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_index_dip" type="revolute">
+    <origin xyz="-0.0054686 0 0.025665" rpy="0 0 0" />
+    <parent link="Left_Hand_index_middle" />
+    <child link="Left_Hand_index_distal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.628" effort="100" velocity="1" />
+    <mimic joint="Left_Hand_index_mcp_pitch" multiplier="0.4616" offset="0" />
+  </joint>
+  <link name="Left_Hand_middle_proximal">
+    <inertial>
+      <origin xyz="-0.00139098027014184 -2.04476498844031E-06 0.0182289750275599" rpy="0 0 0" />
+      <mass value="0.00316246719662224" />
+      <inertia ixx="3.56355985740973E-07" ixy="-1.52464655137029E-11" ixz="4.34003274159042E-08" iyy="3.51905920397221E-07" iyz="1.08359634878477E-10" izz="1.41651767407151E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/middle_proximal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/middle_proximal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_middle_mcp_pitch" type="revolute">
+    <origin xyz="-0.0021316 -0.0076542 0.15281" rpy="0 0 0" />
+    <parent link="Left_Hand_hand_base_link" />
+    <child link="Left_Hand_middle_proximal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.3607" effort="100" velocity="1" />
+  </joint>
+  <link name="Left_Hand_middle_middle">
+    <inertial>
+      <origin xyz="-0.0026170048250792 2.18964489276385E-06 0.0110132913946175" rpy="0 0 0" />
+      <mass value="0.00283043921858529" />
+      <inertia ixx="2.6019615015243E-07" ixy="-5.79194626881696E-11" ixz="4.13918339836743E-08" iyy="2.33077520740401E-07" iyz="2.81014096462077E-11" izz="1.27384787247362E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/middle_middle.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/middle_middle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_middle_pip" type="revolute">
+    <origin xyz="-0.001397 0 0.035623" rpy="0 0 0" />
+    <parent link="Left_Hand_middle_proximal" />
+    <child link="Left_Hand_middle_middle" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.8317" effort="100" velocity="1" />
+    <mimic joint="Left_Hand_middle_mcp_pitch" multiplier="1.3462" offset="0" />
+  </joint>
+  <link name="Left_Hand_middle_distal">
+    <inertial>
+      <origin xyz="-0.000728403029144615 -4.7556974856755E-06 0.0121442774004862" rpy="0 0 0" />
+      <mass value="0.00314452092965163" />
+      <inertia ixx="1.63189533228873E-07" ixy="-2.12447856725291E-11" ixz="4.34448768867267E-08" iyy="1.48361296215225E-07" iyz="1.96771697224987E-10" izz="9.86831899309453E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/middle_distal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/middle_distal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_middle_dip" type="revolute">
+    <origin xyz="-0.0055098 0 0.025656" rpy="0 0 0" />
+    <parent link="Left_Hand_middle_middle" />
+    <child link="Left_Hand_middle_distal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.628" effort="100" velocity="1" />
+    <mimic joint="Left_Hand_middle_mcp_pitch" multiplier="0.4616" offset="0" />
+  </joint>
+  <link name="Left_Hand_ring_metacarpals">
+    <inertial>
+      <origin xyz="-0.00152426817464828 6.05770268197192E-07 0.010691159612339" rpy="0 0 0" />
+      <mass value="0.00388771277323251" />
+      <inertia ixx="1.87385239390142E-07" ixy="-1.50747799012373E-11" ixz="-1.35851521243144E-08" iyy="2.75278189614442E-07" iyz="-2.13460044414369E-11" izz="2.06630683818817E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/ring_metacarpals.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/ring_metacarpals.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_ring_mcp_roll" type="revolute">
+    <origin xyz="-0.0021643 0.011346 0.13253" rpy="0 0 0" />
+    <parent link="Left_Hand_hand_base_link" />
+    <child link="Left_Hand_ring_metacarpals" />
+    <axis xyz="-0.99996 0 0.0087265" />
+    <limit lower="0" upper="0.2181" effort="100" velocity="1" />
+  </joint>
+  <link name="Left_Hand_ring_proximal">
+    <inertial>
+      <origin xyz="-0.00138261330266684 -2.0447785264166E-06 0.0182296118982312" rpy="0 0 0" />
+      <mass value="0.0031624671652163" />
+      <inertia ixx="3.56395781426818E-07" ixy="-1.51970550291323E-11" ixz="4.33017653956416E-08" iyy="3.51905919284355E-07" iyz="1.08366441004821E-10" izz="1.4161197116697E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/ring_proximal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/ring_proximal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_ring_mcp_pitch" type="revolute">
+    <origin xyz="0.0020763 0 0.015294" rpy="0 0 0" />
+    <parent link="Left_Hand_ring_metacarpals" />
+    <child link="Left_Hand_ring_proximal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.3607" effort="100" velocity="1" />
+  </joint>
+  <link name="Left_Hand_ring_middle">
+    <inertial>
+      <origin xyz="-0.00259933547466245 2.18954477221311E-06 0.0110174751134697" rpy="0 0 0" />
+      <mass value="0.00283043915953111" />
+      <inertia ixx="2.60328598871493E-07" ixy="-5.78718096660343E-11" ixz="4.11785818944011E-08" iyy="2.33077515495018E-07" iyz="2.81941916146631E-11" izz="1.27252331273933E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/ring_middle.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/ring_middle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_ring_pip" type="revolute">
+    <origin xyz="-0.0013807 0 0.035624" rpy="0 0 0" />
+    <parent link="Left_Hand_ring_proximal" />
+    <child link="Left_Hand_ring_middle" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.8317" effort="100" velocity="1" />
+    <mimic joint="Left_Hand_ring_mcp_pitch" multiplier="1.3462" offset="0" />
+  </joint>
+  <link name="Left_Hand_ring_distal">
+    <inertial>
+      <origin xyz="-0.000710517105065085 -4.75636578367578E-06 0.0121453401469508" rpy="0 0 0" />
+      <mass value="0.00314452208497789" />
+      <inertia ixx="1.63317386570295E-07" ixy="-2.09324585080789E-11" ixz="4.33497128582753E-08" iyy="1.48361350800559E-07" iyz="1.9679121866702E-10" izz="9.85553885284675E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/ring_distal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/ring_distal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_ring_dip" type="revolute">
+    <origin xyz="-0.0054686 0 0.025665" rpy="0 0 0" />
+    <parent link="Left_Hand_ring_middle" />
+    <child link="Left_Hand_ring_distal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.628" effort="100" velocity="1" />
+    <mimic joint="Left_Hand_ring_mcp_pitch" multiplier="0.4616" offset="0" />
+  </joint>
+  <link name="Left_Hand_pinky_metacarpals">
+    <inertial>
+      <origin xyz="-0.0015242681746482 6.05770268197192E-07 0.010691159612339" rpy="0 0 0" />
+      <mass value="0.00388771277323252" />
+      <inertia ixx="1.87385239390143E-07" ixy="-1.50747799026559E-11" ixz="-1.35851521243143E-08" iyy="2.75278189614442E-07" iyz="-2.13460044423049E-11" izz="2.06630683818817E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/pinky_metacarpals.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/pinky_metacarpals.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_pinky_mcp_roll" type="revolute">
+    <origin xyz="-0.00012074 0.030346 0.12755" rpy="0 0 0" />
+    <parent link="Left_Hand_hand_base_link" />
+    <child link="Left_Hand_pinky_metacarpals" />
+    <axis xyz="-0.99996 0 0.0087265" />
+    <limit lower="0" upper="0.3489" effort="100" velocity="1" />
+  </joint>
+  <link name="Left_Hand_pinky_proximal">
+    <inertial>
+      <origin xyz="-0.0013826133500916 -2.04480739013357E-06 0.0182296115873023" rpy="0 0 0" />
+      <mass value="0.00316246721927742" />
+      <inertia ixx="3.56395782184299E-07" ixy="-1.51975383069221E-11" ixz="4.33017644806427E-08" iyy="3.51905921292737E-07" iyz="1.08366128612708E-10" izz="1.41611972744827E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/pinky_proximal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/pinky_proximal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_pinky_mcp_pitch" type="revolute">
+    <origin xyz="0.0020763 0 0.015294" rpy="0 0 0" />
+    <parent link="Left_Hand_pinky_metacarpals" />
+    <child link="Left_Hand_pinky_proximal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.3607" effort="100" velocity="1" />
+  </joint>
+  <link name="Left_Hand_pinky_middle">
+    <inertial>
+      <origin xyz="-0.0025993354746625 2.18954477224087E-06 0.0110174751134698" rpy="0 0 0" />
+      <mass value="0.00283043915953116" />
+      <inertia ixx="2.60328598871551E-07" ixy="-5.78718096771597E-11" ixz="4.11785818944279E-08" iyy="2.33077515495214E-07" iyz="2.81941916132638E-11" izz="1.27252331274066E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/pinky_middle.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/pinky_middle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_pinky_pip" type="revolute">
+    <origin xyz="-0.0013807 0 0.035624" rpy="0 0 0" />
+    <parent link="Left_Hand_pinky_proximal" />
+    <child link="Left_Hand_pinky_middle" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.8317" effort="100" velocity="1" />
+    <mimic joint="Left_Hand_pinky_mcp_pitch" multiplier="1.3462" offset="0" />
+  </joint>
+  <link name="Left_Hand_pinky_distal">
+    <inertial>
+      <origin xyz="-0.000710517460743719 -4.75730252216811E-06 0.0121453361986339" rpy="0 0 0" />
+      <mass value="0.00314452044951957" />
+      <inertia ixx="1.63317337383031E-07" ixy="-2.09430019728007E-11" ixz="4.33496839959002E-08" iyy="1.48361292034124E-07" iyz="1.96809590206387E-10" izz="9.85553441949477E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/pinky_distal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/left/meshes/pinky_distal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Left_Hand_pinky_dip" type="revolute">
+    <origin xyz="-0.0054686 0 0.025665" rpy="0 0 0" />
+    <parent link="Left_Hand_pinky_middle" />
+    <child link="Left_Hand_pinky_distal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.628" effort="100" velocity="1" />
+    <mimic joint="Left_Hand_pinky_mcp_pitch" multiplier="0.4616" offset="0" />
+  </joint>
+  <joint name="left_arm_hand_fixed_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 3.14159265359 0" />
+    <parent link="Left_Wrist_Roll_Link" />
+    <child link="Left_Hand_hand_base_link" />
+  </joint>
+  <link name="Right_Hand_hand_base_link">
+    <inertial>
+      <origin xyz="-0.00378572993474923 -0.000415839048931058 0.0836392883613671" rpy="0 0 0" />
+      <mass value="0.10884427610512" />
+      <inertia ixx="0.00019345483956042" ixy="1.28842682703635E-06" ixz="1.97005632028112E-07" iyy="0.000129793182936336" iyz="-2.34961034039841E-06" izz="7.75126657491835E-05" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/hand_base_link.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="1 0.6 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/hand_base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="Right_Hand_thumb_metacarpals_base1">
+    <inertial>
+      <origin xyz="0.0284774593036823 -0.00319295610820959 0.000288698025133524" rpy="0 0 0" />
+      <mass value="0.0084581719416891" />
+      <inertia ixx="1.40261950876138E-06" ixy="1.18207329998214E-07" ixz="-1.77710409325651E-08" iyy="9.82563824235415E-07" iyz="-6.88503841796069E-08" izz="7.36195207923163E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/thumb_metacarpals_base1.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0 0 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/thumb_metacarpals_base1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_thumb_cmc_roll" type="revolute">
+    <origin xyz="-0.013419 0.012551 0.060602" rpy="0 0 0" />
+    <parent link="Right_Hand_hand_base_link" />
+    <child link="Right_Hand_thumb_metacarpals_base1" />
+    <axis xyz="0.99996 0 -0.0087265" />
+    <limit lower="0" upper="1.1339" effort="100" velocity="1" />
+  </joint>
+  <link name="Right_Hand_thumb_metacarpals_base2">
+    <inertial>
+      <origin xyz="0.00215248483593253 0.00687960824638228 -0.00178648738539141" rpy="0 0 0" />
+      <mass value="0.00582710536801184" />
+      <inertia ixx="3.1580508435925E-07" ixy="-1.2523312776122E-08" ixz="7.34627751822501E-09" iyy="2.74551538715439E-07" iyz="-1.11420623852877E-08" izz="1.7708647486189E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/thumb_metacarpals_base2.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/thumb_metacarpals_base2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_thumb_cmc_yaw" type="revolute">
+    <origin xyz="0.035797 -0.00065879 0.00045944" rpy="0 0 0" />
+    <parent link="Right_Hand_thumb_metacarpals_base1" />
+    <child link="Right_Hand_thumb_metacarpals_base2" />
+    <axis xyz="0.008517 -0.21782 -0.97595" />
+    <limit lower="0" upper="1.9189" effort="100" velocity="0" />
+  </joint>
+  <link name="Right_Hand_thumb_metacarpals">
+    <inertial>
+      <origin xyz="0.00183661834550107 -2.80742940476572E-06 0.0269905020099197" rpy="0 0 0" />
+      <mass value="0.0152011697874328" />
+      <inertia ixx="2.95370119498705E-06" ixy="5.98576599418973E-11" ixz="1.58078022444628E-07" iyy="3.84770651487058E-06" iyz="4.18316149481869E-10" izz="1.32007495243356E-06" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/thumb_metacarpals.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.592156862745098 0.666666666666667 0.682352941176471 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/thumb_metacarpals.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_thumb_cmc_pitch" type="revolute">
+    <origin xyz="0.0046051 0.014383 -0.0051478" rpy="0.16356 -1.1191 -2.0038" />
+    <parent link="Right_Hand_thumb_metacarpals_base2" />
+    <child link="Right_Hand_thumb_metacarpals" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.5146" effort="100" velocity="1" />
+  </joint>
+  <link name="Right_Hand_thumb_proximal">
+    <inertial>
+      <origin xyz="0.00159270226880857 -4.4335770623613E-06 0.0151573535592338" rpy="0 0 0" />
+      <mass value="0.00662230120907192" />
+      <inertia ixx="1.01526965693255E-06" ixy="-3.40889077339227E-12" ixz="4.4224333375416E-08" iyy="9.10433196570128E-07" iyz="2.59867251981586E-11" izz="4.4746314468008E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/thumb_proximal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.6 0.6 0.6 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/thumb_proximal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_thumb_mcp" type="revolute">
+    <origin xyz="0.0061722 0 0.047968" rpy="0 0 0" />
+    <parent link="Right_Hand_thumb_metacarpals" />
+    <child link="Right_Hand_thumb_proximal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.7152" effort="100" velocity="1" />
+    <mimic joint="Right_Hand_thumb_cmc_pitch" multiplier="1.3898" offset="0" />
+  </joint>
+  <link name="Right_Hand_thumb_distal">
+    <inertial>
+      <origin xyz="-0.00138919652929166 1.66654390589688E-06 0.0115790399688877" rpy="0 0 0" />
+      <mass value="0.00512933613321634" />
+      <inertia ixx="3.30969722600772E-07" ixy="-3.44780214263253E-10" ixz="1.04733139974397E-07" iyy="3.23809589950991E-07" iyz="-8.21573772773073E-11" izz="2.489052525811E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/thumb_distal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.6 0.4 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/thumb_distal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_thumb_ip" type="revolute">
+    <origin xyz="-0.00017064 0 0.038665" rpy="0 0 0" />
+    <parent link="Right_Hand_thumb_proximal" />
+    <child link="Right_Hand_thumb_distal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.7763" effort="100" velocity="1" />
+    <mimic joint="Right_Hand_thumb_cmc_pitch" multiplier="1.508" offset="0" />
+  </joint>
+  <link name="Right_Hand_index_metacarpals">
+    <inertial>
+      <origin xyz="-0.000473392019250098 -6.96702861594997E-07 0.00909067743061448" rpy="0 0 0" />
+      <mass value="0.00903700347459462" />
+      <inertia ixx="4.90035722472611E-07" ixy="3.89143802263231E-11" ixz="-2.78580197566548E-08" iyy="7.37380420538667E-07" iyz="6.37050140815271E-11" izz="5.52381285093451E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/index_metacarpals.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/index_metacarpals.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_index_mcp_roll" type="revolute">
+    <origin xyz="-0.0021643 0.026654 0.13253" rpy="0 0 0" />
+    <parent link="Right_Hand_hand_base_link" />
+    <child link="Right_Hand_index_metacarpals" />
+    <axis xyz="-0.99996 0 0.0087265" />
+    <limit lower="0" upper="0.2181" effort="100" velocity="1" />
+  </joint>
+  <link name="Right_Hand_index_proximal">
+    <inertial>
+      <origin xyz="-0.000221409784741484 1.17214413283134E-06 0.0104801609243648" rpy="0 0 0" />
+      <mass value="0.00654982479821771" />
+      <inertia ixx="4.43447817415824E-07" ixy="-2.69774925527114E-12" ixz="2.71645765576885E-08" iyy="4.58697755319572E-07" iyz="-8.52649515921746E-11" izz="1.7465947341041E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/index_proximal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.647058823529412 0.517647058823529 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/index_proximal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_index_mcp_pitch" type="revolute">
+    <origin xyz="0.0020763 0 0.015294" rpy="0 0 0" />
+    <parent link="Right_Hand_index_metacarpals" />
+    <child link="Right_Hand_index_proximal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.3607" effort="100" velocity="1" />
+  </joint>
+  <link name="Right_Hand_index_middle">
+    <inertial>
+      <origin xyz="-0.00259932519148708 -2.09526073980532E-06 0.0110174765184068" rpy="0 0 0" />
+      <mass value="0.00283043635595588" />
+      <inertia ixx="2.60328472325947E-07" ixy="5.7907596345584E-11" ixz="4.11787064047029E-08" iyy="2.33077669786127E-07" iyz="-2.91977981203693E-11" izz="1.27252395425434E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/index_middle.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0 0.6 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/index_middle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_index_pip" type="revolute">
+    <origin xyz="-0.0013807 0 0.035624" rpy="0 0 0" />
+    <parent link="Right_Hand_index_proximal" />
+    <child link="Right_Hand_index_middle" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.8317" effort="100" velocity="1" />
+    <mimic joint="Right_Hand_index_mcp_pitch" multiplier="1.3462" offset="0" />
+  </joint>
+  <link name="Right_Hand_index_distal">
+    <inertial>
+      <origin xyz="-0.000710605319534495 5.23484329792434E-06 0.0121456668819466" rpy="0 0 0" />
+      <mass value="0.00314458657125681" />
+      <inertia ixx="1.63322109883219E-07" ixy="1.96094345230889E-11" ixz="4.33517104700554E-08" iyy="1.48366110942312E-07" iyz="-2.0277830463002E-10" izz="9.85575309385827E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/index_distal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0 0.6 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/index_distal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_index_dip" type="revolute">
+    <origin xyz="-0.0054686 0 0.025665" rpy="0 0 0" />
+    <parent link="Right_Hand_index_middle" />
+    <child link="Right_Hand_index_distal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.8317" effort="100" velocity="1" />
+    <mimic joint="Right_Hand_index_mcp_pitch" multiplier="0.4616" offset="0" />
+  </joint>
+  <link name="Right_Hand_middle_proximal">
+    <inertial>
+      <origin xyz="-0.000226219980586555 1.17216483217115E-06 0.0104800581470382" rpy="0 0 0" />
+      <mass value="0.00654982478226948" />
+      <inertia ixx="4.43422823045881E-07" ixy="-2.65801609336249E-12" ixz="2.72879331079687E-08" iyy="4.58697754707372E-07" iyz="-8.52654749041276E-11" izz="1.746844667607E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/middle_proximal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.647058823529412 0.517647058823529 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/middle_proximal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_middle_mcp_pitch" type="revolute">
+    <origin xyz="-0.0021316 0.0076542 0.15281" rpy="0 0 0" />
+    <parent link="Right_Hand_hand_base_link" />
+    <child link="Right_Hand_middle_proximal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.3607" effort="100" velocity="1" />
+  </joint>
+  <link name="Right_Hand_middle_middle">
+    <inertial>
+      <origin xyz="-0.00261699473119732 -2.09526685195343E-06 0.0110132928110042" rpy="0 0 0" />
+      <mass value="0.00283043635504843" />
+      <inertia ixx="2.60196021834948E-07" ixy="5.79547865424082E-11" ixz="4.1391958359388E-08" iyy="2.33077669434872E-07" iyz="-2.91048412607941E-11" izz="1.27384845266404E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/middle_middle.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0 0.6 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/middle_middle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_middle_pip" type="revolute">
+    <origin xyz="-0.001397 0 0.035623" rpy="0 0 0" />
+    <parent link="Right_Hand_middle_proximal" />
+    <child link="Right_Hand_middle_middle" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.8317" effort="100" velocity="1" />
+    <mimic joint="Right_Hand_middle_mcp_pitch" multiplier="1.3462" offset="0" />
+  </joint>
+  <link name="Right_Hand_middle_distal">
+    <inertial>
+      <origin xyz="-0.000728492686368068 5.23463091207845E-06 0.0121446078355904" rpy="0 0 0" />
+      <mass value="0.0031445865911477" />
+      <inertia ixx="1.6319430020531E-07" ixy="1.99064061423831E-11" ixz="4.34469141575623E-08" iyy="1.48366133401933E-07" iyz="-2.0274172110168E-10" izz="9.86853634492536E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/middle_distal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0 0.6 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/middle_distal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_middle_dip" type="revolute">
+    <origin xyz="-0.0055098 0 0.025656" rpy="0 0 0" />
+    <parent link="Right_Hand_middle_middle" />
+    <child link="Right_Hand_middle_distal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.628" effort="100" velocity="1" />
+    <mimic joint="Right_Hand_middle_mcp_pitch" multiplier="0.4616" offset="0" />
+  </joint>
+  <link name="Right_Hand_ring_metacarpals">
+    <inertial>
+      <origin xyz="-0.000473392019250147 -6.96702861586324E-07 0.00909067743061451" rpy="0 0 0" />
+      <mass value="0.00903700347459463" />
+      <inertia ixx="4.90035722472612E-07" ixy="3.89143802227228E-11" ixz="-2.78580197566549E-08" iyy="7.37380420538669E-07" iyz="6.37050140810733E-11" izz="5.52381285093452E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/ring_metacarpals.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/ring_metacarpals.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_ring_mcp_roll" type="revolute">
+    <origin xyz="-0.0021643 -0.011346 0.13253" rpy="0 0 0" />
+    <parent link="Right_Hand_hand_base_link" />
+    <child link="Right_Hand_ring_metacarpals" />
+    <axis xyz="0.99996 0 0.0087265" />
+    <limit lower="0" upper="0.2181" effort="100" velocity="1" />
+  </joint>
+  <link name="Right_Hand_ring_proximal">
+    <inertial>
+      <origin xyz="-0.000221412177759527 1.17116513872681E-06 0.0104801549347171" rpy="0 0 0" />
+      <mass value="0.00654982867950541" />
+      <inertia ixx="4.43447863010516E-07" ixy="-2.73227024213763E-12" ixz="2.71645164102371E-08" iyy="4.58697895506594E-07" iyz="-8.52846225435011E-11" izz="1.74659590566364E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/ring_proximal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.647058823529412 0.517647058823529 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/ring_proximal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_ring_mcp_pitch" type="revolute">
+    <origin xyz="0.0020763 0 0.015294" rpy="0 0 0" />
+    <parent link="Right_Hand_ring_metacarpals" />
+    <child link="Right_Hand_ring_proximal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.3607" effort="100" velocity="1" />
+  </joint>
+  <link name="Right_Hand_ring_middle">
+    <inertial>
+      <origin xyz="-0.00259932539169275 -2.09536925854445E-06 0.0110174765352322" rpy="0 0 0" />
+      <mass value="0.00283043628669241" />
+      <inertia ixx="2.6032847037415E-07" ixy="5.79104972037516E-11" ixz="4.11787063652271E-08" iyy="2.33077663802866E-07" iyz="-2.91978956610415E-11" izz="1.27252388488073E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/ring_middle.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0 0.6 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/ring_middle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_ring_pip" type="revolute">
+    <origin xyz="-0.0013807 0 0.035624" rpy="0 0 0" />
+    <parent link="Right_Hand_ring_proximal" />
+    <child link="Right_Hand_ring_middle" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.8317" effort="100" velocity="1" />
+    <mimic joint="Right_Hand_ring_mcp_pitch" multiplier="1.3462" offset="0" />
+  </joint>
+  <link name="Right_Hand_ring_distal">
+    <inertial>
+      <origin xyz="-0.000710605070655887 5.23486441320054E-06 0.0121456664241844" rpy="0 0 0" />
+      <mass value="0.0031445863941225" />
+      <inertia ixx="1.6332208655443E-07" ixy="1.96096284326007E-11" ixz="4.33517042915493E-08" iyy="1.48366090032445E-07" iyz="-2.02778843611257E-10" izz="9.85575241184011E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/ring_distal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0 0.6 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/ring_distal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_ring_dip" type="revolute">
+    <origin xyz="-0.0054686 0 0.025665" rpy="0 0 0" />
+    <parent link="Right_Hand_ring_middle" />
+    <child link="Right_Hand_ring_distal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.628" effort="100" velocity="1" />
+    <mimic joint="Right_Hand_ring_mcp_pitch" multiplier="0.4616" offset="0" />
+  </joint>
+  <link name="Right_Hand_pinky_metacarpals">
+    <inertial>
+      <origin xyz="-0.000473392019250103 -6.96702861589793E-07 0.00909067743061448" rpy="0 0 0" />
+      <mass value="0.00903700347459465" />
+      <inertia ixx="4.90035722472611E-07" ixy="3.89143802264643E-11" ixz="-2.78580197566552E-08" iyy="7.37380420538668E-07" iyz="6.37050140815369E-11" izz="5.52381285093452E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/pinky_metacarpals.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/pinky_metacarpals.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_pinky_mcp_roll" type="revolute">
+    <origin xyz="-0.00012074 -0.030346 0.12755" rpy="0 0 0" />
+    <parent link="Right_Hand_hand_base_link" />
+    <child link="Right_Hand_pinky_metacarpals" />
+    <axis xyz="0.99996 0 0.0087265" />
+    <limit lower="0" upper="0.3489" effort="100" velocity="1" />
+  </joint>
+  <link name="Right_Hand_pinky_proximal">
+    <inertial>
+      <origin xyz="-0.000221412258607754 1.17103683876935E-06 0.0104801532987067" rpy="0 0 0" />
+      <mass value="0.00654982918810593" />
+      <inertia ixx="4.43447910769094E-07" ixy="-2.73411126621624E-12" ixz="2.71644852567342E-08" iyy="4.58697939807031E-07" iyz="-8.52970212446317E-11" izz="1.74659590066949E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/pinky_proximal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0 0.6 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/pinky_proximal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_pinky_mcp_pitch" type="revolute">
+    <origin xyz="0.0020763 0 0.015294" rpy="0 0 0" />
+    <parent link="Right_Hand_pinky_metacarpals" />
+    <child link="Right_Hand_pinky_proximal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.3607" effort="100" velocity="1" />
+  </joint>
+  <link name="Right_Hand_pinky_middle">
+    <inertial>
+      <origin xyz="-0.002599325191487 -2.09526073984695E-06 0.0110174765184069" rpy="0 0 0" />
+      <mass value="0.00283043635595589" />
+      <inertia ixx="2.60328472325978E-07" ixy="5.7907596343404E-11" ixz="4.11787064048009E-08" iyy="2.33077669786026E-07" iyz="-2.91977981214484E-11" izz="1.27252395425297E-07" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/pinky_middle.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0 0.6 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/pinky_middle.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_pinky_pip" type="revolute">
+    <origin xyz="-0.0013807 0 0.035624" rpy="0 0 0" />
+    <parent link="Right_Hand_pinky_proximal" />
+    <child link="Right_Hand_pinky_middle" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="1.8317" effort="100" velocity="1" />
+    <mimic joint="Right_Hand_pinky_mcp_pitch" multiplier="1.3462" offset="0" />
+  </joint>
+  <link name="Right_Hand_pinky_distal">
+    <inertial>
+      <origin xyz="-0.000710605211329151 5.23471293070038E-06 0.0121456666744262" rpy="0 0 0" />
+      <mass value="0.0031445864920905" />
+      <inertia ixx="1.63322099233008E-07" ixy="1.96074242691561E-11" ixz="4.33517077122639E-08" iyy="1.48366101127732E-07" iyz="-2.02773897050006E-10" izz="9.85575276143507E-08" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/pinky_distal.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0 0.6 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="/mnt/F/ICRA2027_TELEOP/assets/robots/linker_platform/l10/right/meshes/pinky_distal.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Right_Hand_pinky_dip" type="revolute">
+    <origin xyz="-0.0054686 0 0.025665" rpy="0 0 0" />
+    <parent link="Right_Hand_pinky_middle" />
+    <child link="Right_Hand_pinky_distal" />
+    <axis xyz="0 1 0" />
+    <limit lower="0" upper="0.628" effort="100" velocity="1" />
+    <mimic joint="Right_Hand_pinky_mcp_pitch" multiplier="0.4616" offset="0" />
+  </joint>
+  <joint name="right_arm_hand_fixed_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 3.14159265359 0" />
+    <parent link="Right_Wrist_Roll_Link" />
+    <child link="Right_Hand_hand_base_link" />
+  </joint>
+  <link name="head_d435i_mount_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 0.02" />
+      </geometry>
+      <material name="head_d435i_mount_link_material">
+        <color rgba="0.15 0.15 0.15 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="head_d435i_mount_joint" type="fixed">
+    <origin xyz="0.18 0 1.55" rpy="0 0 0" />
+    <parent link="Body_Base_link" />
+    <child link="head_d435i_mount_link" />
+  </joint>
+  <link name="head_d435i_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.09 0.025 0.025" />
+      </geometry>
+      <material name="head_d435i_link_material">
+        <color rgba="0.05 0.35 0.75 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="head_d435i_body_joint" type="fixed">
+    <origin xyz="0 0 0.035" rpy="0 0 0" />
+    <parent link="head_d435i_mount_link" />
+    <child link="head_d435i_link" />
+  </joint>
+  <link name="head_d435i_optical_frame">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.006 0.006 0.006" />
+      </geometry>
+      <material name="head_d435i_optical_frame_material">
+        <color rgba="0.9 0.1 0.1 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="head_d435i_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.57079632679 0 -1.57079632679" />
+    <parent link="head_d435i_link" />
+    <child link="head_d435i_optical_frame" />
+  </joint>
+  <link name="left_wrist_d405_mount_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 0.02" />
+      </geometry>
+      <material name="left_wrist_d405_mount_link_material">
+        <color rgba="0.15 0.15 0.15 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="left_wrist_d405_mount_joint" type="fixed">
+    <origin xyz="0.02 0.04 -0.018" rpy="0 0 0" />
+    <parent link="Left_Wrist_Roll_Link" />
+    <child link="left_wrist_d405_mount_link" />
+  </joint>
+  <link name="left_wrist_d405_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.04 0.02 0.02" />
+      </geometry>
+      <material name="left_wrist_d405_link_material">
+        <color rgba="0.05 0.35 0.75 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="left_wrist_d405_body_joint" type="fixed">
+    <origin xyz="0 0 0.035" rpy="0 0 0" />
+    <parent link="left_wrist_d405_mount_link" />
+    <child link="left_wrist_d405_link" />
+  </joint>
+  <link name="left_wrist_d405_optical_frame">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.006 0.006 0.006" />
+      </geometry>
+      <material name="left_wrist_d405_optical_frame_material">
+        <color rgba="0.9 0.1 0.1 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="left_wrist_d405_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.57079632679 0 -1.57079632679" />
+    <parent link="left_wrist_d405_link" />
+    <child link="left_wrist_d405_optical_frame" />
+  </joint>
+  <link name="right_wrist_d405_mount_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 0.02" />
+      </geometry>
+      <material name="right_wrist_d405_mount_link_material">
+        <color rgba="0.15 0.15 0.15 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="right_wrist_d405_mount_joint" type="fixed">
+    <origin xyz="0.02 -0.04 -0.018" rpy="0 0 0" />
+    <parent link="Right_Wrist_Roll_Link" />
+    <child link="right_wrist_d405_mount_link" />
+  </joint>
+  <link name="right_wrist_d405_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.04 0.02 0.02" />
+      </geometry>
+      <material name="right_wrist_d405_link_material">
+        <color rgba="0.05 0.35 0.75 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="right_wrist_d405_body_joint" type="fixed">
+    <origin xyz="0 0 0.035" rpy="0 0 0" />
+    <parent link="right_wrist_d405_mount_link" />
+    <child link="right_wrist_d405_link" />
+  </joint>
+  <link name="right_wrist_d405_optical_frame">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <mass value="0.01" />
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.006 0.006 0.006" />
+      </geometry>
+      <material name="right_wrist_d405_optical_frame_material">
+        <color rgba="0.9 0.1 0.1 1" />
+      </material>
+    </visual>
+  </link>
+  <joint name="right_wrist_d405_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.57079632679 0 -1.57079632679" />
+    <parent link="right_wrist_d405_link" />
+    <child link="right_wrist_d405_optical_frame" />
+  </joint>
+</robot>

@@ -1,0 +1,11 @@
+{
+  "schema": "robot_teleop.filter-flywheel-round/v1",
+  "round_id": "F_static_d0_v1",
+  "parent_round_id": null,
+  "condition_id": "reference_residual_bc_v1",
+  "model": {"history_length": 8, "context_size": 8, "ridge": 0.001},
+  "episodes": [
+    {"split": "train", "manifest": "../../evidence/d0_001/episode.manifest.json", "control_jsonl": "../../evidence/d0_001/streams/control.jsonl", "commands_jsonl": "../../evidence/d0_001/streams/commands.jsonl", "task_context_jsonl": "../../evidence/d0_001/streams/task_context.jsonl"},
+    {"split": "validation", "manifest": "../../evidence/d0_heldout_001/episode.manifest.json", "control_jsonl": "../../evidence/d0_heldout_001/streams/control.jsonl", "commands_jsonl": "../../evidence/d0_heldout_001/streams/commands.jsonl", "task_context_jsonl": "../../evidence/d0_heldout_001/streams/task_context.jsonl"}
+  ]
+}

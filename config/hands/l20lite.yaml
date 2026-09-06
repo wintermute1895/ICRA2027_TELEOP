@@ -1,0 +1,6 @@
+model: L20Lite
+sdk_model: L10
+joint_count: 10
+command_range: [0.0, 255.0]
+protocol: can
+compatibility: "L20 Lite is treated as the current name for L10; verify firmware and 10-joint order before arming"

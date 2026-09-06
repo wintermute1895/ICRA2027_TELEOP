@@ -1,0 +1,59 @@
+[project]
+name = "linkerbot"
+version = "0.5.4"
+description = "Linkerbot Python SDK"
+readme = "README.md"
+authors = [{ name = "Jason Yip", email = "yezi.2022@outlook.com" }]
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=2.2.6",
+  "pydantic>=2.12.5",
+  "python-can>=4.6.1",
+  "scipy>=1.15.3",
+]
+
+[project.optional-dependencies]
+kinetix = ["pin>=3.9.0"]
+
+[build-system]
+requires = ["uv_build>=0.9.8,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["matplotlib>=3.10.8", "ruff>=0.15.0", "ty>=0.0.15", "uv-bump>=0.4.1"]
+test = ["pytest>=9.0.2", "pytest-timeout>=2.4.0"]
+
+[tool.uv.build-backend]
+module-name = "linkerbot"
+
+[[tool.uv.index]]
+name = "gitea-linker-bot"
+url = "https://gitea.linkerhub.work/api/packages/linker-bot/pypi/simple/"
+publish-url = "https://gitea.linkerhub.work/api/packages/linker-bot/pypi"
+explicit = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "interactive: Interactive tests requiring human observation",
+  "l6: Tests for L6 robotic hand",
+  "l20lite: Tests for L20Lite robotic hand",
+  "l25: Tests for L25 robotic hand",
+  "o6: Tests for O6 robotic hand",
+  "slow: Tests that take longer to run",
+  "lifecycle: Connection and lifecycle tests",
+  "control: Angle, speed, and torque control tests",
+  "sensor: Temperature, current, fault, and force sensor tests",
+  "polling: Background polling tests",
+  "streaming: Event streaming tests",
+  "a7_lite: Tests for A7lite robotic arm",
+  "a7: Tests for A7 robotic arm",
+  "basic: Basic functionality tests",
+  "safety: Safety verification tests",
+  "motion: Motion control tests",
+  "extra: Extra tests (explicit invocation only)",
+]
+addopts = ["-v", "--strict-markers", "-m", "not interactive"]
+
+[tool.ty.analysis]
+replace-imports-with-any = ["pinocchio.**"]

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ACT Data Preparation"
+  short_description: "Validate and prepare ACT datasets"
+  default_prompt: "Prepare recorded robot episodes for ACT training with timestamp alignment and quality gates."

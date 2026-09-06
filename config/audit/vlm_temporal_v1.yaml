@@ -1,0 +1,9 @@
+schema: robot_teleop.vlm-temporal-profile/v1
+profile_id: vlm_temporal_v1
+window_duration_ms: 4000
+stride_ms: 500
+frame_interval_ms: 200
+max_frames_per_camera: 24
+causal: true
+boundary_tolerance_ms: 250
+labels: [phase, correction_active, correction_start, correction_end, confidence]

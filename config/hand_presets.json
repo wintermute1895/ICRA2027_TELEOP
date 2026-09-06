@@ -1,0 +1,26 @@
+{
+  "schema": "robot_teleop.hand-presets/v1",
+  "arm": "right",
+  "robot_namespace": "/robot1",
+  "teleop_namespace": "/teleop",
+  "speed": 40.0,
+  "force": 40.0,
+  "publish_hz": 20.0,
+  "hold_seconds": 0.5,
+  "state_publish_hz": 2.0,
+  "state_timeout_s": 2.0,
+  "hands": {
+    "right": {
+      "model": "O6",
+      "position_encoding": "normalized_0_100",
+      "command_encoding": "ros_joint_state_raw_0_255",
+      "gesture_file": "../gestures/o6_tuned.json",
+      "cycle": [
+        {"name": "gesture_0_open", "gesture_id": 0, "gripper_state": 0},
+        {"name": "gesture_1_grasp", "gesture_id": 1, "gripper_state": 1},
+        {"name": "gesture_2_grasp", "gesture_id": 2, "gripper_state": 1},
+        {"name": "gesture_3_grasp", "gesture_id": 3, "gripper_state": 1}
+      ]
+    }
+  }
+}

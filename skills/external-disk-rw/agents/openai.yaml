@@ -1,0 +1,4 @@
+interface:
+  display_name: "External Disk RW"
+  short_description: "Remount the Cyan_data disk read-write safely"
+  default_prompt: "Make the external Cyan_data disk writable for capture and training."

@@ -1,0 +1,7 @@
+schema: robot_teleop.reference-profile/v1
+reference_id: usb_c_nominal_v1
+reference_revision: usb_c_nominal_v1
+generator: nominal_geometric_planner
+output_contract: {command_space: tcp_pose_delta, linear_unit: m, angular_unit: rad, phase_conditioned: true}
+fallback: stop_and_request_intervention
+notes: [The reference is a nominal geometric prior, not task truth.]

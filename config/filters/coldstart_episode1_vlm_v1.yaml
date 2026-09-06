@@ -1,0 +1,16 @@
+schema: robot_teleop.filter-round-config/v0.1
+dataset:
+  train:
+    - /media/ilex/Cyan_data/ICRA2027_TELEOP_DATA/vlm_audit/episode1/vlm_filter_v2/filter_training_vlm.jsonl
+  validation: []
+training:
+  model_config: config/filters/trajectory_cvae_transformer_v0_2_vlm.yaml
+  device: cuda
+  require_cuda: true
+  epochs: 50
+  batch_size: 128
+  validation_fraction: 0
+output:
+  directory: /media/ilex/Cyan_data/ICRA2027_TELEOP/filter_runs/coldstart_episode1_vlm_v1
+evaluation:
+  device: cuda

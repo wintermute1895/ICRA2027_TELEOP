@@ -1,0 +1,14 @@
+schema: robot_teleop.task-bundle/v1
+task_id: precision_alignment
+task_revision: precision_alignment_v1
+task_family: contact_rich_precision_assembly_v1
+task_kind: concrete_scenario
+template: config
+annotation_profile: config/common/annotation_keys_v1.yaml
+evaluation_profile: config/evaluation/precision_assembly_v1.yaml
+safety_profile: config/safety/precision_assembly_v1.yaml
+capture_contract:
+  required_cameras: [main_rgb, auxiliary_rgb]
+  camera_profile: 640x480@15
+  require_depth: true
+  manual_segments: true

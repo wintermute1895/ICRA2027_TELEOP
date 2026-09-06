@@ -1,0 +1,16 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Robot policies depend on data whose value is determined by both task outcome and
+the downstream learning objective. Low-cost teleoperation interfaces make data
+collection accessible, but do not by themselves identify corrective actions or
+reduce the cost of auditing them \citep{gello2024,umi2024}.
+
+We focus on visually observable tabletop manipulation tasks with a single
+target, an already grasped object, and a need for local trajectory correction.
+The system keeps the human operator in control. A frozen visual encoder provides
+continuous visual context, a visual-language auditor proposes correction
+intervals offline, and a causal action model predicts a bounded local
+intervention from only past observations. The central empirical question is
+whether this loop improves the yield of task-valid demonstrations under fixed
+operator and safety budgets.

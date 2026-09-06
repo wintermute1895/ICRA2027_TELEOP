@@ -1,0 +1,6 @@
+schema: robot_teleop.control-profile/v1
+profile_id: proposed
+inherits: ros2_ws/src/teleop_control_bridge/config/hardware_teleop.yaml
+change_policy: exactly_one_primary_factor
+description: Fill in the pre-registered change before collecting condition B.
+

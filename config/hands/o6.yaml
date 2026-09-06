@@ -1,0 +1,5 @@
+model: O6
+sdk_model: O6
+joint_count: 6
+command_range: [0.0, 255.0]
+protocol: can

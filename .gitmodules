@@ -1,0 +1,3 @@
+[submodule "third_party/linkerhand_ros2_sdk"]
+	path = third_party/linkerhand_ros2_sdk
+	url = https://github.com/linker-bot/linkerhand-ros2-sdk.git

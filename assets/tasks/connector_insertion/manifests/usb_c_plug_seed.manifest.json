@@ -1,0 +1,17 @@
+{
+  "source_url": "project-authored://assets/tasks/connector_insertion/usb_c/usb_c_plug_seed.obj",
+  "retrieved_at": "2026-08-13T00:00:00+08:00",
+  "license": "LicenseRef-ProjectAuthored",
+  "attribution": "ICRA2027_TELEOP connector insertion baseline",
+  "scale_to_meters": 1.0,
+  "used_for": "visual_only",
+  "source_sha256": "e32f8b2e9b05cdb2de09059b7f79b174560b3972d38fc20ee228b837610c2689",
+  "visual_sha256": "e1baa2a8c3b816f73d8d9b567f89c7531ce71326256426fe2e382cfe34281a62",
+  "collision_sha256": "b34935833fe4aa7ff0319a8dacf2a77183fa0945c16681aba77fc0637f1cf52f",
+  "collision_generator": {
+    "tool": "CoACD",
+    "threshold": 0.05,
+    "max_convex_hull": 8,
+    "part_count": 1
+  }
+}

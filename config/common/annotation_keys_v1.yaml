@@ -1,0 +1,12 @@
+schema: robot_teleop.annotation-profile/v1
+annotation_profile_id: annotation_keys_v1
+keys:
+  "1": approach
+  "2": align
+  "4": correction_toggle
+  "5": stalled_or_misaligned
+  "6": recovery
+  "7": target_lost
+  "8": retreat
+  "9": success
+  "0": failure

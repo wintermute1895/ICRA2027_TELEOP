@@ -1,0 +1,23 @@
+schema: robot_teleop.data-quality-gate/v1
+minimum_samples: 30
+required_fields:
+  - episode_id
+  - source_domain
+  - sample_index
+  - header_stamp_ns
+  - joint_names
+  - robot_joint_state_rad
+  - mapped_joint_command_rad
+thresholds:
+  state_coverage_min: 0.99
+  command_coverage_min: 0.99
+  rgb_coverage_min: 0.95
+  depth_coverage_min: 0.95
+  maximum_gap_ms: 250.0
+requirements:
+  require_rgb: true
+  require_depth: true
+  require_strictly_increasing_timestamps: true
+notes:
+  - Data quality is independent of task success and A/B condition.
+  - Collision, joint-limit, and singularity replay are separate kinematic gates.

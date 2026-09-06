@@ -15,15 +15,12 @@ import time
 import tty
 
 import numpy as np
-import pinocchio as pin
-from pinocchio.visualize import MeshcatVisualizer
 
 ROOT = Path(__file__).resolve().parents[1]
-IROS = ROOT / "IROS_teleop"
-sys.path.insert(0, str(IROS))
-from lbot.sdk_v103 import LbotSdk103, default_library
+ROBOT_ASSETS = ROOT / "assets/robots/linker_platform"
+sys.path.insert(0, str(ROOT / "third_party/linkerbot_sdk/python"))
+from lbot_sdk_v103 import LbotSdk103, default_library
 
-DEFAULT_URDF = IROS / "config/combined_robot/robot.urdf"
 ARM_JOINTS = {
     "left": ["Left_Shoulder_Pitch_Joint", "Left_Shoulder_Roll_Joint", "Left_Shoulder_Yaw_Joint", "Left_Elbow_Pitch_Joint", "Left_Wrist_Yaw_Joint", "Left_Wrist_Pitch_Joint", "Left_Wrist_Roll_Joint"],
     "right": ["Right_Shoulder_Pitch_Joint", "Right_Shoulder_Roll_Joint", "Right_Shoulder_Yaw_Joint", "Right_Elbow_Pitch_Joint", "Right_Wrist_Yaw_Joint", "Right_Wrist_Pitch_Joint", "Right_Wrist_Roll_Joint"],
@@ -61,6 +58,9 @@ def read_key(prompt: str, allowed: set[str]) -> str:
 
 class RobotView:
     def __init__(self, urdf: Path, headless: bool):
+        import pinocchio as pin
+
+        self.pin = pin
         self.robot = pin.RobotWrapper.BuildFromURDF(str(urdf), package_dirs=[str(urdf.parent)])
         self.model = self.robot.model
         self.data = self.model.createData()
@@ -75,6 +75,8 @@ class RobotView:
         self.viz = None
         if not headless:
             import meshcat.geometry as geometry
+            from pinocchio.visualize import MeshcatVisualizer
+
             self.viz = MeshcatVisualizer(self.model, self.robot.collision_model, self.robot.visual_model)
             self.viz.initViewer(open=True)
             self.viz.loadViewerModel(rootNodeName="joint_direction_robot")
@@ -100,7 +102,7 @@ class RobotView:
         self.viz.display(self.q)
         if active:
             joint_id = self.model.getJointId(active)
-            pin.forwardKinematics(self.model, self.data, self.q)
+            self.pin.forwardKinematics(self.model, self.data, self.q)
             self.viz.viewer["joint_direction/active"].set_transform(self.data.oMi[joint_id].homogeneous)
 
 
@@ -256,7 +258,7 @@ def parse_args():
     parser.add_argument("--step-deg", type=float, default=2.0); parser.add_argument("--speed", type=float, default=0.05)
     parser.add_argument("--accel", type=float, default=0.05); parser.add_argument("--margin-deg", type=float, default=5.0)
     parser.add_argument("--connect-timeout", type=float, default=10.0); parser.add_argument("--preview-seconds", type=float, default=0.75)
-    parser.add_argument("--headless", action="store_true"); parser.add_argument("--urdf", type=Path, default=DEFAULT_URDF)
+    parser.add_argument("--headless", action="store_true"); parser.add_argument("--urdf", type=Path, required=True, help="validated robot URDF; no obsolete O2 default is provided")
     parser.add_argument("--sdk-library", type=Path, default=default_library(ROOT)); parser.add_argument("--output", type=Path, default=ROOT / "reports/joint_direction_report.json")
     args = parser.parse_args()
     if not args.urdf.is_file() or not args.sdk_library.is_file(): parser.error("URDF or SDK library not found")

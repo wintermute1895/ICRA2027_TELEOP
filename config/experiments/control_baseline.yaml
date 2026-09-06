@@ -1,0 +1,5 @@
+schema: robot_teleop.control-profile/v1
+profile_id: baseline
+inherits: ros2_ws/src/teleop_control_bridge/config/hardware_teleop.yaml
+description: Existing validated teleoperation configuration.
+

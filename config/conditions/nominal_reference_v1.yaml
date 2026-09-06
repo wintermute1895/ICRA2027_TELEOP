@@ -1,0 +1,7 @@
+schema: robot_teleop.condition-profile/v1
+condition_id: nominal_reference_v1
+condition_role: A
+reference_profile: config/references/usb_c_nominal_v1.yaml
+policy_profile: {policy_id: no_learned_correction, policy_revision: nominal_reference_v1, mode: nominal_reference_only, learned_correction: false}
+safety_profile: config/safety/precision_assembly_v1.yaml
+notes: [Low-level tracking and safety projection are allowed, Visual or learned corrective actions are prohibited]

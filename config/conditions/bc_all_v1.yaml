@@ -1,0 +1,13 @@
+schema: robot_teleop.condition-profile/v1
+condition_id: bc_all_v1
+condition_role: B0
+reference_profile: config/references/usb_c_nominal_v1.yaml
+policy_profile:
+  policy_id: bc_all
+  policy_revision: bc_all_v1
+  mode: direct_behavior_cloning
+  learned_correction: true
+  observation_contract: [rgb, depth, robot_state_rad, trajectory_phase, nominal_reference]
+  action_contract: local_tcp_delta
+  training_data_selector: all_eligible_demonstrations
+safety_profile: config/safety/precision_assembly_v1.yaml

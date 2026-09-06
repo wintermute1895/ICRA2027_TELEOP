@@ -1,0 +1,8 @@
+{
+  "source_url": "project-authored://assets/tasks/connector_insertion/usb_c/usb_c_plug_seed.obj",
+  "retrieved_at": "2026-08-13T00:00:00+08:00",
+  "license": "LicenseRef-ProjectAuthored",
+  "attribution": "ICRA2027_TELEOP connector insertion baseline",
+  "scale_to_meters": 1.0,
+  "used_for": "visual_only"
+}

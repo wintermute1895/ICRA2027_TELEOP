@@ -1,0 +1,14 @@
+schema: robot_teleop.condition-profile/v1
+condition_id: reference_residual_bc_v1
+condition_role: B1
+reference_profile: config/references/usb_c_nominal_v1.yaml
+policy_profile:
+  policy_id: reference_residual_bc
+  policy_revision: reference_residual_bc_v1
+  mode: reference_plus_residual
+  learned_correction: true
+  observation_contract: [rgb, depth, robot_state_rad, trajectory_phase, nominal_reference]
+  action_contract: local_tcp_delta_residual
+  composition: nominal_reference + policy_residual -> safety_projection
+  training_data_selector: all_eligible_demonstrations
+safety_profile: config/safety/precision_assembly_v1.yaml

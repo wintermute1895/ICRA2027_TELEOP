@@ -1,0 +1,11 @@
+schema: robot_teleop.evaluation-profile/v1
+evaluation_id: precision_assembly_v1
+recording_eligibility: config/experiments/data_quality_gate.yaml
+safety_feasibility: {required_fields: [joint_limit_margin_rad, minimum_singular_value, minimum_clearance_m]}
+task_outcome:
+  task_profile: config/tasks/usb_c_insertion_v1.yaml
+  labels: [success, failure_mode, recovery_success, intervention]
+learning_utility:
+  retain_corrective_segments: true
+  retain_failure_segments: true
+  prohibit_filtering_by: [jerk, tracking_error]
