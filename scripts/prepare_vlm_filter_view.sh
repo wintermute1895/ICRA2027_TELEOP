@@ -5,6 +5,11 @@ set -Eeuo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT_DIR/scripts/lib/training_env.sh"
 
+# The teleop interpreter must not inherit ROS/system dist-packages through
+# PYTHONPATH (e.g. Ubuntu sympy 1.9 under /usr/lib/python3/dist-packages)
+# because torch/transformers import the wrong versions and fail.
+export PYTHONPATH=""
+
 EPISODE=""
 OUTPUT_DIR=""
 MODEL_ID="${VLM_MODEL_ID:-google/siglip2-base-patch16-224}"
@@ -23,6 +28,8 @@ DROP_UNMATCHED=0
 ALLOW_NETWORK=0
 CAMERA_IDS=()
 FRAME_INDEXES=()
+OUTPUT_DIR=""
+FILTER_VIEW=""
 
 usage() {
   cat >&2 <<'EOF'
@@ -72,6 +79,13 @@ done
 [[ -f "$EPISODE" ]] || { echo "[FATAL] episode JSONL not found: $EPISODE" >&2; exit 2; }
 [[ -n "$OUTPUT_DIR" ]] || { usage; echo "[FATAL] --output-dir is required" >&2; exit 2; }
 ((${#CAMERA_IDS[@]} > 0)) || { usage; echo "[FATAL] at least one --camera is required" >&2; exit 2; }
+FILTER_VIEW="$OUTPUT_DIR/filter_training_vlm.jsonl"
+# A directory left by an interrupted run is derived output only; remove it so
+# the prepare loop is idempotent and can continue after transient failures.
+if [[ -e "$OUTPUT_DIR" && ! -f "$FILTER_VIEW" ]]; then
+  echo "[WARN] removing incomplete VLM output: $OUTPUT_DIR" >&2
+  rm -rf "$OUTPUT_DIR"
+fi
 [[ ! -e "$OUTPUT_DIR" ]] || { echo "[FATAL] refusing to overwrite: $OUTPUT_DIR" >&2; exit 2; }
 for index in "${FRAME_INDEXES[@]}"; do
   [[ -f "$index" ]] || { echo "[FATAL] frame index not found: $index" >&2; exit 2; }
@@ -90,7 +104,6 @@ PYTHON="$ENV_PREFIX/bin/python"
 
 mkdir -p "$OUTPUT_DIR"
 EMBEDDINGS="$OUTPUT_DIR/vlm_embeddings.jsonl"
-FILTER_VIEW="$OUTPUT_DIR/filter_training_vlm.jsonl"
 encode=(
   "$PYTHON" "$ROOT_DIR/tools/encode_images_with_vlm.py"
   --output "$EMBEDDINGS" --model-id "$MODEL_ID" --revision "$REVISION"
