@@ -100,6 +100,11 @@ def generate_launch_description():
             {"enable_right_arm": ParameterValue(enable_right_arm, value_type=bool)},
             {"master_left_topic": master_left_topic},
             {"master_right_topic": master_right_topic},
+            {"initial_movej_mode": LaunchConfiguration("initial_movej_mode")},
+            {"first_command_max_delta_rad": ParameterValue(
+                LaunchConfiguration("first_command_max_delta_rad"), value_type=float)},
+            {"measured_state_max_age_s": ParameterValue(
+                LaunchConfiguration("measured_state_max_age_s"), value_type=float)},
         ]
     )
 
@@ -123,6 +128,15 @@ def generate_launch_description():
         DeclareLaunchArgument("enable_right_arm", default_value="true"),
         DeclareLaunchArgument("master_left_topic", default_value=str(bridge_params["master_left_topic"])),
         DeclareLaunchArgument("master_right_topic", default_value=str(bridge_params["master_right_topic"])),
+        DeclareLaunchArgument(
+            "initial_movej_mode", default_value="",
+            description="Right-arm startup mode: 'required', 'bypass', or empty for legacy bool behavior"),
+        DeclareLaunchArgument(
+            "first_command_max_delta_rad", default_value="0.0",
+            description="Bypass fail-safe: reject the first model frame farther than this from measured pose"),
+        DeclareLaunchArgument(
+            "measured_state_max_age_s", default_value="5.0",
+            description="Maximum age of cached measured state accepted for startup auditing"),
         *driver_nodes,          # 所有从臂驱动节点
         linkerta_launch,        # 主臂节点
         bridge_launch,          # mapping/filter/safety bridge

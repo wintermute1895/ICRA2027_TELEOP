@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 
-EVENT_KEYS = {
+DEFAULT_EVENT_KEYS = {
     "1": "approach",
     "2": "align",
     "3": "short_insert",
@@ -25,6 +25,25 @@ EVENT_KEYS = {
     "9": "terminal_success",
     "0": "terminal_failure",
 }
+
+
+def _load_event_keys() -> dict[str, str]:
+    """Allow task-specific keyboard mappings through an environment override."""
+    merged = dict(DEFAULT_EVENT_KEYS)
+    raw = os.environ.get("TELEOP_ANNOTATION_EVENT_MAP", "")
+    if not raw:
+        return merged
+    try:
+        override = json.loads(raw)
+    except (ValueError, TypeError):
+        return merged
+    if not isinstance(override, dict):
+        return merged
+    merged.update({str(key): str(value) for key, value in override.items() if isinstance(value, str)})
+    return merged
+
+
+EVENT_KEYS = _load_event_keys()
 
 
 def load_state(path: Path) -> dict[str, Any]:
@@ -90,14 +109,36 @@ def append_event(run_dir: Path, event: dict[str, Any]) -> Path:
 
 
 def print_help() -> None:
+    labels = {
+        "approach": "approach 接近",
+        "align": "align 对齐",
+        "short_insert": "short_insert 短插入/触碰",
+        "press": "press 按下按钮",
+        "correction_toggle": "correction 开始/结束",
+        "stalled_or_misaligned": "stalled/misaligned 停滞或未对齐",
+        "recovery_start": "recovery 开始恢复",
+        "target_lost": "target_lost 目标丢失",
+        "verify": "verify 验证",
+        "retreat": "retreat 后退",
+        "terminal_success": "terminal_success 任务成功",
+        "terminal_failure": "terminal_failure 任务失败",
+    }
+    lines = [
+        "\n========== AUDITOR ANNOTATION ==========",
+        "数字键直接标注（无需 Enter，仅在 RECORDING 时有效）",
+    ]
+    for key in ("1", "2", "3", "4", "5", "6", "7", "8", "9", "0"):
+        event = EVENT_KEYS.get(key)
+        if key == "4":
+            lines.append("4 correction 开始/结束 toggle")
+        elif event:
+            lines.append(f"{key} {labels.get(event, event)}")
+    lines += [
+        "h help            q 退出标注窗口（不停止采集）",
+        "",
+    ]
     print(
-        "\n========== AUDITOR ANNOTATION =========="
-        "\n数字键直接标注（无需 Enter，仅在 RECORDING 时有效）"
-        "\n1 approach        2 align           3 short_insert"
-        "\n4 correction 开始/结束 toggle"
-        "\n5 stalled/misaligned   6 recovery_start   7 target_lost"
-        "\n8 retreat         9 terminal_success  0 terminal_failure"
-        "\nh help            q 退出标注窗口（不停止采集）\n",
+        "\n".join(lines),
         flush=True,
     )
 

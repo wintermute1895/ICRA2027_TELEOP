@@ -24,6 +24,9 @@ def main() -> int:
     parser.add_argument("--dataset-stats", type=Path)
     args = parser.parse_args()
 
+    if args.kind == "act" and args.dataset_stats is None:
+        raise ValueError("ACT promotion requires --dataset-stats from the training dataset")
+
     checkpoint = args.checkpoint.expanduser().resolve()
     if not checkpoint.exists() or not checkpoint.is_file() and not checkpoint.is_dir():
         raise ValueError(f"checkpoint not found: {checkpoint}")

@@ -1,5 +1,5 @@
 schema: robot_teleop.task-registry/v1
-registry_revision: 1
+registry_revision: 2
 tasks:
   - task_id: precision_alignment
     profile: config/tasks/precision_alignment_v1/task.yaml
@@ -7,3 +7,5 @@ tasks:
     profile: config/tasks/usb_c_insertion_v1.yaml
   - task_id: power_button_press_v1
     profile: config/tasks/power_button_press_v1/task.yaml
+  - task_id: screwdriver_alignment_v1
+    profile: config/tasks/screwdriver_alignment_v1/task.yaml

@@ -16,6 +16,9 @@
 #include <std_srvs/srv/empty.hpp>
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
+#include <limits>
+#include <sstream>
 
 using namespace std::chrono_literals;
 using lbot_driver::LBot;
@@ -395,7 +398,56 @@ void LBot::right_joint_follow_callback(const std::shared_ptr<lbot_arm_interfaces
     command.source = "lbot_driver.accepted_for_sdk";
     right_vendor_command_pub_->publish(command);
 
-    if (!lbot_api.lbot_joint_follow(lbot_handle, LBOT_RIGHT_ARM, joints, msg->follow)) {
+    const bool sdk_ok = lbot_api.lbot_joint_follow(lbot_handle, LBOT_RIGHT_ARM, joints, msg->follow);
+    // The vendor_command topic is published before the SDK call, so it only
+    // proves the callback fired.  This diagnostic captures the actual SDK
+    // return value and the measured pose at the time of the call so Follow
+    // execution can be separated from command delivery in the rollout logs.
+    const uint64_t sequence = ++right_follow_call_count_;
+    std::vector<double> measured(7, std::numeric_limits<double>::quiet_NaN());
+    bool measured_ok = false;
+    {
+        std::lock_guard<std::mutex> lock(state_mutex_);
+        if (current_lbot_state_receipt_ns_ > 0) {
+            for (size_t i = 0; i < 7; ++i) {
+                measured[i] = current_lbot_state_.right_arm.joint_position[i];
+            }
+            measured_ok = true;
+        }
+    }
+    double max_abs_delta = std::numeric_limits<double>::quiet_NaN();
+    if (measured_ok) {
+        max_abs_delta = 0.0;
+        for (size_t i = 0; i < 7; ++i) {
+            max_abs_delta = std::max(max_abs_delta, std::abs(joints[i] - measured[i]));
+        }
+    }
+    std::ostringstream target_text;
+    target_text << std::fixed << std::setprecision(4) << "[";
+    for (size_t i = 0; i < joints.size(); ++i) {
+        if (i) target_text << ", ";
+        target_text << joints[i];
+    }
+    target_text << "]";
+    std::ostringstream measured_text;
+    measured_text << std::fixed << std::setprecision(4) << "[";
+    if (measured_ok) {
+        for (size_t i = 0; i < measured.size(); ++i) {
+            if (i) measured_text << ", ";
+            measured_text << measured[i];
+        }
+    } else {
+        measured_text << "n/a";
+    }
+    measured_text << "]";
+    RCLCPP_INFO_THROTTLE(
+        this->get_logger(), *this->get_clock(), 1000,
+        "Right follow SDK call: sequence=%lu result=%d follow_mode=%d "
+        "target_rad=%s measured_rad=%s max_abs_target_minus_measured=%s",
+        static_cast<unsigned long>(sequence), sdk_ok ? 1 : 0,
+        msg->follow ? 1 : 0, target_text.str().c_str(), measured_text.str().c_str(),
+        measured_ok ? std::to_string(max_abs_delta).c_str() : "n/a");
+    if (!sdk_ok) {
         RCLCPP_ERROR(this->get_logger(), "Failed to execute right_joint_follow");
     }
 }

@@ -1,0 +1,11 @@
+schema: robot_teleop.evaluation-profile/v1
+evaluation_id: screwdriver_alignment_v1
+recording_eligibility: config/experiments/data_quality_gate.yaml
+task_outcome:
+  task_profile: config/tasks/screwdriver_alignment_v1/task.yaml
+  labels: [success, failure_mode, recovery_success, intervention]
+  success_requires: [screwdriver_tip_aligned_to_screw, stable_end_state]
+learning_utility:
+  retain_corrective_segments: true
+  retain_failure_segments: true
+  prohibit_filtering_by: [jerk, tracking_error]

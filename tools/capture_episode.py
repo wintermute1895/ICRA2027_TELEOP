@@ -215,16 +215,45 @@ def write_terminal_audit(run_dir: Path, args: argparse.Namespace) -> None:
     print(f"[AUDIT] 已写入 {path}", flush=True)
 
 
+def bag_record_command(bag_dir: Path, topic_list: list[str], *, compression_mode: str, compression_format: str) -> list[str]:
+    """Build a ros2 bag record command compatible with the installed ROS distro.
+
+    Humble uses positional topics and does not accept --disable-keyboard-controls;
+    newer ROS 2 releases added both --topics and --disable-keyboard-controls.
+    Detect support from the local help text instead of hard-coding one distro.
+    """
+    command = ["ros2", "bag", "record"]
+    try:
+        help_result = subprocess.run(
+            ["ros2", "bag", "record", "--help"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            timeout=15,
+        )
+        help_text = (help_result.stdout or "") if help_result.returncode == 0 else ""
+    except (OSError, subprocess.TimeoutExpired):
+        help_text = ""
+    if "--disable-keyboard-controls" in help_text:
+        command.append("--disable-keyboard-controls")
+    command += ["--storage", "sqlite3", "--output", str(bag_dir)]
+    if compression_mode != "none":
+        command += ["--compression-mode", compression_mode, "--compression-format", compression_format]
+    if "--topics" in help_text:
+        command.append("--topics")
+    command += topic_list
+    return command
+
+
 def record_one(args: argparse.Namespace, run_dir: Path, topic_list: list[str]) -> tuple[bool, float]:
     bag_dir = run_dir / "artifacts" / "rosbag2"
     write_capture_manifest(run_dir, args, topic_list)
-    command = [
-        "ros2", "bag", "record", "--disable-keyboard-controls",
-        "--storage", "sqlite3", "--output", str(bag_dir),
-    ]
-    if args.compression_mode != "none":
-        command += ["--compression-mode", args.compression_mode, "--compression-format", args.compression_format]
-    command += ["--topics"] + topic_list
+    command = bag_record_command(
+        bag_dir,
+        topic_list,
+        compression_mode=args.compression_mode,
+        compression_format=args.compression_format,
+    )
     print(f"[RECORDING] {len(topic_list)} topics | Enter=stop | 1-9/0=annotate", flush=True)
     if sys.stdin.isatty():
         # Consume any CR/LF still queued by the start key before the stop

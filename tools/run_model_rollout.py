@@ -35,6 +35,47 @@ class Rollout:
         self.processes: list[tuple[str, subprocess.Popen[bytes]]] = []
         self.log_dir = Path(config.get("log_dir", "/tmp/teleop_rollout_logs"))
         self.log_dir.mkdir(parents=True, exist_ok=True)
+        self._status_offsets: dict[str, int] = {}
+        self._status_partial: dict[str, str] = {}
+
+    _STATUS_MARKERS = (
+        "[ACT] model loaded",
+        "[SUPERVISOR]",
+        "[BRIDGE]",
+        "first valid ACT command",
+        "Right follow SDK call",
+        "deployment supervisor:",
+        "state=WAITING_FOR_MODEL",
+        "fallback suppressed",
+        "Initial MoveJ",
+        "FAILSAFE",
+        "outside [",
+        "MoveJ service not available",
+    )
+
+    def print_status(self) -> None:
+        """Forward key startup/diagnostic log lines to the operator console."""
+        for label in ("model_deployment", "hardware_teleop", "rosbag"):
+            path = self.log_dir / f"{label}.log"
+            if not path.is_file():
+                continue
+            size = path.stat().st_size
+            offset = self._status_offsets.get(label, 0)
+            if size < offset:
+                offset = 0
+            if size == offset:
+                continue
+            with path.open("rb") as handle:
+                handle.seek(offset)
+                data = handle.read()
+            self._status_offsets[label] = size
+            text = self._status_partial.pop(label, "") + data.decode("utf-8", errors="replace")
+            *lines, tail = text.split("\n")
+            if tail:
+                self._status_partial[label] = tail
+            for line in lines:
+                if any(marker in line for marker in self._STATUS_MARKERS):
+                    print(f"[{label}] {line.rstrip()}", flush=True)
 
     def command(self, label: str, args: list[str]) -> subprocess.Popen[bytes]:
         log = (self.log_dir / f"{label}.log").open("ab")
@@ -104,6 +145,16 @@ class Rollout:
             f"master_left_topic:={hardware.get('master_left_topic', '/left_arm_joint_control')}",
             f"master_right_topic:={hardware.get('master_right_topic', '/model_deployment/right_arm_joint_control')}",
         ]
+        # Right-arm startup-mode passthrough. Empty values keep legacy bridge
+        # semantics; "required"/"bypass" select the v10 A/B diagnosis paths.
+        if hardware.get("initial_movej_mode"):
+            bridge_cmd.append(f"initial_movej_mode:={hardware['initial_movej_mode']}")
+        first_delta = hardware.get("first_command_max_delta_rad")
+        if first_delta is not None:
+            bridge_cmd.append(f"first_command_max_delta_rad:={first_delta}")
+        measured_age = hardware.get("measured_state_max_age_s")
+        if measured_age is not None:
+            bridge_cmd.append(f"measured_state_max_age_s:={measured_age}")
         self.command("hardware_teleop", bridge_cmd)
         self.wait_topic("/model_deployment/right_arm_joint_control")
         if self.record_dir is not None:
@@ -117,7 +168,22 @@ class Rollout:
         topics = list(dict.fromkeys((self.config.get("recording") or {}).get("topics") or []))
         if not topics:
             raise ValueError("recording enabled but no topics configured")
-        self.command("rosbag", ["ros2", "bag", "record", "--storage", "sqlite3", "--output", str(self.record_dir), "--topics", *topics])
+        command = ["ros2", "bag", "record", "--storage", "sqlite3", "--output", str(self.record_dir)]
+        try:
+            help_result = subprocess.run(
+                ["ros2", "bag", "record", "--help"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=10,
+            )
+            help_text = (help_result.stdout or "") if help_result.returncode == 0 else ""
+        except (OSError, subprocess.TimeoutExpired):
+            help_text = ""
+        if "--topics" in help_text:
+            command.append("--topics")
+        command += topics
+        self.command("rosbag", command)
 
     @staticmethod
     def resolve_path(value: str | Path) -> Path:
@@ -217,6 +283,7 @@ def main() -> int:
             dead = [(label, proc.returncode) for label, proc in runner.processes if proc.poll() is not None]
             if dead:
                 raise RuntimeError(f"rollout process exited: {dead}")
+            runner.print_status()
             time.sleep(1.0)
     except KeyboardInterrupt:
         return 0
