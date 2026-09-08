@@ -102,10 +102,11 @@ class FilterTrainingConfig:
     def visual_dim(self) -> int:
         return int(self.model["visual_dim"])
 
-    def model_config(self, *, action_dim: int, state_dim: int) -> TrajectoryFilterConfig:
+    def model_config(self, *, action_dim: int, state_dim: int, command_dim: int | None = None) -> TrajectoryFilterConfig:
         return TrajectoryFilterConfig(
             action_dim=action_dim,
             state_dim=state_dim,
+            command_dim=command_dim,
             history_length=self.history_length,
             horizon=self.horizon,
             context_dim=self.context_dim,
@@ -122,4 +123,9 @@ class FilterTrainingConfig:
             gain_current_command=bool(self.model.get("gain_current_command", False)),
             shared_action_gain_head=bool(self.model.get("shared_action_gain_head", False)),
             fixed_gain=(None if self.model.get("fixed_gain") is None else float(self.model["fixed_gain"])),
+            model_type=str(self.model.get("model_type", "cvae_rate_limited")),
+            authority_mode=str(self.model.get("authority_mode", "rate_limited")),
+            risk_use_discrepancy=bool(self.model.get("risk_use_discrepancy", True)),
+            risk_use_dispersion=bool(self.model.get("risk_use_dispersion", True)),
+            risk_use_correction_probability=bool(self.model.get("risk_use_correction_probability", True)),
         )

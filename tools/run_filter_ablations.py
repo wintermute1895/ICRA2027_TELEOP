@@ -18,14 +18,21 @@ import yaml
 
 VARIANTS = {
     "full": {},
+    "deterministic_action": {"model": {"model_type": "deterministic_action"}, "loss": {"beta_kl": 0.0}},
+    "raw_teleoperation": {"model": {"authority_mode": "zero", "gain_enabled": False}, "loss": {"gain_weight": 0.0}},
     "no_visual": {"model": {"visual_dim": 0, "gain_enabled": True}},
     "no_gain": {"model": {"gain_enabled": False}, "loss": {"gain_weight": 0.0}},
-    "fixed_gain": {"model": {"gain_enabled": True, "fixed_gain": 0.25}, "loss": {"gain_weight": 0.0}},
+    "fixed_gain": {"model": {"gain_enabled": True, "authority_mode": "fixed", "fixed_gain": 0.25}, "loss": {"gain_weight": 0.0}},
+    "binary_gate": {"model": {"gain_enabled": True, "authority_mode": "binary_gate", "gate_enabled": True}},
+    "framewise_gain": {"model": {"gain_enabled": True, "authority_mode": "framewise", "gain_current_command": True}},
     "shared_head": {"model": {"shared_action_gain_head": True}},
     "nominal_only": {"loss": {"correction_weight": 0.0, "gain_weight": 0.0}},
     "correction_only": {"loss": {"zero_weight": 0.0}},
     "single_step": {"model": {"horizon": 1}},
-    "no_rate_limit": {"model": {"alpha_rate": 1.0}},
+    "no_rate_limit": {"model": {"authority_mode": "framewise"}},
+    "risk_no_discrepancy": {"model": {"model_type": "risk_conditioned_authority", "risk_use_discrepancy": False}},
+    "risk_no_dispersion": {"model": {"model_type": "risk_conditioned_authority", "risk_use_dispersion": False}},
+    "risk_no_correction_probability": {"model": {"model_type": "risk_conditioned_authority", "risk_use_correction_probability": False}},
 }
 
 

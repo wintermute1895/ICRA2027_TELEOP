@@ -110,6 +110,12 @@ def write_capture_manifest(run_dir: Path, args: argparse.Namespace, topic_list: 
         "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "capture_mode": getattr(args, "capture_mode", "timed" if getattr(args, "auto_start", False) else "manual"),
         "source_domain": args.source_domain,
+        "collection_provenance": {
+            "collection_round": getattr(args, "collection_round", 0),
+            "control_mode": getattr(args, "control_mode", "raw_teleoperation"),
+            "filter_enabled": getattr(args, "control_mode", "raw_teleoperation") == "learned_filter",
+            "filter_checkpoint": getattr(args, "filter_checkpoint", None),
+        },
         "capture_arms": args.arms,
         "camera_namespaces": args.cameras,
         "camera_profile": args.camera_profile,
@@ -474,8 +480,17 @@ def main() -> int:
     parser.add_argument("--compression-mode", default="file")
     parser.add_argument("--compression-format", default="zstd")
     parser.add_argument("--source-domain", default="real")
+    parser.add_argument("--collection-round", type=int, default=0)
+    parser.add_argument("--control-mode", choices=("raw_teleoperation", "learned_filter"), default="raw_teleoperation")
+    parser.add_argument("--filter-checkpoint")
     parser.add_argument("--auto-start", action="store_true")
     args = parser.parse_args()
+    if args.collection_round < 0:
+        raise SystemExit("--collection-round must be non-negative")
+    if args.collection_round == 0 and args.control_mode != "raw_teleoperation":
+        raise SystemExit("round 0 requires raw_teleoperation control mode")
+    if args.collection_round > 0 and (args.control_mode != "learned_filter" or not args.filter_checkpoint):
+        raise SystemExit("assisted rounds require learned_filter mode and --filter-checkpoint")
     args.arms = [x for x in args.arms.split(",") if x]
     args.cameras = [x for x in args.cameras.split(",") if x]
     from run_evidence.lifecycle import build_manifest, finish_run, initialize_run, mark_running, new_run_id, write_host_capture

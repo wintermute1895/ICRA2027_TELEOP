@@ -22,6 +22,46 @@ from teleop_filter import (  # noqa: E402
 
 
 class TrajectoryCVAEModelTest(unittest.TestCase):
+    def test_deterministic_model_has_no_uncertainty_or_kl(self):
+        config = TrajectoryFilterConfig(
+            action_dim=2, state_dim=2, command_dim=4, history_length=3, horizon=2,
+            latent_dim=2, model_dim=8, num_heads=2, num_layers=1, dropout=0.0,
+            model_type="deterministic_action",
+        )
+        model = ConditionalTrajectoryVAE(config)
+        commands, states = torch.zeros(2, 3, 4), torch.zeros(2, 3, 2)
+        targets = torch.zeros(2, 2, 2)
+        outputs = model(commands, states, targets)
+        self.assertIsNone(outputs["uncertainty"])
+        self.assertIsNone(outputs["uncertainty_type"])
+        self.assertEqual(float(trajectory_vae_loss(outputs, targets)["kl"]), 0.0)
+
+    def test_risk_authority_feature_ablation_and_rate_limit(self):
+        for disabled in ("risk_use_discrepancy", "risk_use_dispersion", "risk_use_correction_probability"):
+            options = {disabled: False}
+            config = TrajectoryFilterConfig(
+                action_dim=2, state_dim=2, command_dim=4, history_length=3, horizon=2,
+                latent_dim=2, model_dim=8, num_heads=2, num_layers=1, dropout=0.0,
+                model_type="risk_conditioned_authority", gain_enabled=True,
+                gain_current_command=True, alpha_max=0.6, alpha_rate=0.05, **options,
+            )
+            result = ConditionalTrajectoryVAE(config).predict(
+                torch.zeros(2, 3, 4), torch.zeros(2, 3, 2),
+                current_command=torch.zeros(2, 2), discrepancy_command=torch.zeros(2, 2),
+            )
+            self.assertTrue(torch.all(result["alpha"] <= 0.05 + 1e-6))
+            self.assertEqual(result["uncertainty_type"], "cvae_multimodal_dispersion")
+
+    def test_binary_authority_creates_gate_and_applies_bounded_gain(self):
+        config = TrajectoryFilterConfig(
+            action_dim=2, state_dim=2, history_length=3, horizon=1,
+            latent_dim=2, model_dim=8, num_heads=2, num_layers=1, dropout=0.0,
+            gain_enabled=True, authority_mode="binary_gate", alpha_max=0.4,
+        )
+        result = ConditionalTrajectoryVAE(config).predict(torch.zeros(2, 3, 2), torch.zeros(2, 3, 2))
+        self.assertIsNotNone(result["correction_probability"])
+        self.assertTrue(torch.all((result["alpha"] == 0.0) | (result["alpha"] == 0.4)))
+
     def test_forward_loss_and_prior_only_inference(self):
         torch.manual_seed(7)
         config = TrajectoryFilterConfig(

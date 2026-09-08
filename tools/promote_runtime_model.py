@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 
 import yaml
+import torch
 
 try:
     from model_artifacts import sha256_path
@@ -42,6 +43,13 @@ def main() -> int:
     config["enabled"] = True
     config["checkpoint"] = str(checkpoint)
     config["checkpoint_sha256"] = sha256_path(checkpoint)
+    if args.kind == "filter":
+        try:
+            payload = torch.load(checkpoint, map_location="cpu", weights_only=False)
+        except Exception:
+            payload = None
+        if isinstance(payload, dict) and "model_config" in payload:
+            config["model_type"] = payload.get("model_type", payload["model_config"].get("model_type", "cvae_rate_limited"))
     if args.kind == "act" and args.dataset_stats:
         stats = args.dataset_stats.expanduser().resolve()
         if not stats.is_file():

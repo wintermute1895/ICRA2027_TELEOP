@@ -1,6 +1,6 @@
 schema: robot_teleop.trajectory-filter-model/v0.1
 model:
-  model_type: cvae_rate_limited
+  model_type: risk_conditioned_authority
   authority_mode: rate_limited
   history_length: 16
   horizon: 8
@@ -10,22 +10,28 @@ model:
   num_layers: 3
   dropout: 0.1
   context_dim: 0
-  visual_dim: 0 # set to the frozen VLM embedding width for task-aware training
-  gate_enabled: false
+  visual_dim: 0
+  gate_enabled: true
+  gain_enabled: true
+  gain_current_command: true
+  alpha_max: 0.6
+  alpha_rate: 0.05
+  risk_use_discrepancy: true
+  risk_use_dispersion: true
+  risk_use_correction_probability: true
 loss:
   beta_kl: 0.001
   smoothness_weight: 0.01
   correction_weight: 2.0
+  gate_weight: 1.0
+  gain_weight: 1.0
 data:
   allow_synthetic_smoke: false
 runtime:
   deterministic_prior: true
-  blend: 0.35
+  blend: 1.0
   max_correction_rad: 0.05
   deployment: offline_and_simulation_only
 semantics:
-  prior: learned_conditional_prior_from_past_raw_and_executed_commands_and_measured_state
-  posterior: training_only_conditioned_on_explicit_expert_action_target
   target: expert_action_target_rad_is_human_command_for_round0_and_audited_executed_action_for_assisted_rounds
-  quality_claim: reconstruction_and_kl_are_model_diagnostics_not_ground_truth_human_quality
-  visual_semantics: none; trajectory_only_ablation
+  uncertainty: cvae_multimodal_dispersion_not_epistemic_uncertainty

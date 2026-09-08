@@ -24,6 +24,8 @@ class TrajectoryFilterPrediction:
     gain_delta: np.ndarray | None = None
     alpha: np.ndarray | None = None
     desired_gain: np.ndarray | None = None
+    uncertainty: np.ndarray | None = None
+    uncertainty_type: str | None = None
 
 
 class TrajectoryFilterRuntime:
@@ -41,6 +43,9 @@ class TrajectoryFilterRuntime:
         self.visual_encoder = checkpoint.get("visual_encoder")
         self.target_semantics = checkpoint.get("target_semantics", "residual")
         self.command_semantics = checkpoint.get("command_semantics", "master_joint_raw")
+        self.model_type = checkpoint.get("model_type", self.config.model_type)
+        if self.model_type != self.config.model_type:
+            raise ValueError("checkpoint model_type disagrees with model_config")
         if self.target_semantics not in {"residual", "synthetic_smoke_residual", "recorded_expert_action"}:
             raise ValueError(f"unsupported target semantics: {self.target_semantics}")
         if self.config.visual_dim:
@@ -84,16 +89,19 @@ class TrajectoryFilterRuntime:
     ) -> TrajectoryFilterPrediction:
         command_tensor = self._normalized("commands", commands)
         current_command_physical = (
-            np.asarray(commands[:, -1, :], dtype=np.float32)
+            np.asarray(commands[:, -1, :self.config.action_dim], dtype=np.float32)
             if current_command is None
             else np.asarray(current_command, dtype=np.float32)
         )
         current_command_tensor = (
-            command_tensor[:, -1]
+            command_tensor[:, -1, :self.config.action_dim]
             if current_command is None
-            else self._normalized(
-                "commands", np.asarray(current_command, dtype=np.float32)[:, None, :]
-            )[:, 0]
+            else self._normalized_current_command(np.asarray(current_command, dtype=np.float32))
+        )
+        target_stats = self.normalization["targets"]
+        discrepancy_command_tensor = torch.as_tensor(
+            (current_command_physical - np.asarray(target_stats["mean"]).reshape(-1))
+            / np.asarray(target_stats["std"]).reshape(-1), dtype=torch.float32, device=self.device,
         )
         state_tensor = self._normalized("states", states)
         context_tensor = None
@@ -115,9 +123,9 @@ class TrajectoryFilterRuntime:
                 command_tensor, state_tensor, context_tensor, visual_tensor,
                 None if previous_alpha is None else torch.as_tensor(previous_alpha, dtype=torch.float32, device=self.device).reshape(-1, 1),
                 current_command=current_command_tensor,
+                discrepancy_command=discrepancy_command_tensor,
                 deterministic=deterministic
             )
-            target_stats = self.normalization["targets"]
             target_mean = torch.as_tensor(
                 target_stats["mean"], dtype=torch.float32, device=self.device
             )
@@ -138,4 +146,20 @@ class TrajectoryFilterRuntime:
             gain_delta=None if outputs.get("gain_delta") is None else outputs["gain_delta"].cpu().numpy(),
             alpha=None if outputs.get("alpha") is None else outputs["alpha"].cpu().numpy(),
             desired_gain=None if outputs.get("desired_gain") is None else outputs["desired_gain"].cpu().numpy(),
+            uncertainty=None if outputs.get("uncertainty") is None else outputs["uncertainty"].cpu().numpy(),
+            uncertainty_type=outputs.get("uncertainty_type"),
         )
+
+    def _normalized_current_command(self, current_command: np.ndarray) -> torch.Tensor:
+        stats = self.normalization.get("raw_commands")
+        if stats is None:
+            command_stats = self.normalization["commands"]
+            stats = {
+                "mean": np.asarray(command_stats["mean"])[..., :self.config.action_dim],
+                "std": np.asarray(command_stats["std"])[..., :self.config.action_dim],
+            }
+        value = current_command[:, None, :]
+        return torch.as_tensor(
+            (value - np.asarray(stats["mean"])) / np.asarray(stats["std"]),
+            dtype=torch.float32, device=self.device,
+        )[:, 0]

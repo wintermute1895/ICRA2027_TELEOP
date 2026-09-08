@@ -41,6 +41,7 @@ def unroll_rate_limited_gain(
 class TrajectoryFilterConfig:
     action_dim: int
     state_dim: int
+    command_dim: int | None = None
     history_length: int = 16
     horizon: int = 8
     context_dim: int = 0
@@ -57,6 +58,11 @@ class TrajectoryFilterConfig:
     gain_current_command: bool = False
     shared_action_gain_head: bool = False
     fixed_gain: float | None = None
+    model_type: str = "cvae_rate_limited"
+    authority_mode: str = "rate_limited"
+    risk_use_discrepancy: bool = True
+    risk_use_dispersion: bool = True
+    risk_use_correction_probability: bool = True
 
     def validate(self) -> None:
         integer_fields = (
@@ -75,9 +81,21 @@ class TrajectoryFilterConfig:
             raise ValueError("fixed_gain must be within [0, alpha_max]")
         if self.shared_action_gain_head and not self.gain_enabled:
             raise ValueError("shared_action_gain_head requires gain_enabled")
+        if self.model_type not in {"deterministic_action", "cvae_rate_limited", "risk_conditioned_authority"}:
+            raise ValueError("unsupported model_type")
+        if self.authority_mode not in {"zero", "fixed", "binary_gate", "framewise", "rate_limited"}:
+            raise ValueError("unsupported authority_mode")
+        if self.authority_mode == "fixed" and self.fixed_gain is None:
+            raise ValueError("fixed authority_mode requires fixed_gain")
+        if self.model_type == "risk_conditioned_authority" and not self.gain_enabled:
+            raise ValueError("risk-conditioned authority requires gain_enabled")
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+    @property
+    def effective_command_dim(self) -> int:
+        return self.action_dim if self.command_dim is None else self.command_dim
 
 
 class ConditionalTrajectoryVAE(nn.Module):
@@ -87,7 +105,7 @@ class ConditionalTrajectoryVAE(nn.Module):
         super().__init__()
         config.validate()
         self.config = config
-        token_dim = config.action_dim + config.state_dim + config.context_dim + config.visual_dim
+        token_dim = config.effective_command_dim + config.state_dim + config.context_dim + config.visual_dim
         self.input_projection = nn.Linear(token_dim, config.model_dim)
         self.position = nn.Parameter(torch.zeros(1, config.history_length, config.model_dim))
         layer = nn.TransformerEncoderLayer(
@@ -101,9 +119,20 @@ class ConditionalTrajectoryVAE(nn.Module):
         )
         self.history_encoder = nn.TransformerEncoder(layer, num_layers=config.num_layers)
         self.history_norm = nn.LayerNorm(config.model_dim)
-        self.gate_head = nn.Linear(config.model_dim, 1) if config.gate_enabled else None
+        needs_gate = config.gate_enabled or (
+            config.model_type == "risk_conditioned_authority" and config.risk_use_correction_probability
+        ) or config.authority_mode == "binary_gate"
+        self.gate_head = nn.Linear(config.model_dim, 1) if needs_gate else None
         gain_dim = config.model_dim + (config.action_dim if config.gain_current_command else 0)
-        self.gain_head = nn.Linear(gain_dim, 1) if config.gain_enabled and not config.shared_action_gain_head else None
+        risk_features = int(config.risk_use_discrepancy) + int(config.risk_use_dispersion) + int(config.risk_use_correction_probability)
+        self.risk_head = (
+            nn.Linear(gain_dim + risk_features, 1)
+            if config.model_type == "risk_conditioned_authority" else None
+        )
+        self.gain_head = (
+            nn.Linear(gain_dim, 1)
+            if config.gain_enabled and not config.shared_action_gain_head and self.risk_head is None else None
+        )
         self.prior = nn.Linear(config.model_dim, 2 * config.latent_dim)
         self.posterior = nn.Sequential(
             nn.Linear(config.model_dim + config.horizon * config.action_dim, 2 * config.model_dim),
@@ -126,7 +155,7 @@ class ConditionalTrajectoryVAE(nn.Module):
         visual: Tensor | None = None,
     ) -> Tensor:
         cfg = self.config
-        expected_commands = (commands.shape[0], cfg.history_length, cfg.action_dim)
+        expected_commands = (commands.shape[0], cfg.history_length, cfg.effective_command_dim)
         expected_states = (states.shape[0], cfg.history_length, cfg.state_dim)
         if tuple(commands.shape) != expected_commands or tuple(states.shape) != expected_states:
             raise ValueError("commands/states do not match configured batch, history, or feature dimensions")
@@ -169,6 +198,7 @@ class ConditionalTrajectoryVAE(nn.Module):
         visual: Tensor | None = None,
         current_command: Tensor | None = None,
         previous_alpha: Tensor | None = None,
+        discrepancy_command: Tensor | None = None,
     ) -> dict[str, Tensor]:
         cfg = self.config
         if tuple(target_actions.shape) != (commands.shape[0], cfg.horizon, cfg.action_dim):
@@ -177,12 +207,21 @@ class ConditionalTrajectoryVAE(nn.Module):
         prior_mean, prior_log_variance = self._distribution(self.prior(history))
         posterior_input = torch.cat([history, target_actions.flatten(start_dim=1)], dim=-1)
         posterior_mean, posterior_log_variance = self._distribution(self.posterior(posterior_input))
-        latent = self._sample(posterior_mean, posterior_log_variance)
+        if cfg.model_type == "deterministic_action":
+            posterior_mean, posterior_log_variance = prior_mean, prior_log_variance
+        latent = (
+            torch.zeros_like(posterior_mean)
+            if cfg.model_type == "deterministic_action" else self._sample(posterior_mean, posterior_log_variance)
+        )
         decoded = self.decoder(torch.cat([history, latent], dim=-1))
         prediction = decoded[:, :cfg.horizon * cfg.action_dim].view(-1, cfg.horizon, cfg.action_dim)
         shared_gain_logit = decoded[:, -1:] if cfg.shared_action_gain_head else None
+        correction_probability = None if self.gate_head is None else torch.sigmoid(self.gate_head(history).view(-1, 1))
+        dispersion = torch.exp(0.5 * prior_log_variance).mean(dim=-1, keepdim=True)
         desired_gain, alpha, gain_delta = self._gain_outputs(
             history, current_command, previous_alpha, shared_gain_logit,
+            prediction=prediction, dispersion=dispersion, correction_probability=correction_probability,
+            discrepancy_command=discrepancy_command,
         )
         return {
             "prediction": prediction,
@@ -194,24 +233,54 @@ class ConditionalTrajectoryVAE(nn.Module):
             "desired_gain": desired_gain,
             "alpha": alpha,
             "gain_delta": gain_delta,
+            "uncertainty": None if cfg.model_type == "deterministic_action" else dispersion,
+            "uncertainty_type": None if cfg.model_type == "deterministic_action" else "cvae_multimodal_dispersion",
         }
 
     def _gain_outputs(
         self, history: Tensor, current_command: Tensor | None, previous_alpha: Tensor | None,
-        shared_gain_logit: Tensor | None = None,
+        shared_gain_logit: Tensor | None = None, *, prediction: Tensor | None = None,
+        dispersion: Tensor | None = None, correction_probability: Tensor | None = None,
+        discrepancy_command: Tensor | None = None,
     ) -> tuple[Tensor | None, Tensor | None, Tensor | None]:
+        if self.config.authority_mode == "zero":
+            zero = history.new_zeros((history.shape[0], 1))
+            return zero, zero, zero
+        if self.config.authority_mode == "binary_gate":
+            if correction_probability is None:
+                raise ValueError("binary_gate authority requires correction probability")
+            desired = (correction_probability >= 0.5).to(history) * self.config.alpha_max
+            return desired, desired, desired - self._previous_gain(desired, previous_alpha)
         if self.config.fixed_gain is not None:
             desired = history.new_full((history.shape[0], 1), self.config.fixed_gain)
-            alpha = self._rate_limited_gain(desired, previous_alpha)
+            alpha = self._apply_authority_dynamics(desired, previous_alpha)
             previous = self._previous_gain(alpha, previous_alpha)
             return desired, alpha, alpha - previous
         if self.config.shared_action_gain_head:
             if shared_gain_logit is None:
                 raise ValueError("shared gain logit is required")
             desired = torch.sigmoid(shared_gain_logit) * self.config.alpha_max
-            alpha = self._rate_limited_gain(desired, previous_alpha)
+            alpha = self._apply_authority_dynamics(desired, previous_alpha)
             previous = self._previous_gain(alpha, previous_alpha)
             return desired, alpha, alpha - previous
+        if self.risk_head is not None:
+            if current_command is None or prediction is None:
+                raise ValueError("risk authority requires current command and action prediction")
+            comparison = current_command if discrepancy_command is None else discrepancy_command
+            features = [history]
+            if self.config.gain_current_command:
+                features.append(current_command)
+            if self.config.risk_use_discrepancy:
+                features.append((prediction[:, 0] - comparison).abs().mean(dim=-1, keepdim=True))
+            if self.config.risk_use_dispersion:
+                if dispersion is None: raise ValueError("risk authority requires dispersion")
+                features.append(dispersion)
+            if self.config.risk_use_correction_probability:
+                if correction_probability is None: raise ValueError("risk authority requires correction probability")
+                features.append(correction_probability)
+            desired = torch.sigmoid(self.risk_head(torch.cat(features, dim=-1))) * self.config.alpha_max
+            alpha = self._apply_authority_dynamics(desired, previous_alpha)
+            return desired, alpha, alpha - self._previous_gain(alpha, previous_alpha)
         if self.gain_head is None:
             return None, None, None
         if not self.config.gain_current_command:
@@ -222,7 +291,7 @@ class ConditionalTrajectoryVAE(nn.Module):
         if current_command is None or tuple(current_command.shape) != (history.shape[0], self.config.action_dim):
             raise ValueError("current_command is required and must match the action dimension when gain is enabled")
         desired = torch.sigmoid(self.gain_head(torch.cat([history, current_command], dim=-1))) * self.config.alpha_max
-        alpha = self._rate_limited_gain(desired, previous_alpha)
+        alpha = self._apply_authority_dynamics(desired, previous_alpha)
         previous = self._previous_gain(alpha, previous_alpha)
         return desired, alpha, alpha - previous
 
@@ -243,6 +312,11 @@ class ConditionalTrajectoryVAE(nn.Module):
         previous = self._previous_gain(desired_gain, previous_alpha)
         return previous + (desired_gain - previous).clamp(-self.config.alpha_rate, self.config.alpha_rate)
 
+    def _apply_authority_dynamics(self, desired_gain: Tensor, previous_alpha: Tensor | None) -> Tensor:
+        if self.config.authority_mode == "framewise":
+            return desired_gain
+        return self._rate_limited_gain(desired_gain, previous_alpha)
+
     @torch.no_grad()
     def predict(
         self,
@@ -252,19 +326,27 @@ class ConditionalTrajectoryVAE(nn.Module):
         visual: Tensor | None = None,
         previous_alpha: Tensor | None = None,
         current_command: Tensor | None = None,
+        discrepancy_command: Tensor | None = None,
         *,
         deterministic: bool = True,
     ) -> dict[str, Tensor]:
         history = self.encode_history(commands, states, context, visual)
         prior_mean, prior_log_variance = self._distribution(self.prior(history))
-        latent = prior_mean if deterministic else self._sample(prior_mean, prior_log_variance)
+        latent = (
+            torch.zeros_like(prior_mean) if self.config.model_type == "deterministic_action"
+            else (prior_mean if deterministic else self._sample(prior_mean, prior_log_variance))
+        )
         decoded = self.decoder(torch.cat([history, latent], dim=-1))
         action_width = self.config.horizon * self.config.action_dim
         prediction = decoded[:, :action_width].view(-1, self.config.horizon, self.config.action_dim)
         shared_gain_logit = decoded[:, -1:] if self.config.shared_action_gain_head else None
         gate_logits = self.gate_head(history).view(-1, 1) if self.gate_head is not None else None
+        correction_probability = None if gate_logits is None else torch.sigmoid(gate_logits)
+        dispersion = torch.exp(0.5 * prior_log_variance).mean(dim=-1, keepdim=True)
         desired_gain, alpha, gain_delta = self._gain_outputs(
             history, current_command, previous_alpha, shared_gain_logit,
+            prediction=prediction, dispersion=dispersion, correction_probability=correction_probability,
+            discrepancy_command=discrepancy_command,
         )
         return {
             "prediction": prediction,
@@ -276,6 +358,8 @@ class ConditionalTrajectoryVAE(nn.Module):
             "gain_delta": gain_delta,
             "desired_gain": desired_gain,
             "alpha": alpha,
+            "uncertainty": None if self.config.model_type == "deterministic_action" else dispersion,
+            "uncertainty_type": None if self.config.model_type == "deterministic_action" else "cvae_multimodal_dispersion",
         }
 
 

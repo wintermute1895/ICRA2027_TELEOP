@@ -84,9 +84,9 @@ def predict_episode(runtime: TrajectoryFilterRuntime, windows, deterministic: bo
     return TrajectoryFilterPrediction(**{
         name: combine(name) for name in (
             "predicted_actions", "predicted_residuals", "latent_variance",
-            "correction_probability", "gain_delta", "alpha", "desired_gain",
+            "correction_probability", "gain_delta", "alpha", "desired_gain", "uncertainty",
         )
-    })
+    }, uncertainty_type=rows[0].uncertainty_type)
 
 
 def main() -> int:

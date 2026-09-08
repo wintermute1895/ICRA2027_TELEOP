@@ -46,6 +46,7 @@ class EpisodeWindows:
     episode_start: np.ndarray
     target_semantics: str
     command_semantics: str
+    target_sources: tuple[str, ...]
     episode_id: str
     visual_provenance: dict[str, object] | None = None
 
@@ -127,6 +128,11 @@ def build_windows(
                 "episode lacks expert_action_target_rad; "
                 "build a correction-segment view with recorded_expert_action targets"
             )
+    target_sources = {row.get("action_target_source") for row in rows}
+    allowed_sources = {"human_command", "executed_assisted_action", "explicit_verified_expert_action"}
+    if not target_sources or not target_sources <= allowed_sources:
+        if not (allow_synthetic_smoke and target_sources == {"synthetic_smoke_only"}):
+            raise ValueError(f"episode has missing or unsupported action_target_source: {path}")
     inferred_action = len(rows[0].get(target_name) or [])
     inferred_state = len(rows[0].get("robot_joint_state_rad") or [])
     action_dim = action_dim or inferred_action
@@ -153,7 +159,7 @@ def build_windows(
             "embedding_dim": visual_dim,
         }
 
-    command_name = "master_joint_raw"
+    command_name = "raw_and_executed_action_history"
     command_windows, state_windows, context_windows, visual_windows = [], [], [], []
     targets, current_commands, chunk_commands, masks, weights = [], [], [], [], []
     flags = correction_flags(rows)
@@ -161,10 +167,16 @@ def build_windows(
         command_rows = rows[anchor - history_length:anchor]
         observation_rows = rows[anchor - history_length + 1:anchor + 1]
         future_rows = rows[anchor:anchor + horizon]
-        commands = [vector(row, command_name, action_dim) for row in command_rows]
+        commands = []
+        for row in command_rows:
+            raw = vector(row, "master_joint_raw", action_dim)
+            executed = vector(row, "executed_joint_command_rad", action_dim)
+            if executed is None and row.get("collection_round") == 0 and row.get("control_mode") == "raw_teleoperation":
+                executed = raw
+            commands.append(None if raw is None or executed is None else np.concatenate([raw, executed]))
         states = [vector(row, "robot_joint_state_rad", state_dim) for row in observation_rows]
         future = [vector(row, target_name, action_dim) for row in future_rows]
-        raw_future = [vector(row, command_name, action_dim) for row in future_rows]
+        raw_future = [vector(row, "master_joint_raw", action_dim) for row in future_rows]
         if any(value is None for value in (*commands, *states, *future, *raw_future)):
             continue
         contexts = None
@@ -208,6 +220,7 @@ def build_windows(
         episode_start=np.asarray([True] + [False] * (len(targets) - 1)),
         target_semantics="recorded_expert_action" if target_name == "expert_action_target_rad" else "synthetic_smoke_residual",
         command_semantics=command_name,
+        target_sources=tuple(sorted(str(source) for source in target_sources)),
         episode_id=episode_id,
         visual_provenance=visual_provenance,
     )
@@ -271,7 +284,9 @@ def loader(
     commands = (commands - normalization["commands"][0]) / normalization["commands"][1]
     states = (states - normalization["states"][0]) / normalization["states"][1]
     targets = (targets - normalization["targets"][0]) / normalization["targets"][1]
-    current_commands = (current_commands - normalization["commands"][0].reshape(-1)) / normalization["commands"][1].reshape(-1)
+    # Current raw command is a 7-D signal, not the 14-D concatenated history.
+    current_commands = (current_commands - normalization["raw_commands"][0].reshape(-1)) / normalization["raw_commands"][1].reshape(-1)
+    discrepancy_commands = (arrays.current_commands - normalization["targets"][0].reshape(-1)) / normalization["targets"][1].reshape(-1)
     tensors = [torch.from_numpy(commands), torch.from_numpy(states)]
     if contexts is not None:
         contexts = (contexts - normalization["contexts"][0]) / normalization["contexts"][1]
@@ -281,6 +296,7 @@ def loader(
         tensors.append(torch.from_numpy(visuals))
     tensors.append(torch.from_numpy(targets))
     tensors.append(torch.from_numpy(current_commands.astype(np.float32)))
+    tensors.append(torch.from_numpy(discrepancy_commands.astype(np.float32)))
     tensors.append(torch.from_numpy(chunk_commands.astype(np.float32)))
     tensors.append(torch.from_numpy(correction_mask))
     tensors.append(torch.from_numpy(correction_weights))
@@ -323,13 +339,15 @@ def run_epoch(
             offset += int(bool(visual_dim))
             targets = batch[offset].to(device)
             current_commands = batch[offset + 1].to(device)
-            raw_commands = batch[offset + 2].to(device)
-            correction_mask = batch[offset + 3].to(device)
-            correction_weights = batch[offset + 4].to(device)
-            episode_start = batch[offset + 5].to(device)
+            discrepancy_commands = batch[offset + 2].to(device)
+            raw_commands = batch[offset + 3].to(device)
+            correction_mask = batch[offset + 4].to(device)
+            correction_weights = batch[offset + 5].to(device)
+            episode_start = batch[offset + 6].to(device)
             outputs = model(
                 commands, states, targets, context, visual,
                 current_command=current_commands,
+                discrepancy_command=discrepancy_commands,
             )
             if outputs.get("desired_gain") is not None:
                 alpha = unroll_rate_limited_gain(
@@ -411,7 +429,8 @@ def main() -> int:
         correction_loss_weight=training_config.loss.correction_weight,
         allow_synthetic_smoke=training_config.data.allow_synthetic_smoke,
     )
-    action_dim, state_dim = first.commands.shape[-1], first.states.shape[-1]
+    command_dim, state_dim = first.commands.shape[-1], first.states.shape[-1]
+    action_dim = first.targets.shape[-1]
     episodes = [first]
     for path in args.episode[1:]:
         episodes.append(build_windows(
@@ -445,6 +464,7 @@ def main() -> int:
     train_arrays = stack(train_episodes)
     normalization = {
         "commands": mean_std(train_arrays.commands), "states": mean_std(train_arrays.states),
+        "raw_commands": mean_std(train_arrays.current_commands[:, None, :]),
         "targets": mean_std(train_arrays.targets),
     }
     if train_arrays.contexts is not None:
@@ -452,7 +472,7 @@ def main() -> int:
     if train_arrays.visuals is not None:
         normalization["visuals"] = mean_std(train_arrays.visuals)
 
-    config = training_config.model_config(action_dim=action_dim, state_dim=state_dim)
+    config = training_config.model_config(action_dim=action_dim, state_dim=state_dim, command_dim=command_dim)
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     device = torch.device(args.device)
@@ -514,6 +534,7 @@ def main() -> int:
     args.output_dir.mkdir(parents=True)
     checkpoint = {
         "schema": "robot_teleop.trajectory-filter-checkpoint/v0.1",
+        "model_type": config.model_type,
         "model_config": config.to_dict(),
         "model_state": model.cpu().state_dict(),
         "normalization": {key: {"mean": mean, "std": std} for key, (mean, std) in normalization.items()},
@@ -528,6 +549,7 @@ def main() -> int:
     } for path in args.episode]
     report = {
         "schema": "robot_teleop.trajectory-filter-training-report/v0.1",
+        "model_type": config.model_type,
         "model": config.to_dict(), "config": str(args.config.resolve()), "sources": sources,
         "split": {
             "train_episode_ids": [item.episode_id for item in train_episodes],
