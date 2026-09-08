@@ -1,0 +1,94 @@
+\begin{figure*}[t]
+  \centering
+  \resizebox{0.99\textwidth}{!}{%
+  \begin{tikzpicture}[
+    font=\sffamily\footnotesize,
+    >=Latex,
+    flow/.style={->,line width=0.8pt,draw=DarkGray},
+    data/.style={draw=AuditBlue,fill=AuditBlue!7,rounded corners=2pt,
+      minimum height=10mm,align=center,inner xsep=5pt},
+    model/.style={draw=ActionTeal,fill=ActionTeal!7,rounded corners=2pt,
+      minimum height=10mm,align=center,inner xsep=5pt},
+    gain/.style={draw=GainOrange,fill=GainOrange!9,rounded corners=2pt,
+      minimum height=10mm,align=center,inner xsep=5pt},
+    safety/.style={draw=SafetyRed,fill=SafetyRed!7,rounded corners=2pt,
+      minimum height=10mm,align=center,inner xsep=5pt},
+    tag/.style={font=\sffamily\scriptsize\bfseries,text=DarkGray}
+  ]
+    % Offline audit and update path.
+    \node[data,minimum width=28mm] (episodes) at (0,2.55)
+      {Synchronized\\episodes};
+    \node[data,minimum width=31mm,right=7mm of episodes] (audit)
+      {Offline VLM proposals\\+ human review};
+    \node[data,minimum width=33mm,right=7mm of audit] (views)
+      {Training views\\nominal + correction};
+    \node[model,minimum width=29mm,right=7mm of views] (train)
+      {Filter training\\and selection};
+    \draw[flow] (episodes) -- (audit);
+    \draw[flow] (audit) -- (views);
+    \draw[flow] (views) -- (train);
+    \node[tag,anchor=west] at ($(episodes.north west)+(0,4mm)$)
+      {OFFLINE AUDIT AND UPDATE};
+
+    % Online input path.
+    \node[data,minimum width=24mm] (human) at (0,0)
+      {Operator command\\$u_t^{\mathrm{raw}}$};
+    \node[data,minimum width=24mm,below=5mm of human] (vision)
+      {Multi-view image\\$o_t$};
+    \node[data,minimum width=24mm,below=5mm of vision] (state)
+      {Robot state\\$q_t$};
+
+    \node[model,minimum width=28mm] (context) at (4.25,-0.75)
+      {Frozen visual encoder\\+ causal history};
+    \node[model,minimum width=28mm,right=7mm of context] (backbone)
+      {Causal temporal\\backbone $h_t$};
+    \node[model,minimum width=30mm,right=7mm of backbone,yshift=8mm] (action)
+      {CVAE action branch\\$\hat u_t^{\mathrm{exp}}$};
+    \node[gain,minimum width=30mm,right=7mm of backbone,yshift=-8mm] (gain)
+      {Rate-limited gain\\$\alpha_t$};
+    \node[model,minimum width=29mm,right=8mm of action,yshift=-8mm] (compose)
+      {Bounded residual\\$u_t^{\mathrm{raw}}+\alpha_t\hat\delta_t$};
+    \node[safety,minimum width=24mm,right=7mm of compose] (safe)
+      {Safety\\projection};
+    \node[data,minimum width=24mm,right=7mm of safe] (robot)
+      {Robot\\execution};
+
+    \draw[flow] (human.east) -- (context.west);
+    \draw[flow] (vision.east) -- (context.west);
+    \draw[flow] (state.east) -- (context.west);
+    \draw[flow] (context) -- (backbone);
+    \draw[flow] (backbone.east) -- ++(4mm,0) |- (action.west);
+    \draw[flow] (backbone.east) -- ++(4mm,0) |- (gain.west);
+    \draw[flow] (action.east) -- ++(4mm,0) |- (compose.west);
+    \draw[flow] (gain.east) -- ++(4mm,0) |- (compose.west);
+    \draw[flow] (compose) -- (safe);
+    \draw[flow] (safe) -- node[above,tag]{$u_t^{\mathrm{out}}$} (robot);
+
+    \draw[flow,draw=AuditBlue]
+      (robot.south) -- ++(0,-9mm) -| node[pos=0.25,below,tag]
+      {next observation $o_{t+1}$} (vision.south);
+    \draw[flow,draw=AuditBlue,dashed]
+      (robot.north) -- ++(0,24mm) -| (episodes.north);
+    \node[tag,anchor=south] at ($(audit.north)!0.5!(views.north)+(0,8mm)$)
+      {new candidate episodes $D'_r$};
+    \draw[flow,draw=ActionTeal,dashed]
+      (train.south) -- ++(0,-7mm) -| (backbone.north);
+
+    \node[tag,anchor=west] at ($(human.north west)+(0,5mm)$)
+      {ONLINE CONTINUOUS ASSISTANCE};
+    \begin{scope}[on background layer]
+      \node[draw=DarkGray!35,fill=SoftGray!45,rounded corners=3pt,
+        fit=(episodes)(audit)(views)(train),inner sep=4mm] {};
+      \node[draw=DarkGray!35,fill=SoftGray!25,rounded corners=3pt,
+        fit=(human)(vision)(state)(context)(backbone)(action)(gain)(compose)(safe)(robot),
+        inner sep=4mm] {};
+    \end{scope}
+  \end{tikzpicture}}
+  \caption{System overview. Offline auditing converts synchronized episodes
+  into complementary nominal and correction supervision. During collection,
+  the causal filter predicts a candidate expert action and a continuous
+  assistance gain; bounded residual composition and safety projection produce
+  the executed command. New executions are audited before they update the next
+  collection round. Dashed arrows indicate cross-round information flow.}
+  \label{fig:overview}
+\end{figure*}

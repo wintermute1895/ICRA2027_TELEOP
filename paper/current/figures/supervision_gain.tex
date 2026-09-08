@@ -1,0 +1,59 @@
+\begin{figure}[t]
+  \centering
+  \resizebox{\columnwidth}{!}{%
+  \begin{tikzpicture}[font=\sffamily\scriptsize,>=Latex]
+    \def\xmax{10.8}
+
+    % Correction interval background shared by all panels.
+    \fill[GainOrange!13] (3.25,-0.3) rectangle (7.15,5.55);
+    \draw[GainOrange!70,dashed] (3.25,-0.3) -- (3.25,5.55);
+    \draw[GainOrange!70,dashed] (7.15,-0.3) -- (7.15,5.55);
+    \node[text=GainOrange!90!black,font=\sffamily\scriptsize\bfseries]
+      at (5.2,5.3) {correction interval $I_k$};
+
+    % Interval label.
+    \draw[->,draw=DarkGray] (0,4.35) -- (\xmax,4.35);
+    \draw[->,draw=DarkGray] (0,4.1) -- (0,5.05);
+    \draw[line width=1.3pt,draw=AuditBlue]
+      (0.1,4.45) -- (3.25,4.45) -- (3.25,4.88) --
+      (7.15,4.88) -- (7.15,4.45) -- (10.55,4.45);
+    \node[anchor=east] at (-0.15,4.7) {$m_t$};
+    \node[anchor=north] at (1.65,4.38) {nominal};
+    \node[anchor=north] at (8.85,4.38) {nominal};
+
+    % Continuous gain.
+    \draw[->,draw=DarkGray] (0,2.45) -- (\xmax,2.45);
+    \draw[->,draw=DarkGray] (0,2.2) -- (0,3.75);
+    \draw[line width=1.5pt,draw=GainOrange]
+      plot[smooth] coordinates {(0.1,2.55) (1.4,2.57) (2.7,2.63)
+      (3.5,2.82) (4.3,3.25) (5.2,3.55) (6.2,3.48)
+      (7.1,3.12) (8.0,2.75) (9.2,2.58) (10.55,2.56)};
+    \node[anchor=east,text=GainOrange!90!black] at (-0.15,3.1) {$\alpha_t$};
+    \node[anchor=west,text=GainOrange!90!black] at (7.45,3.35)
+      {bounded rate};
+
+    % Raw and assisted action schematic.
+    \draw[->,draw=DarkGray] (0,0.25) -- (\xmax,0.25);
+    \draw[->,draw=DarkGray] (0,-0.05) -- (0,1.75);
+    \draw[line width=1.1pt,draw=DarkGray!65]
+      plot[smooth] coordinates {(0.1,0.62) (1.2,0.9) (2.2,0.55)
+      (3.2,0.85) (4.1,0.38) (5.0,1.35) (5.7,0.48)
+      (6.5,1.18) (7.3,0.75) (8.4,1.02) (9.4,0.72) (10.55,0.9)};
+    \draw[line width=1.5pt,draw=ActionTeal]
+      plot[smooth] coordinates {(0.1,0.65) (1.2,0.84) (2.2,0.62)
+      (3.2,0.78) (4.1,0.68) (5.0,0.92) (5.7,0.73)
+      (6.5,0.98) (7.3,0.82) (8.4,0.97) (9.4,0.77) (10.55,0.88)};
+    \node[anchor=east] at (-0.15,1.05) {action};
+    \draw[line width=1.1pt,draw=DarkGray!65] (7.65,1.55) -- (8.25,1.55);
+    \node[anchor=west] at (8.35,1.55) {raw};
+    \draw[line width=1.5pt,draw=ActionTeal] (7.65,1.25) -- (8.25,1.25);
+    \node[anchor=west] at (8.35,1.25) {assisted};
+
+    \node[anchor=north] at (\xmax,0.18) {time};
+  \end{tikzpicture}}
+  \caption{Schematic relation between interval supervision and continuous
+  assistance. Binary interval annotations define an offline training signal;
+  the deployed gain remains a bounded, rate-constrained continuous state. The
+  action trace is illustrative and does not report experimental data.}
+  \label{fig:supervision_gain}
+\end{figure}

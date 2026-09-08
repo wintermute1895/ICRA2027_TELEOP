@@ -1,0 +1,17 @@
+\section{Conclusion}
+\label{sec:conclusion}
+
+This work studies how audited demonstrations can improve the next round of
+real-robot teleoperation data collection. Successful nominal segments constrain
+the model to preserve adequate human input, while correction intervals provide
+local recovery behavior in difficult states. A visual-conditioned filter then
+predicts a candidate expert action and a continuous assistance gain, composing
+them through a bounded residual, gain-rate constraint, and safety projection.
+
+The evaluation extends beyond offline action fitting to the collection process
+itself. A frozen reference audit set, independent round-wise review, and a fixed
+admission rule maintain comparable standards across iterations. Valid
+demonstrations per operator minute measure collection efficiency, and downstream
+imitation learning measures whether admitted episodes retain training value.
+This framework makes the link between auditing, assistance, and recollection
+explicit and experimentally testable for visually observable fine manipulation.

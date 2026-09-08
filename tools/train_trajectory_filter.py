@@ -273,13 +273,16 @@ def run_epoch(
     beta_kl: float,
     smoothness_weight: float,
     gate_weight: float,
+    gain_weight: float,
+    alpha_max: float,
+    alpha_rate: float,
     zero_weight: float,
     target_mean: torch.Tensor,
     target_std: torch.Tensor,
     device: torch.device,
 ) -> dict[str, float]:
     model.train(optimizer is not None)
-    totals = {key: 0.0 for key in ("total", "reconstruction", "kl", "smoothness", "gate", "zero_residual", "correction_reconstruction", "background_reconstruction")}
+    totals = {key: 0.0 for key in ("total", "reconstruction", "kl", "smoothness", "gate", "gain", "zero_residual", "correction_reconstruction", "background_reconstruction")}
     metric_counts = {"correction_reconstruction": 0, "background_reconstruction": 0}
     samples = 0
     with torch.set_grad_enabled(optimizer is not None):
@@ -298,7 +301,8 @@ def run_epoch(
             losses = trajectory_vae_loss(
                 outputs, targets, beta_kl=beta_kl, smoothness_weight=smoothness_weight,
                 reconstruction_weights=correction_weights,
-                correction_mask=correction_mask, gate_weight=gate_weight, zero_weight=zero_weight,
+                correction_mask=correction_mask, gate_weight=gate_weight, gain_weight=gain_weight,
+                alpha_max=alpha_max, alpha_rate=alpha_rate, zero_weight=zero_weight,
                 raw_commands=raw_commands, target_mean=target_mean, target_std=target_std,
             )
             if optimizer is not None:
@@ -419,6 +423,9 @@ def main() -> int:
             beta_kl=training_config.loss.beta_kl,
             smoothness_weight=training_config.loss.smoothness_weight,
             gate_weight=training_config.loss.gate_weight,
+            gain_weight=training_config.loss.gain_weight,
+            alpha_max=config.alpha_max,
+            alpha_rate=config.alpha_rate,
             zero_weight=training_config.loss.zero_weight,
             target_mean=target_mean,
             target_std=target_std,
@@ -429,6 +436,9 @@ def main() -> int:
             beta_kl=training_config.loss.beta_kl,
             smoothness_weight=training_config.loss.smoothness_weight,
             gate_weight=training_config.loss.gate_weight,
+            gain_weight=training_config.loss.gain_weight,
+            alpha_max=config.alpha_max,
+            alpha_rate=config.alpha_rate,
             zero_weight=training_config.loss.zero_weight,
             target_mean=target_mean,
             target_std=target_std,

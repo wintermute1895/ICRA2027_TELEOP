@@ -56,6 +56,7 @@ class Worker:
         self.visuals: deque[np.ndarray] = deque(maxlen=length)
         self.blend = float(config.get("residual_blend", 0.1))
         self.limit = float(config.get("max_residual_rad", 0.01))
+        self.alpha = 0.0
 
     def handle(self, request: dict) -> dict:
         baseline = np.asarray(request["master_joint_raw_rad"], dtype=np.float32)
@@ -69,12 +70,15 @@ class Worker:
             return {"ready": False, "reason": "history_warmup"}
         prediction = self.runtime.predict(
             np.stack(self.commands)[None, ...], np.stack(self.states)[None, ...],
-            visuals=np.stack(self.visuals)[None, ...],
+            visuals=np.stack(self.visuals)[None, ...], previous_alpha=self.alpha,
         )
         gate = 1.0
         if prediction.correction_probability is not None:
             gate = float(prediction.correction_probability[0, 0])
-        residual = np.clip(prediction.predicted_residuals[0, 0] * self.blend * gate, -self.limit, self.limit)
+        if prediction.alpha is not None:
+            self.alpha = float(prediction.alpha[0, 0])
+        authority = self.alpha if prediction.alpha is not None else gate
+        residual = np.clip(prediction.predicted_residuals[0, 0] * self.blend * authority, -self.limit, self.limit)
         return {
             "ready": True,
             "timestamp_ns": int(request["timestamp_ns"]),
@@ -82,6 +86,8 @@ class Worker:
             "residual_rad": residual.tolist(),
             "latent_variance": float(prediction.latent_variance[0]),
             "correction_probability": gate,
+            "alpha": self.alpha,
+            "gain_delta": None if prediction.gain_delta is None else float(prediction.gain_delta[0, 0]),
         }
 
 

@@ -93,6 +93,43 @@ class TrajectoryCVAEModelTest(unittest.TestCase):
         self.assertTrue(torch.isfinite(losses["total"]))
         self.assertEqual(tuple(model.predict(commands, states)["correction_probability"].shape), (4, 1))
 
+    def test_continuous_gain_is_rate_limited_and_recurrent(self):
+        config = TrajectoryFilterConfig(
+            action_dim=2, state_dim=2, history_length=3, horizon=1,
+            latent_dim=2, model_dim=8, num_heads=2, num_layers=1,
+            dropout=0.0, gain_enabled=True, alpha_max=0.6, alpha_rate=0.1,
+        )
+        model = ConditionalTrajectoryVAE(config)
+        with torch.no_grad():
+            model.gain_head.weight.zero_()
+            model.gain_head.bias.fill_(10.0)
+        commands = torch.zeros(2, 3, 2)
+        states = torch.zeros(2, 3, 2)
+        first = model.predict(commands, states, previous_alpha=torch.tensor([[0.55], [0.0]]))
+        self.assertTrue(torch.all(first["gain_delta"] <= config.alpha_rate))
+        self.assertTrue(torch.allclose(first["alpha"], torch.tensor([[0.6], [0.1]]), atol=1e-4))
+
+    def test_gain_loss_supervises_raise_and_release(self):
+        prediction = torch.zeros(2, 1, 2)
+        common = {
+            "prediction": prediction,
+            "posterior_mean": torch.zeros(2, 1),
+            "posterior_log_variance": torch.zeros(2, 1),
+            "prior_mean": torch.zeros(2, 1),
+            "prior_log_variance": torch.zeros(2, 1),
+            "gate_logits": None,
+        }
+        labels = torch.tensor([[1.0], [0.0]])
+        good = trajectory_vae_loss(
+            {**common, "gain_delta": torch.tensor([[0.1], [-0.1]])}, prediction,
+            correction_mask=labels, gain_weight=1.0, alpha_rate=0.1,
+        )
+        wrong = trajectory_vae_loss(
+            {**common, "gain_delta": torch.tensor([[-0.1], [0.1]])}, prediction,
+            correction_mask=labels, gain_weight=1.0, alpha_rate=0.1,
+        )
+        self.assertLess(good["gain"], wrong["gain"])
+
     def test_checkpoint_runtime_normalizes_and_bounds(self):
         config = TrajectoryFilterConfig(
             action_dim=2, state_dim=2, history_length=3, horizon=1,

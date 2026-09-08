@@ -1,0 +1,64 @@
+\section{Introduction}
+\label{sec:introduction}
+
+Embodied policy learning increasingly depends on the quality and downstream
+utility of demonstrations, rather than on record count alone
+\citep{yeDataPyramidEmbodied2026,hejnaRobotDataCuration2025,hoqueEGODEXLEARNINGDEXTEROUSMANIPULATION2026,collaborationOpenXEmbodimentRobotic2025}.
+Simulation, portable teleoperation, egocentric recording, and large-scale
+real-robot datasets have broadened the sources of manipulation data
+\citep{collaborationOpenXEmbodimentRobotic2025,chiUniversalManipulationInterface2024,khazatskyDROIDLargeScaleInTheWild2024,hoqueEGODEXLEARNINGDEXTEROUSMANIPULATION2026,mandlekarMimicGenDataGeneration2023}.
+Yet these collection paradigms do not share a common record of temporal
+synchronization, task phase, operator correction, and failure cause. Recent
+visual auditing and reward-modeling methods begin to represent failures,
+progress, near misses, and partial completion explicitly
+\citep{duanAHAVisionLanguageModelDetecting2024,leeRoboRewardGeneralPurposeVisionLanguage2026,sermanetRoboVQAMultimodalLongHorizon2024,wuLargeRewardModels2026}.
+For visually observable manipulation with tight action tolerances,
+misalignment, stagnation, and repeated attempts reduce the reuse value of a
+demonstration. Data curation and visuomotor policy studies likewise show that
+trajectory properties and data selection affect downstream learning
+\citep{hejnaRobotDataCuration2025,chiDiffusionPolicyVisuomotor2024,zhaoLearningFineGrainedBimanual2023}.
+
+High-quality demonstrations do not require assistance at every step. Smooth,
+single-pass executions preserve the operator's nominal behavior, while local
+corrections reveal how an expert recovers from difficult states
+\citep{rossReductionImitationLearning2011,liuRobotLearningJob2023,luoPreciseDexterousRobotic}.
+Current work covers the required components separately: teleoperation systems
+address how demonstrations are collected
+\citep{wuGELLOGeneralLowCost2024,chengOpenTeleVisionTeleoperationImmersive2024,wangDexCapScalablePortable2024,qinAnyTeleopGeneralVisionBased2024,xuDexUMIUsingHuman2025};
+data-quality and visual models score trajectories after collection
+\citep{hejnaRobotDataCuration2025,duanAHAVisionLanguageModelDetecting2024,leeRoboRewardGeneralPurposeVisionLanguage2026};
+and shared control, residual learning, and interactive imitation learning
+primarily optimize deployment success or expert-intervention cost
+\citep{johanninkResidualReinforcementLearning2019,javdaniSharedAutonomyHindsight2015,hoqueThriftyDAggerBudgetAwareNovelty2021,welteFlowCorrectEfficientInteractive2026a}.
+What remains unclear is whether audited historical demonstrations can improve
+the yield of the \emph{next} teleoperation round under fixed operator-time and
+safety budgets, while preserving operator commands in nominal states.
+
+We study this question through a causal, visual-conditioned continuous action
+filter. Correction intervals provide weak supervision for difficult portions
+of a trajectory; successful nominal segments constrain unnecessary action
+offsets. A frozen visual encoder supplies continuous observations, and an
+offline vision-language auditor proposes phase, progress, stagnation, and
+recovery events for human review. The online model predicts a candidate expert
+action and a time-varying assistance gain. Their difference from the raw human
+command produces a bounded residual whose strength changes gradually with task
+context. Executing the filtered command produces the next visual observation,
+and newly audited episodes supply the next training round. Fig.~\ref{fig:overview}
+summarizes this loop.
+
+\input{figures/system_overview}
+
+Our contributions are threefold:
+\begin{enumerate}
+  \item We introduce a correction-aware, auditable demonstration
+  representation in which correction intervals and successful nominal segments
+  provide complementary supervision, while separate action and audit sets make
+  training admission explicit.
+  \item We propose a visual-conditioned continuous action filter that models a
+  candidate expert action separately from assistance gain, and constrains both
+  the magnitude and rate of assistance.
+  \item We formulate and evaluate an iterative real-robot collection loop whose
+  primary outcome is valid-demonstration yield under a fixed operator budget,
+  with independent auditing and downstream imitation learning used to assess
+  reliability and utility.
+\end{enumerate}

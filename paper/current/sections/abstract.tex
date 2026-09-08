@@ -1,0 +1,19 @@
+The bottleneck in collecting real-robot data is not only volume, but whether
+demonstrations are valid, auditable, and useful for downstream policy learning.
+In visually observable tasks that require local alignment or short-horizon
+refinement, useful data include both smooth nominal executions and sparse,
+timely corrections in difficult states. Novice operators, however, may spend
+substantial time obtaining only a few valid demonstrations. We present a
+visual-conditioned continuous action filter for teleoperation and organize it
+within an iterative data-collection loop. The system synchronously records raw
+operator commands, robot state, and multi-view images. Successful nominal
+segments and human-confirmed correction intervals form complementary
+supervision, while a frozen visual encoder and an offline vision-language model
+support phase and progress auditing. A causal temporal model uses separate
+heads for a conditional expert-action distribution and a bounded,
+rate-constrained assistance gain. Their outputs form a bounded residual that
+continuously modulates the operator command. Our real-robot evaluation measures
+audit quality, assistance behavior and generalization, valid demonstrations per
+operator minute, and downstream imitation-learning utility. A frozen reference
+audit set and independent per-round review are used to distinguish genuine
+collection gains from audit drift across iterations.

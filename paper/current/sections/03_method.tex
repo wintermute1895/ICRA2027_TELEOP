@@ -1,0 +1,176 @@
+\section{Method}
+\label{sec:method}
+
+\subsection{Task Formulation and Auditable Data Protocol}
+We consider visually observable manipulation in which the object is already
+grasped, the target or task state is visible, and successful execution requires
+local trajectory alignment or refinement. An episode is
+\begin{equation}
+  \tau=\{(o_t,u^{\mathrm{raw}}_t,u^{\mathrm{exec}}_t,q_t,e_t)\}_{t=1}^{T},
+  \label{eq:episode}
+\end{equation}
+where $o_t$ denotes synchronized multi-camera observations,
+$u^{\mathrm{raw}}_t$ the operator command, $u^{\mathrm{exec}}_t$ the command
+applied by the robot controller, $q_t$ the measured robot state, and $e_t$ a
+timestamped audit event. Each task configuration declares its success
+criterion, pose tolerance, velocity limit, and safety termination condition
+before collection. Grasp acquisition, long-horizon navigation, force-dependent
+control without force sensing, persistent occlusion, and deformable-object
+dynamics are outside our present scope.
+
+An annotator marks one or more correction intervals
+$I_k=[t_s^k,t_e^k]$, spanning the onset of a corrective maneuver through its
+recovery. Their union induces the frame-level indicator
+\begin{equation}
+  m_t=\mathbb{1}\!\left[t\in\bigcup_k I_k\right]\in\{0,1\}.
+  \label{eq:correction_indicator}
+\end{equation}
+This indicator is derived from interval annotation and is used only to build
+offline supervision and evaluation statistics. The episode contract also
+records terminal success or failure, manual bypass, safety termination, and
+task-configuration metadata.
+
+Let $\Gamma(\tau)$ be a fixed admission rule over terminal outcome,
+synchronization completeness, missing frames, and safety events. Successful,
+reusable episodes satisfying this rule form the action-training set
+\begin{equation}
+  \Aaction=\{\tau:\Gamma(\tau)=1\},
+\end{equation}
+whereas failed, near-miss, conflicting, incomplete, or safety-terminated
+episodes are retained in $\Aaudit$ for quality analysis. Correction intervals
+inside admitted episodes supply difficult-state behavior; their successful
+nominal complement $\mathcal{N}=\{t:m_t=0\}$ identifies contexts in which the
+operator command should be preserved. The processing path is
+\emph{raw record $\rightarrow$ synchronized episode $\rightarrow$ audited
+training view $\rightarrow$ collection model}.
+
+\input{figures/supervision_gain}
+
+\subsection{Visual-Conditioned Continuous Action Filter}
+At time $t$, the filter uses a causal history of length $L$,
+\begin{equation}
+  x_t=\{u^{\mathrm{raw}}_{t-L:t-1},q_{t-L:t-1},v_{t-L:t}\},
+  \qquad v_t=E_{\mathrm{vis}}(o_t),
+  \label{eq:context}
+\end{equation}
+where the frozen encoder $E_{\mathrm{vis}}$ maps the synchronized camera views
+to a continuous representation $v_t$. We use SigLIP2 for this representation.
+An offline vision-language auditor processes longer clips and proposes task
+phase, progress, stagnation, recovery, and correction events with confidence
+scores. Human review converts these proposals into interval labels, terminal
+labels, and the admission decision. Online inference uses only the context in
+Eq.~\eqref{eq:context}.
+
+Linear projections convert command, state, and visual features into tokens. A
+causal Transformer maps their interleaved history to $h_t$ using the attention
+mask $M_{ij}=0$ for $j\leq i$ and $-\infty$ otherwise
+\citep{vaswaniAttentionAllYou2023}. The action branch models a conditional
+expert-action distribution with a conditional variational autoencoder (CVAE)
+\citep{kingmaAutoEncodingVariationalBayes2022}:
+\begin{align}
+  z_t &\sim p_\theta(z_t\mid h_t), \\
+  \hat u^{\mathrm{exp}}_t &\sim
+  p_\theta(u^{\mathrm{exp}}_t\mid h_t,z_t),
+  \label{eq:cvae_action}
+\end{align}
+with an amortized posterior
+$q_\phi(z_t\mid h_t,u^{\mathrm{exp}}_t)$ used during training. The latent
+variable represents multiple locally plausible expert actions under similar
+visual context.
+
+A separate gain branch maps $h_t$ to a bounded increment and updates a scalar
+assistance state,
+\begin{align}
+  \Delta\alpha_t &= r_\alpha\tanh(g_\theta(h_t)), \\
+  \alpha_t &= \operatorname{clip}
+  (\alpha_{t-1}+\Delta\alpha_t,0,\alpha_{\max}),
+  \label{eq:gain}
+\end{align}
+where $r_\alpha$ limits the per-step gain change and $\alpha_{\max}$ limits
+authority. The candidate expert action defines the local residual and the gain
+sets its applied magnitude:
+\begin{align}
+  \hat\delta_t &= \hat u^{\mathrm{exp}}_t-u^{\mathrm{raw}}_t, \\
+  u^{\mathrm{out}}_t &= \Pi_{\mathrm{safe}}\!\left(
+  u^{\mathrm{raw}}_t+\alpha_t\hat\delta_t\right).
+  \label{eq:composition}
+\end{align}
+$\Pi_{\mathrm{safe}}$ projects the composed command onto declared joint
+position, velocity, and command-rate constraints. The executed action changes
+$o_{t+1}$, so Eqs.~\eqref{eq:context}--\eqref{eq:composition} recur on the
+resulting visual history.
+
+\subsection{Complementary Supervision}
+For synchronized trajectories in $\Aaction$, let
+$u^{\mathrm{exp}}_t$ denote the recorded expert command. We optimize
+\begin{equation}
+  \mathcal{L}=\lambda_a\mathcal{L}_{\mathrm{act}}+
+  \lambda_g\mathcal{L}_{\mathrm{gain}}+
+  \lambda_n\mathcal{L}_{\mathrm{nom}}+
+  \beta\mathcal{L}_{\mathrm{KL}}+
+  \lambda_s\mathcal{L}_{\mathrm{smooth}}.
+  \label{eq:objective}
+\end{equation}
+The action term emphasizes expert behavior inside correction intervals,
+\begin{align}
+  \mathcal{L}_{\mathrm{act}}
+  &=\frac{1}{T}\sum_t w_t
+  \|\hat u^{\mathrm{exp}}_t-u^{\mathrm{exp}}_t\|_1,\\
+  w_t&=1+(w_{\mathrm{corr}}-1)m_t.
+  \label{eq:action_loss}
+\end{align}
+The gain term supplies interval-level trend supervision rather than a target
+gain at every frame:
+\begin{equation}
+\begin{split}
+  \mathcal{L}_{\mathrm{gain}}=\frac{1}{T}\sum_t
+  \big[&m_t[\alpha_{\min}-\alpha_t]_+\\
+       &+(1-m_t)\alpha_t\big],
+  \label{eq:gain_loss}
+\end{split}
+\end{equation}
+where $[a]_+=\max(a,0)$ and $\alpha_{\min}$ denotes the minimum useful gain
+range selected on validation data. Successful nominal segments further
+penalize candidate corrections that would move an already adequate command,
+\begin{equation}
+  \mathcal{L}_{\mathrm{nom}}=\frac{1}{T}\sum_t(1-m_t)
+  \|\hat\delta_t\|_1.
+  \label{eq:nominal_loss}
+\end{equation}
+The CVAE regularizer is
+\begin{equation}
+  \mathcal{L}_{\mathrm{KL}}=
+  D_{\mathrm{KL}}\!\left(q_\phi(z_t\mid h_t,u^{\mathrm{exp}}_t),
+  \|,p_\theta(z_t\mid h_t)\right),
+\end{equation}
+and $\mathcal{L}_{\mathrm{smooth}}$ penalizes adjacent changes in both
+$u^{\mathrm{out}}_t$ and $\alpha_t$. This factorization lets the action branch
+represent where a plausible local correction leads while the gain branch
+controls how much of it enters the command stream.
+
+\subsection{Safe Iterative Data Collection}
+Online collection executes the encoder, temporal model, action and gain
+branches, and safety projection. Runtime checks cover non-finite outputs,
+residual magnitude and rate, joint and velocity limits, model timeout, and
+missing visual frames; the operator retains a manual bypass and hardware
+emergency stop.
+
+Before round zero, we freeze a reference audit set $H_{\mathrm{ref}}$ and the
+admission rule $\Gamma$. At round $r$, dataset $D_r$ trains filter $f_r$, which
+collects candidate episodes $D'_r$. A configuration-stratified subset
+$H^{(r)}_{\mathrm{audit}}$ is independently re-audited and permanently excluded
+from training. The remaining admitted candidates update the next round:
+\begin{equation}
+\begin{split}
+  D_r &\xrightarrow{\mathrm{train}} f_r
+  \xrightarrow{\mathrm{collection}} D'_r,\\
+  D_{r+1} &=D_r\cup
+  \Gamma\!\left(D'_r\setminus H^{(r)}_{\mathrm{audit}}\right).
+  \label{eq:flywheel}
+\end{split}
+\end{equation}
+$H_{\mathrm{ref}}$ detects cross-round audit drift, while
+$H^{(r)}_{\mathrm{audit}}$ estimates false admission and missed valid episodes
+on newly collected data. With $\Gamma$, operator time, reset count, task quotas,
+and safety limits fixed, changes in admitted demonstrations per operator minute
+measure the practical effect of each update.

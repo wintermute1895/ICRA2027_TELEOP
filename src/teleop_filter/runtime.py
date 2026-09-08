@@ -21,6 +21,8 @@ class TrajectoryFilterPrediction:
     predicted_residuals: np.ndarray
     latent_variance: np.ndarray
     correction_probability: np.ndarray | None = None
+    gain_delta: np.ndarray | None = None
+    alpha: np.ndarray | None = None
 
 
 class TrajectoryFilterRuntime:
@@ -74,6 +76,7 @@ class TrajectoryFilterRuntime:
         states: np.ndarray,
         contexts: np.ndarray | None = None,
         visuals: np.ndarray | None = None,
+        previous_alpha: float | np.ndarray | None = None,
         *,
         deterministic: bool | None = None,
     ) -> TrajectoryFilterPrediction:
@@ -95,7 +98,9 @@ class TrajectoryFilterRuntime:
         )
         with torch.inference_mode():
             outputs = self.model.predict(
-                command_tensor, state_tensor, context_tensor, visual_tensor, deterministic=deterministic
+                command_tensor, state_tensor, context_tensor, visual_tensor,
+                None if previous_alpha is None else torch.as_tensor(previous_alpha, dtype=torch.float32, device=self.device).reshape(-1, 1),
+                deterministic=deterministic
             )
             target_stats = self.normalization["targets"]
             target_mean = torch.as_tensor(
@@ -115,4 +120,6 @@ class TrajectoryFilterRuntime:
             predicted_residuals=predicted_residuals.cpu().numpy(),
             latent_variance=outputs["latent_variance"].cpu().numpy(),
             correction_probability=None if outputs.get("correction_probability") is None else outputs["correction_probability"].cpu().numpy(),
+            gain_delta=None if outputs.get("gain_delta") is None else outputs["gain_delta"].cpu().numpy(),
+            alpha=None if outputs.get("alpha") is None else outputs["alpha"].cpu().numpy(),
         )

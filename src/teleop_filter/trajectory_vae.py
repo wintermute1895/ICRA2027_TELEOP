@@ -23,6 +23,9 @@ class TrajectoryFilterConfig:
     num_layers: int = 3
     dropout: float = 0.1
     gate_enabled: bool = False
+    gain_enabled: bool = False
+    alpha_max: float = 1.0
+    alpha_rate: float = 0.1
 
     def validate(self) -> None:
         integer_fields = (
@@ -35,6 +38,8 @@ class TrajectoryFilterConfig:
             raise ValueError("model_dim must be divisible by num_heads")
         if not 0.0 <= self.dropout < 1.0:
             raise ValueError("dropout must be in [0, 1)")
+        if self.alpha_max < 0.0 or self.alpha_rate < 0.0:
+            raise ValueError("alpha_max and alpha_rate must be non-negative")
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -62,6 +67,7 @@ class ConditionalTrajectoryVAE(nn.Module):
         self.history_encoder = nn.TransformerEncoder(layer, num_layers=config.num_layers)
         self.history_norm = nn.LayerNorm(config.model_dim)
         self.gate_head = nn.Linear(config.model_dim, 1) if config.gate_enabled else None
+        self.gain_head = nn.Linear(config.model_dim, 1) if config.gain_enabled else None
         self.prior = nn.Linear(config.model_dim, 2 * config.latent_dim)
         self.posterior = nn.Sequential(
             nn.Linear(config.model_dim + config.horizon * config.action_dim, 2 * config.model_dim),
@@ -144,6 +150,7 @@ class ConditionalTrajectoryVAE(nn.Module):
             "posterior_mean": posterior_mean,
             "posterior_log_variance": posterior_log_variance,
             "gate_logits": self.gate_head(history).view(-1, 1) if self.gate_head is not None else None,
+            "gain_delta": torch.tanh(self.gain_head(history)).view(-1, 1) * config.alpha_rate if self.gain_head is not None else None,
         }
 
     @torch.no_grad()
@@ -153,6 +160,7 @@ class ConditionalTrajectoryVAE(nn.Module):
         states: Tensor,
         context: Tensor | None = None,
         visual: Tensor | None = None,
+        previous_alpha: Tensor | None = None,
         *,
         deterministic: bool = True,
     ) -> dict[str, Tensor]:
@@ -163,6 +171,11 @@ class ConditionalTrajectoryVAE(nn.Module):
             -1, self.config.horizon, self.config.action_dim
         )
         gate_logits = self.gate_head(history).view(-1, 1) if self.gate_head is not None else None
+        gain_delta = torch.tanh(self.gain_head(history)).view(-1, 1) * self.config.alpha_rate if self.gain_head is not None else None
+        alpha = None
+        if gain_delta is not None:
+            previous = torch.zeros_like(gain_delta) if previous_alpha is None else previous_alpha.to(gain_delta)
+            alpha = (previous + gain_delta).clamp(0.0, self.config.alpha_max)
         return {
             "prediction": prediction,
             "prior_mean": prior_mean,
@@ -170,6 +183,8 @@ class ConditionalTrajectoryVAE(nn.Module):
             "latent_variance": torch.exp(prior_log_variance).mean(dim=-1),
             "gate_logits": gate_logits,
             "correction_probability": torch.sigmoid(gate_logits) if gate_logits is not None else None,
+            "gain_delta": gain_delta,
+            "alpha": alpha,
         }
 
 
@@ -195,12 +210,15 @@ def trajectory_vae_loss(
     reconstruction_weights: Tensor | None = None,
     correction_mask: Tensor | None = None,
     gate_weight: float = 0.0,
+    gain_weight: float = 0.0,
+    alpha_max: float = 1.0,
+    alpha_rate: float = 0.1,
     zero_weight: float = 0.0,
     raw_commands: Tensor | None = None,
     target_mean: Tensor | None = None,
     target_std: Tensor | None = None,
 ) -> dict[str, Tensor]:
-    if beta_kl < 0.0 or smoothness_weight < 0.0 or gate_weight < 0.0 or zero_weight < 0.0:
+    if beta_kl < 0.0 or smoothness_weight < 0.0 or gate_weight < 0.0 or gain_weight < 0.0 or zero_weight < 0.0:
         raise ValueError("loss weights must be non-negative")
     prediction = outputs["prediction"]
     if reconstruction_weights is None:
@@ -227,6 +245,14 @@ def trajectory_vae_loss(
         if logits.shape != labels.shape:
             logits = logits.expand_as(labels)
         gate = F.binary_cross_entropy_with_logits(logits, labels)
+    gain = prediction.new_zeros(())
+    if gain_weight and outputs.get("gain_delta") is not None:
+        if correction_mask is None:
+            raise ValueError("correction_mask is required when gain_weight is non-zero")
+        # Correction intervals raise authority; nominal intervals release it.
+        direction = correction_mask.to(dtype=prediction.dtype).clamp(0.0, 1.0).mul(2.0).sub(1.0)
+        target_delta = direction * min(alpha_max, alpha_rate)
+        gain = F.smooth_l1_loss(outputs["gain_delta"], target_delta)
     zero = prediction.new_zeros(())
     if zero_weight:
         if correction_mask is None or raw_commands is None or target_mean is None or target_std is None:
@@ -235,8 +261,8 @@ def trajectory_vae_loss(
         residual = predicted_physical - raw_commands.to(dtype=prediction.dtype)
         nominal = (1.0 - correction_mask.to(dtype=prediction.dtype)).unsqueeze(-1)
         zero = (residual.abs() * nominal).sum() / nominal.expand_as(residual).sum().clamp_min(1e-6)
-    total = reconstruction + beta_kl * kl + smoothness_weight * smoothness + gate_weight * gate + zero_weight * zero
-    return {"total": total, "reconstruction": reconstruction, "kl": kl, "smoothness": smoothness, "gate": gate, "zero_residual": zero}
+    total = reconstruction + beta_kl * kl + smoothness_weight * smoothness + gate_weight * gate + gain_weight * gain + zero_weight * zero
+    return {"total": total, "reconstruction": reconstruction, "kl": kl, "smoothness": smoothness, "gate": gate, "gain": gain, "zero_residual": zero}
 
 
 def bounded_residual_command(

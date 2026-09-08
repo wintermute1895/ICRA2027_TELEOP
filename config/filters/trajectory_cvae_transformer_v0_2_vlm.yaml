@@ -10,11 +10,15 @@ model:
   context_dim: 0
   visual_dim: 1536 # two SigLIP2-base image embeddings, 768d per camera, concat in camera order
   gate_enabled: true
+  gain_enabled: true
+  alpha_max: 1.0
+  alpha_rate: 0.1
 loss:
   beta_kl: 0.001
   smoothness_weight: 0.01
   correction_weight: 2.0
   gate_weight: 0.5
+  gain_weight: 0.25
   zero_weight: 0.05
 data:
   allow_synthetic_smoke: false

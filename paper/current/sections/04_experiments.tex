@@ -1,0 +1,235 @@
+\section{Experiments}
+\label{sec:experiments}
+
+The evaluation is organized around three questions. \textbf{Q1:} Do correction
+intervals and successful nominal segments provide reliable and complementary
+supervision? \textbf{Q2:} Does the learned filter preserve adequate human
+motion while improving difficult states and unseen configurations?
+\textbf{Q3:} Does iterative updating increase valid demonstrations per unit of
+operator time, and do those demonstrations improve a downstream policy?
+Unless stated otherwise, comparisons use the same robot, control interface,
+active operator time, reset count, configuration quota, safety limits, and
+episode-level data split.
+
+\subsection{Setup and Evaluation Protocol}
+\label{sec:exp_setup}
+
+Each episode contains synchronized RGB observations, raw, filtered, and
+executed commands, robot state, audit events, correction intervals, terminal
+status, and configuration metadata. Tasks start with a grasped object and a
+visually observable target, and include local approach, alignment, correction,
+or short-horizon execution. Success tolerances, velocity limits, and safety
+termination conditions are fixed before collection. Participants receive the
+same familiarization period and use every compared method on matched
+configurations in balanced crossover order. The primary collection-efficiency
+analysis is paired within novice operators; experienced operators provide a
+secondary experience-stratified analysis.
+
+\begin{table}[!t]
+  \centering
+  \caption{Experimental protocol.}
+  \label{tab:protocol}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabularx}{\columnwidth}{@{}>{\raggedright\arraybackslash}p{0.43\columnwidth}Y@{}}
+    \toprule
+    Item & Configuration \\
+    \midrule
+    Robot and end-effector & \\
+    Teleoperation interface & \\
+    Cameras and placement & \\
+    Image resolution / rate & \\
+    Control mode / rate & \\
+    Synchronization error & \\
+    Visual encoder & SigLIP2: \\
+    Offline auditor & Qwen-VL: \\
+    History $L$; gain limits $\alpha_{\max},r_\alpha$ & \\
+    Tasks / configurations & \\
+    Episodes per configuration & \\
+    Operators (novice / experienced) & \\
+    Familiarization / crossover order & \\
+    Train / validation / test episodes & \\
+    $H_{\mathrm{ref}}$ / round-audit episodes & \\
+    Operator-time / reset / safety budgets & \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+All splits are made at the complete-episode level, so adjacent windows from a
+single trajectory never cross train, validation, and test sets. The cold-start
+round uses manually confirmed action data. Later rounds apply the same
+admission rule $\Gamma$ to update $\Aaction$; failed, near-miss, conflicting,
+and anomalous episodes remain in $\Aaudit$. Metrics are aggregated within an
+episode and then across operators and configurations. We use
+\begin{align}
+  E_{\mathrm{nom}}&=\frac{1}{|\mathcal{N}|}\sum_{t\in\mathcal{N}}
+    \|u^{\mathrm{out}}_t-u^{\mathrm{raw}}_t\|_1,\qquad
+  G_{\mathrm{corr}}=\frac{1}{|\mathcal{C}|}\sum_{t\in\mathcal{C}}\alpha_t,\\
+  \Delta G&=G_{\mathrm{corr}}-G_{\mathrm{nom}},\qquad
+  G_{\mathrm{nom}}=\frac{1}{|\mathcal{N}|}\sum_{t\in\mathcal{N}}\alpha_t,
+  \label{eq:exp_metrics}
+\end{align}
+where $\mathcal{C}=\{t:m_t=1\}$ and $\mathcal{N}=\{t:m_t=0\}$. We also
+report action prediction error, gain AUPRC, gain total variation, jerk, latency,
+clipping, bypass, and safety events. A threshold $\eta$ is selected on the
+validation set and frozen for interval IoU and boundary-delay statistics.
+
+\subsection{Auditable Supervision}
+\label{sec:exp_supervision}
+
+Q1 tests both the audit signal and the information supplied by its two episode
+parts. A second annotator independently labels correction intervals and
+terminal outcomes in the frozen reference set $H_{\mathrm{ref}}$. We report
+interval IoU, active-frame F1, boundary error, success/failure agreement,
+admission agreement, and review time for manual labels, VLM proposals with
+review, and unreviewed proposals. Table~\ref{tab:q1} retains the primary audit
+and assistance outcomes; boundary and admission errors are reported alongside
+the corresponding intervals in the text. We then train the filter with full,
+nominal-only, correction-only, and reviewed-VLM supervision. Action prediction
+error and gain AUPRC are secondary diagnostics.
+
+\begin{table}[!t]
+  \centering
+  \caption{Audit reliability and complementary-supervision ablations.}
+  \label{tab:q1}
+  \footnotesize
+  \setlength{\tabcolsep}{3pt}
+  \textbf{(a) Audit reliability and effort}\par\smallskip
+  \begin{tabularx}{\columnwidth}{@{}Yccc@{}}
+    \toprule
+    Audit procedure & IoU $\uparrow$ & F1 $\uparrow$ & Review time $\downarrow$ \\
+    \midrule
+    Independent manual relabel & & & \\
+    VLM proposals + review & & & \\
+    VLM proposals & & & \\
+    \bottomrule
+  \end{tabularx}
+  \smallskip
+  \textbf{(b) Supervision ablation}\par\smallskip
+  \begin{tabularx}{\columnwidth}{@{}Yccc@{}}
+    \toprule
+    Supervision & $E_{\mathrm{nom}}\downarrow$ & $\Delta G\uparrow$ & $S_{\mathrm{exec}}\uparrow$ \\
+    \midrule
+    Full complementary supervision & & & \\
+    Nominal-only & & & \\
+    Correction-only & & & \\
+    Reviewed VLM supervision & & & \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+The comparison is intended to show whether nominal successes constrain
+unnecessary offsets while correction intervals improve local recovery, rather
+than merely increasing the number of training windows.
+
+\subsection{Continuous Assistance and Generalization}
+\label{sec:exp_filter}
+
+Q2 compares raw teleoperation, a fixed temporal filter, an action-only
+trajectory predictor, and the complete filter. All methods use the same safety
+projection and data budget. Results are split between successful nominal
+segments and episodes containing correction intervals. We then remove visual
+context, merge the action and gain branches, or remove the gain-rate
+constraint. The frozen model is then evaluated on unseen object poses and
+configurations. Table~\ref{tab:q2} denotes gain total variation by
+$V_\alpha$ and execution success by $S_{\mathrm{exec}}$.
+
+\begin{table}[!t]
+  \centering
+  \caption{Continuous assistance, architecture ablations, and held-out
+  generalization.}
+  \label{tab:q2}
+  \footnotesize
+  \setlength{\tabcolsep}{2.5pt}
+  \begin{tabularx}{\columnwidth}{@{}Yccccc@{}}
+    \toprule
+    Method / setting & $E_{\mathrm{nom}}\downarrow$ & $\Delta G\uparrow$ & $V_\alpha\downarrow$ & Jerk $\downarrow$ & $S_{\mathrm{exec}}\uparrow$ \\
+    \midrule
+    \multicolumn{6}{@{}l}{\itshape Baselines} \\
+    Raw teleoperation & & & & & \\
+    Fixed temporal filter & & & & & \\
+    Action-only trajectory model & & & & & \\
+    \method{} (ours) & & & & & \\
+    \addlinespace[2pt]
+    \multicolumn{6}{@{}l}{\itshape Architecture ablations} \\
+    Without visual context & & & & & \\
+    Shared action/gain branch & & & & & \\
+    Without gain-rate limit & & & & & \\
+    \addlinespace[2pt]
+    \multicolumn{6}{@{}l}{\itshape Generalization} \\
+    In-distribution & & & & & \\
+    Unseen configuration & & & & & \\
+    \bottomrule
+    \end{tabularx}
+\end{table}
+
+The primary interpretation is a paired trade-off: $E_{\mathrm{nom}}$ measures
+how closely the filter preserves adequate operator input, while $\Delta G$,
+$V_\alpha$, jerk, and $S_{\mathrm{exec}}$ characterize assistance around
+difficult states. We report means with standard deviations or 95\% confidence
+intervals; the final caption specifies the repeated-measures test and unit of
+analysis.
+
+\subsection{Fixed-Budget Collection and Downstream Utility}
+\label{sec:exp_flywheel}
+
+Q3 compares a static filter, single-round training, and iterative updates under
+matched operator active time, reset count, configuration quota, and safety
+budget. Every round uses the frozen reference set and admission rule. A
+mutually exclusive $H^{(r)}_{\mathrm{audit}}$ is manually reviewed to estimate
+admission precision, recall, and conflict rate on newly collected episodes.
+The primary quantity is valid-demonstration yield,
+\begin{equation}
+  \rho_r=\frac{|\Aaction^{(r)}|}
+  {\operatorname{operator\ minutes}^{(r)}}.
+  \label{eq:yield}
+\end{equation}
+We train one fixed downstream learner, ACT or Diffusion Policy, with identical hyperparameters on the
+admitted data from each round \citep{zhaoLearningFineGrainedBimanual2023,chiDiffusionPolicyVisuomotor2024}.
+The downstream split is disjoint from filter training, and downstream results
+do not affect data admission.
+
+\begin{table*}[!t]
+  \centering
+  \caption{Fixed-budget flywheel and downstream utility.}
+  \label{tab:q3}
+  \footnotesize
+  \setlength{\tabcolsep}{3pt}
+  \begin{minipage}[t]{0.47\textwidth}
+    \centering
+    \textbf{(a) Collection yield and audit stability}\par\smallskip
+    \begin{tabularx}{\linewidth}{@{}Ycccc@{}}
+      \toprule
+      Procedure & $\rho_0\uparrow$ & $\rho_1\uparrow$ & $\rho_2\uparrow$ & Audit P/R $\uparrow$ \\
+      \midrule
+      Static filter & & & & \\
+      Single-round training & & & -- & \\
+      Iterative flywheel & & & & \\
+      \bottomrule
+    \end{tabularx}
+  \end{minipage}\hfill
+  \begin{minipage}[t]{0.47\textwidth}
+    \centering
+    \textbf{(b) Downstream utility}\par\smallskip
+    \begin{tabularx}{\linewidth}{@{}Yccc@{}}
+      \toprule
+      Data source & Episodes & $S_{\mathrm{test}}\uparrow$ & $N_{\mathrm{target}}\downarrow$ \\
+      \midrule
+      Raw teleoperation & & & \\
+      Static-filter data & & & \\
+      Iteration 1 admitted data & & & \\
+      Iteration 2 admitted data & & & \\
+      \bottomrule
+    \end{tabularx}
+  \end{minipage}
+\end{table*}
+
+Here $S_{\mathrm{test}}$ is held-out policy success and
+$N_{\mathrm{target}}$ is the number of admitted episodes needed to reach the
+predeclared target performance. Safety events are reported with operator-level
+counts and exposure time rather than compressed into the utility table.
+Failure, near-miss, recovery, and conflict types are reported separately from
+$\Aaudit$ to determine whether iteration changes the composition of rejected
+episodes as well as the admitted count. The main claim is supported only when
+$\rho_r$ rises without a corresponding drop in audit precision or downstream
+utility.

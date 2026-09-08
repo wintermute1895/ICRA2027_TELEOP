@@ -1,0 +1,21 @@
+\section{Limitations}
+\label{sec:limitations}
+
+The method begins from manually confirmed cold-start data. Correction
+boundaries therefore inherit operator reaction delay and annotator judgment.
+Independent relabeling, a frozen reference set, and per-round review quantify
+this uncertainty but do not remove human audit cost. Offline VLM proposals may
+also cease to save review time when task phases are visually ambiguous or the
+collection distribution shifts substantially.
+
+Our scope is limited to visually observable, local manipulation after an object
+has been grasped. The evaluation does not directly cover grasp acquisition,
+long-horizon navigation, persistent occlusion, force-dependent contact without
+force sensing, or deformable-object control. Residual bounds, gain-rate limits,
+and safety projections remain specific to the robot and task configuration;
+consistent action semantics across embodiments remain open.
+
+The participant count, number of tasks, and number of collection rounds bound
+the statistical reach of the operator study. ACT and Diffusion Policy measure
+utility for the selected downstream learners, but cannot establish equivalent
+benefits for every policy architecture or data scale.

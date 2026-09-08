@@ -1,0 +1,77 @@
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+% Buildable two-column development layout. Replace only the class and venue
+% boilerplate when the official ICRA 2027 author kit becomes available.
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=0.68in,top=0.72in,bottom=0.82in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{placeins}
+\usepackage{flushend}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,backgrounds,calc,fit,positioning,shapes.geometric}
+\usepackage[hidelinks]{hyperref}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{mciteplus}
+\mciteErrorOnUnknownfalse
+
+\definecolor{AuditBlue}{HTML}{356A8A}
+\definecolor{ActionTeal}{HTML}{21867A}
+\definecolor{GainOrange}{HTML}{D97732}
+\definecolor{SafetyRed}{HTML}{B7473A}
+\definecolor{SoftGray}{HTML}{EEF1F3}
+\definecolor{DarkGray}{HTML}{3D454D}
+
+\newcommand{\method}{VCA-Filter}
+\newcommand{\Aaction}{\mathcal{A}_{\mathrm{action}}}
+\newcommand{\Aaudit}{\mathcal{A}_{\mathrm{audit}}}
+\newcommand{\etal}{\textit{et al.}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\makeatletter
+\def\bstctlcite{\@ifnextchar[{\@bstctlcite}{\@bstctlcite[@auxout]}}
+\def\@bstctlcite[#1]#2{\@bsphack
+  \@for\@citeb:=#2\do{%
+    \edef\@citeb{\expandafter\@firstofone\@citeb}%
+    \if@filesw\immediate\write\csname #1\endcsname
+      {\string\citation{\@citeb}}\fi}%
+  \@esphack}
+\makeatother
+\setlength{\columnsep}{0.24in}
+\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlist{nosep,leftmargin=*}
+
+\title{Visual-Conditioned Continuous Action Filtering for\\
+Auditable Robot Teleoperation Data Collection}
+\author{Anonymous Authors}
+\date{}
+
+\begin{document}
+\raggedbottom
+\bstctlcite{paper:BSTcontrol}
+\maketitle
+
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/03_method}
+\input{sections/04_experiments}
+\input{sections/05_limitations}
+\input{sections/06_conclusion}
+
+\small
+\bibliographystyle{IEEEtranMN}
+\bibliography{bib_controls,references}
+\end{document}

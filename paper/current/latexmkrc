@@ -1,0 +1,9 @@
+$pdf_mode = 1;
+$out_dir = 'build';
+$aux_dir = 'build';
+$pdflatex = 'pdflatex -interaction=nonstopmode -halt-on-error -file-line-error %O %S';
+$bibtex = 'bibtex %O %B';
+$max_repeat = 5;
+
+# Linux preview command for `latexmk -pvc`; use the desktop PDF association.
+$pdf_previewer = 'xdg-open %S';

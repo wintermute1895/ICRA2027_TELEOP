@@ -1,0 +1,61 @@
+\section{Related Work}
+\label{sec:related_work}
+
+\subsection{Teleoperation and Demonstration Collection}
+Low-cost isomorphic interfaces, master--slave systems, wearable hand capture,
+and visual retargeting have reduced the hardware barrier to collecting
+real-robot demonstrations and expanded the range of accessible embodiments
+\citep{wuGELLOGeneralLowCost2024,zhaoLearningFineGrainedBimanual2023,fuMobileALOHALearning2024,chiUniversalManipulationInterface2024,wangDexCapScalablePortable2024,qinAnyTeleopGeneralVisionBased2024,xuDexUMIUsingHuman2025}.
+DROID, Open X-Embodiment, EgoDex, and MimicGen further demonstrate paths toward
+cross-scene data collection, egocentric data, and demonstration-driven
+augmentation
+\citep{khazatskyDROIDLargeScaleInTheWild2024,collaborationOpenXEmbodimentRobotic2025,hoqueEGODEXLEARNINGDEXTEROUSMANIPULATION2026,mandlekarMimicGenDataGeneration2023}.
+These systems primarily treat operator commands as demonstrations to record.
+Our method retains their teleoperation interface but treats the command stream
+as a control signal whose filtering strength can change continuously with the
+observed task state.
+
+\subsection{Data Quality and Visual Auditing}
+Demonstration-quality research uses information content, coverage, trajectory
+properties, or task and model factors to decide which offline samples are worth
+retaining
+\citep{hejnaRobotDataCuration2025,chiDiffusionPolicyVisuomotor2024,zhaoLearningFineGrainedBimanual2023}.
+This establishes the importance of downstream validation, but acts after the
+operator time has already been spent. In parallel, visual and vision-language
+models estimate success, failure, phase, progress, near misses, or process
+reward
+\citep{duanAHAVisionLanguageModelDetecting2024,sermanetRoboVQAMultimodalLongHorizon2024,leeRoboRewardGeneralPurposeVisionLanguage2026,wuLargeRewardModels2026}.
+We use reviewed offline audit proposals to construct training views and data
+admission, allowing audit results to affect subsequent collection rather than
+only rank completed trajectories.
+
+\subsection{Shared Control, Residual Policies, and Corrections}
+Residual reinforcement learning, shared autonomy, deployment-time human
+corrections, and interactive policy repair show that a base controller can be
+retained while constrained corrections improve recovery
+\citep{johanninkResidualReinforcementLearning2019,javdaniSharedAutonomyHindsight2015,liuRobotLearningJob2023,luoPreciseDexterousRobotic,welteFlowCorrectEfficientInteractive2026a}.
+These works primarily evaluate task success, policy adaptation, or deployment
+recovery. Our residual is instead a collection-time assistance signal: visual
+and action history determine a candidate correction, a separate continuous
+gain regulates its authority, and a safety projection constrains the composed
+command. Nominal successes suppress unnecessary offsets, while correction
+intervals supervise behavior around difficult states.
+
+\subsection{Interactive Imitation and Iterative Collection}
+DAgger, ThriftyDAgger, and deployment-time intervention learning address
+distribution shift through expert queries, takeovers, or continued data
+collection
+\citep{rossReductionImitationLearning2011,hoqueThriftyDAggerBudgetAwareNovelty2021,liuRobotLearningJob2023,luoPreciseDexterousRobotic}.
+They establish that collection, learning, and deployment can form a loop, but
+usually optimize policy success or query cost. We instead measure the loop at
+the data layer: under fixed operator time, reset count, configuration quotas,
+and safety limits, how many newly collected episodes enter the action-training
+set? Downstream ACT or Diffusion Policy performance is an independent utility
+test, not an admission signal.
+
+Together, prior work supplies teleoperation interfaces, offline curation,
+visual auditing, shared control, and interactive learning. We connect these
+capabilities through a collection-time continuous filter: audited history
+supervises action and gain, real execution generates new observations, and a
+fixed-budget protocol determines whether the next round produces more useful
+data.
