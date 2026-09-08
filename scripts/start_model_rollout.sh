@@ -5,7 +5,7 @@ set -Eeuo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ROS_SETUP="${ROS_SETUP:-}"
 if [[ -z "$ROS_SETUP" ]]; then
-  for distro in "${ROS_DISTRO:-}" jazzy humble; do
+  for distro in "${ROS_DISTRO:-}" humble jazzy; do
     [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
     ROS_SETUP="/opt/ros/$distro/setup.bash"
     break

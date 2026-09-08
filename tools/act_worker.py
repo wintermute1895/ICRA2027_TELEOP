@@ -22,6 +22,7 @@ from act_arm7_contract import (
     validate_policy_config,
     validate_runtime_config,
     validate_state,
+    should_reset_action_chunk,
 )
 
 
@@ -61,6 +62,14 @@ class Worker:
         self.policy = self.policy.to(device).eval()
         self.camera_keys = list((config.get("camera_keys") or {}).keys())
         self.state_key = str(config.get("state_key", "observation.state"))
+        self.inference_hz = float(config.get("inference_hz", 10.0))
+        self._last_timestamp_ns: int | None = None
+
+    def reset_action_chunk(self) -> None:
+        reset_fn = getattr(self.policy, "reset", None)
+        if callable(reset_fn):
+            reset_fn()
+        self._last_timestamp_ns = None
 
     @staticmethod
     def image(data: bytes) -> torch.Tensor:
@@ -73,6 +82,15 @@ class Worker:
         return torch.from_numpy(image).float() / 255.0
 
     def handle(self, request: dict) -> dict:
+        timestamp_ns = int(request["timestamp_ns"])
+        if should_reset_action_chunk(
+            last_timestamp_ns=self._last_timestamp_ns,
+            timestamp_ns=timestamp_ns,
+            inference_hz=self.inference_hz,
+            requested=bool(request.get("reset")),
+        ):
+            self.reset_action_chunk()
+        self._last_timestamp_ns = timestamp_ns
         state = validate_state(request.get("state"))
         batch = {self.state_key: torch.from_numpy(state).unsqueeze(0).to(self.device)}
         images = request.get("camera_jpeg_base64") or {}
@@ -95,10 +113,12 @@ def main() -> int:
     if config.get("enabled") is not True:
         raise SystemExit("ACT runtime is disabled")
     started = time.monotonic()
+    socket_path = Path(config["socket"])
+    # Drop a leftover socket before the slow CUDA load so readiness checks
+    # cannot connect to a previous crashed worker.
+    socket_path.unlink(missing_ok=True)
     worker = Worker(config)
     print(f"[ACT] model loaded in {time.monotonic() - started:.1f}s; inference ready", flush=True)
-    socket_path = Path(config["socket"])
-    socket_path.unlink(missing_ok=True)
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server.bind(str(socket_path)); os.chmod(socket_path, 0o600); server.listen(1)
     print(f"[READY] ACT worker: {socket_path}", flush=True)
@@ -110,6 +130,7 @@ def main() -> int:
                     try:
                         result = worker.handle(json.loads(line))
                     except Exception as error:
+                        worker.reset_action_chunk()
                         result = {"ready": False, "reason": f"inference_error:{type(error).__name__}"}
                     stream.write((json.dumps(result) + "\n").encode()); stream.flush()
     finally:

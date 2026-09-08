@@ -1,10 +1,11 @@
 """Small, deterministic safety boundary shared by model deployment adapters."""
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from enum import Enum
 import time
-from typing import Iterable
+from typing import Any
 
 import numpy as np
 
@@ -18,6 +19,20 @@ class DeploymentMode(str, Enum):
 class DeploymentLimits:
     max_delta_rad: float = 0.05
     max_step_rad: float = 0.05
+
+
+def limits_for_source(source: str, config: Mapping[str, Any] | None = None) -> DeploymentLimits:
+    """Use ACT-specific absolute-pose limits when present; keep residual limits otherwise."""
+
+    values = config or {}
+    max_delta = float(values.get("max_delta_rad", 0.05))
+    max_step = float(values.get("max_step_rad", 0.05))
+    if str(source).lower() == "act":
+        if "act_max_delta_rad" in values:
+            max_delta = float(values["act_max_delta_rad"])
+        if "act_max_step_rad" in values:
+            max_step = float(values["act_max_step_rad"])
+    return DeploymentLimits(max_delta_rad=max_delta, max_step_rad=max_step)
 
 
 @dataclass(frozen=True)

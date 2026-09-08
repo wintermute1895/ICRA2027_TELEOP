@@ -21,18 +21,20 @@ from std_msgs.msg import String
 from act_arm7_contract import (
     IMAGE_HEIGHT,
     IMAGE_WIDTH,
+    ros_joint_positions,
     validate_action,
     validate_runtime_config,
     validate_state,
 )
 
 
+JPEG_QUALITY = 95
+
+
 def jpeg(msg: Image) -> bytes:
     channels = {"rgb8": 3, "bgr8": 3, "rgba8": 4, "bgra8": 4}.get(msg.encoding)
     if channels is None:
         raise ValueError(f"unsupported image encoding: {msg.encoding}")
-    if (msg.width, msg.height) != (IMAGE_WIDTH, IMAGE_HEIGHT):
-        raise ValueError(f"ACT camera requires {IMAGE_WIDTH}x{IMAGE_HEIGHT}, got {msg.width}x{msg.height}")
     if msg.step != msg.width * channels:
         raise ValueError("ACT camera image has unsupported row padding")
     raw = np.frombuffer(msg.data, dtype=np.uint8).reshape(msg.height, msg.step)
@@ -41,7 +43,14 @@ def jpeg(msg: Image) -> bytes:
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR if channels == 3 else cv2.COLOR_RGBA2BGR)
     elif channels == 4:
         image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
-    ok, encoded = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    if (msg.width, msg.height) != (IMAGE_WIDTH, IMAGE_HEIGHT):
+        interpolation = (
+            cv2.INTER_AREA
+            if msg.width > IMAGE_WIDTH or msg.height > IMAGE_HEIGHT
+            else cv2.INTER_LINEAR
+        )
+        image = cv2.resize(image, (IMAGE_WIDTH, IMAGE_HEIGHT), interpolation=interpolation)
+    ok, encoded = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, JPEG_QUALITY])
     if not ok:
         raise ValueError("JPEG encoding failed")
     return encoded.tobytes()
@@ -52,10 +61,14 @@ class ACTAdapter(Node):
         super().__init__("act_ros_adapter")
         validate_runtime_config(config)
         self.timeout_s = float(config.get("input_timeout_ms", 300.0)) / 1000.0
+        self.action_units = config.get("action_units", "radians")
         self.values: dict[str, tuple[float, object]] = {}
         self.camera_keys = dict(config.get("camera_keys") or {})
         self.pending: Future | None = None
         self.pending_started: float | None = None
+        self.last_skip_diag = 0.0
+        self._reset_next = False
+        self._skipped_while_pending = False
         self.inference_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="act-worker")
         self.connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.connection.settimeout(self.timeout_s)
@@ -94,11 +107,16 @@ class ACTAdapter(Node):
     def infer(self) -> None:
         if self.pending is not None:
             if not self.pending.done():
+                self._skipped_while_pending = True
+                if time.monotonic() - self.last_skip_diag >= 1.0:
+                    self.last_skip_diag = time.monotonic()
+                    self.get_logger().info("[diag] infer in flight")
                 return
             try:
                 response = self.pending.result()
                 response_age = time.monotonic() - (self.pending_started or time.monotonic())
-                if response_age > self.timeout_s:
+                timed_out = response_age > self.timeout_s
+                if timed_out:
                     response = {"ready": False, "reason": "inference_timeout", "latency_s": response_age}
                 self.diagnose(**response)
                 state = self.values.get("state")
@@ -107,20 +125,42 @@ class ACTAdapter(Node):
                     msg = JointState()
                     msg.header = state[1].header
                     msg.name = list(state[1].name)
-                    msg.position = np.rad2deg(candidate).astype(float).tolist()
+                    msg.position = ros_joint_positions(candidate, self.action_units)
                     self.output_pub.publish(msg)
+                if timed_out or self._skipped_while_pending or response.get("ready") is not True:
+                    self._reset_next = True
             except (OSError, ValueError, json.JSONDecodeError) as error:
+                self._reset_next = True
                 self.diagnose(ready=False, reason=f"worker_unavailable:{type(error).__name__}")
             self.pending = None
             self.pending_started = None
+            self._skipped_while_pending = False
         now = time.monotonic()
         required = ["state", *self.camera_keys]
-        if any(key not in self.values or now - self.values[key][0] > self.timeout_s for key in required):
+        missing = [name for name in required if name not in self.values]
+        stale = {
+            name: round(now - self.values[name][0], 3)
+            for name in required
+            if name in self.values and now - self.values[name][0] > self.timeout_s
+        }
+        if missing or stale:
+            if now - self.last_skip_diag >= 1.0:
+                self.last_skip_diag = now
+                self.get_logger().info(
+                    f"[diag] infer skipped missing={missing} stale_ages_s={stale}"
+                )
+                self.diagnose(ready=False, reason="input_missing_or_stale", missing=missing, stale_ages_s=stale)
             return
         state = self.values["state"][1]
+        request = {
+            "timestamp_ns": self.get_clock().now().nanoseconds,
+            "state": list(state.position),
+            "reset": self._reset_next,
+        }
+        self._reset_next = False
         self.pending = self.inference_executor.submit(
             self.exchange,
-            {"timestamp_ns": self.get_clock().now().nanoseconds, "state": list(state.position)},
+            request,
             {key: self.values[key][1] for key in self.camera_keys},
         )
         self.pending_started = now

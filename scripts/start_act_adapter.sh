@@ -2,9 +2,9 @@
 # Start ACT's GPU worker and ROS candidate adapter. No bridge is touched here.
 set -Eeuo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CONFIG="${1:-$ROOT_DIR/config/runtime/act.yaml}"
+CONFIG="${1:-$ROOT_DIR/config/runtime/act-button-A.yaml}"
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
-  echo "usage: $0 [config/runtime/act.yaml]"
+  echo "usage: $0 [config/runtime/act-button-A.yaml]"
   exit 0
 fi
 source "$ROOT_DIR/scripts/lib/training_env.sh"
@@ -26,6 +26,10 @@ except (TypeError, ValueError) as error:
 print(c["socket"])
 PY
 )"
+# Remove a stale socket from a previous run before the worker starts; the
+# adapter readiness loop below only watches for the socket file, so a leftover
+# file would otherwise trigger an immediate (failed) adapter connection.
+rm -f -- "$SOCKET"
 "$ENV_PREFIX/bin/python" "$ROOT_DIR/tools/act_worker.py" --config "$CONFIG" &
 WORKER_PID=$!
 cleanup() {
@@ -34,10 +38,10 @@ cleanup() {
   rm -f "$SOCKET"
 }
 trap cleanup EXIT INT TERM
-for _ in {1..100}; do
+for _ in {1..600}; do
   [[ -S "$SOCKET" ]] && break
   kill -0 "$WORKER_PID" 2>/dev/null || { echo "[FATAL] ACT worker exited" >&2; exit 2; }
-  sleep 0.1
+  sleep 0.2
 done
 [[ -S "$SOCKET" ]] || { echo "[FATAL] ACT worker did not become ready" >&2; exit 2; }
 bash "$ROOT_DIR/skills/ros2-python-env/scripts/run_ros2_python.sh" \

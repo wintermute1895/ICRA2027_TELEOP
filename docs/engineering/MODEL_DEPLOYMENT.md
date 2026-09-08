@@ -28,7 +28,7 @@ Start a candidate producer with the same boundary:
 bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml \
   --source=filter --filter-config=config/runtime/learned_filter.yaml --shadow
 bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml \
-  --source=act --act-config=config/runtime/act.yaml --shadow
+  --source=act --act-config=config/runtime/act-button-A.yaml --shadow
 ```
 
 Active mode is an explicit promotion step after held-out evaluation and a
@@ -37,6 +37,16 @@ shadow run:
 ```bash
 bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml \
   --source=filter --filter-config=config/runtime/learned_filter.yaml \
+  --active --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
+```
+
+Active ACT uses the wider absolute-pose window in
+`config/runtime/model_deployment_active_test.yaml`; do not promote ACT with the
+residual `max_delta_rad: 0.05` defaults alone.
+
+```bash
+bash scripts/start_model_deployment.sh config/runtime/model_deployment_active_test.yaml \
+  --source=act --act-config=config/runtime/act-button-A.yaml \
   --active --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
 ```
 

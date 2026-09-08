@@ -6,7 +6,7 @@ if [[ "${1:-}" != "--clean-env" ]]; then
     PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" bash "$0" --clean-env
 fi
 ROS_SETUP=""
-for distro in "${ROS_DISTRO:-}" jazzy humble; do
+for distro in "${ROS_DISTRO:-}" humble jazzy; do
   [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
   ROS_SETUP="/opt/ros/$distro/setup.bash"
   break

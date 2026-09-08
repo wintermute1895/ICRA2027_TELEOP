@@ -10,7 +10,7 @@ ENV_PREFIX="$(resolve_training_env_prefix)" || { echo "[FATAL] training environm
 PYTHON="${ENV_PREFIX}/bin/python"
 ROS_PYTHON="${ROS_PYTHON:-/usr/bin/python3}"
 ROS_SETUP="${ROS_SETUP:-}"
-for distro in "${ROS_DISTRO:-}" jazzy humble; do
+for distro in "${ROS_DISTRO:-}" humble jazzy; do
   [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
   ROS_SETUP="/opt/ros/$distro/setup.bash"
   break

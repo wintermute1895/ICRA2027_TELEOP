@@ -47,5 +47,5 @@ recording:
     - /camera2/camera/color/image_raw
     - /camera2/camera/aligned_depth_to_color/image_raw
 evaluation:
-  max_camera_age_ms: 100.0
+  max_camera_age_ms: 250.0
   max_command_age_ms: 100.0

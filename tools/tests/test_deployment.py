@@ -10,6 +10,7 @@ from robot_teleop.deployment import (  # noqa: E402
     ActionSupervisor,
     DeploymentLimits,
     DeploymentMode,
+    limits_for_source,
 )
 
 
@@ -128,6 +129,33 @@ class ActiveModelGateTest(unittest.TestCase):
         self.assertTrue(outcome.publish)
         self.assertEqual(outcome.reason, "accepted_ramped")
         np.testing.assert_allclose(outcome.command_rad, np.full(7, 0.01))
+
+
+class LimitsForSourceTest(unittest.TestCase):
+    def test_filter_keeps_residual_window(self):
+        limits = limits_for_source("filter", {
+            "max_delta_rad": 0.05,
+            "max_step_rad": 0.05,
+            "act_max_delta_rad": 0.6,
+            "act_max_step_rad": 0.6,
+        })
+        self.assertEqual(limits.max_delta_rad, 0.05)
+        self.assertEqual(limits.max_step_rad, 0.05)
+
+    def test_act_uses_absolute_pose_window(self):
+        limits = limits_for_source("act", {
+            "max_delta_rad": 0.05,
+            "max_step_rad": 0.05,
+            "act_max_delta_rad": 0.6,
+            "act_max_step_rad": 0.6,
+        })
+        self.assertEqual(limits.max_delta_rad, 0.6)
+        self.assertEqual(limits.max_step_rad, 0.6)
+
+    def test_act_falls_back_when_act_limits_omitted(self):
+        limits = limits_for_source("act", {"max_delta_rad": 0.6, "max_step_rad": 0.6})
+        self.assertEqual(limits.max_delta_rad, 0.6)
+        self.assertEqual(limits.max_step_rad, 0.6)
 
 
 if __name__ == "__main__":

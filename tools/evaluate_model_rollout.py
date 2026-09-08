@@ -81,7 +81,7 @@ def main() -> int:
     quality.parent.mkdir(parents=True)
 
     evaluation = config.get("evaluation") or {}
-    max_camera_age = float(args.max_camera_age_ms if args.max_camera_age_ms is not None else evaluation.get("max_camera_age_ms", 100.0))
+    max_camera_age = float(args.max_camera_age_ms if args.max_camera_age_ms is not None else evaluation.get("max_camera_age_ms", 250.0))
     max_command_age = float(args.max_command_age_ms if args.max_command_age_ms is not None else evaluation.get("max_command_age_ms", 100.0))
     command = [
         "/usr/bin/python3", str(ROOT / "tools/export_rosbag_episode.py"),

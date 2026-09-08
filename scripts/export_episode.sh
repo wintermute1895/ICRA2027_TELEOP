@@ -45,7 +45,7 @@ done
 [[ "$SOURCE_DOMAIN" =~ ^(real|sim)$ ]] || { echo "--source-domain must be real or sim" >&2; exit 2; }
 [[ -n "$OUTPUT_DIR" ]] || { echo "--output-dir is required" >&2; exit 2; }
 ROS_SETUP=""
-for distro in "${ROS_DISTRO:-}" jazzy humble; do
+for distro in "${ROS_DISTRO:-}" humble jazzy; do
   [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
   ROS_SETUP="/opt/ros/$distro/setup.bash"
   break

@@ -13,6 +13,7 @@ import numpy as np
 
 
 ACTION_CONTRACT = "arm7"
+ACTION_UNITS = "radians"
 STATE_DIM = 7
 ACTION_DIM = 7
 IMAGE_HEIGHT = 480
@@ -33,11 +34,48 @@ def _shape(feature: Any) -> tuple[int, ...] | None:
     return tuple(int(item) for item in value)
 
 
+def normalize_action_units(value: Any) -> str:
+    units = str(value if value is not None else ACTION_UNITS).strip().lower()
+    if units in {"radian", "radians", "rad"}:
+        return "radians"
+    if units in {"degree", "degrees", "deg"}:
+        return "degrees"
+    raise ValueError(f"unsupported action_units={value!r}")
+
+
+def ros_joint_positions(command_rad: Any, action_units: Any = ACTION_UNITS) -> list[float]:
+    """Convert a model command in radians onto the LinkerTA-degree ROS boundary."""
+
+    values = np.asarray(command_rad, dtype=np.float32)
+    if normalize_action_units(action_units) == "radians":
+        values = np.rad2deg(values)
+    return values.astype(float).tolist()
+
+
+def should_reset_action_chunk(
+    *,
+    last_timestamp_ns: int | None,
+    timestamp_ns: int,
+    inference_hz: float,
+    requested: bool = False,
+) -> bool:
+    """Reset the ACT action queue after an explicit request or a missed cycle."""
+
+    if requested:
+        return True
+    if last_timestamp_ns is None or inference_hz <= 0:
+        return False
+    period_ns = 1_000_000_000.0 / float(inference_hz)
+    return (timestamp_ns - last_timestamp_ns) > 1.5 * period_ns
+
+
 def validate_runtime_config(config: Mapping[str, Any]) -> None:
     """Reject a runtime YAML file that is not the trained arm7 contract."""
 
     if str(config.get("action_contract", ACTION_CONTRACT)) != ACTION_CONTRACT:
         raise ValueError(f"ACT runtime requires action_contract={ACTION_CONTRACT!r}")
+    if normalize_action_units(config.get("action_units", ACTION_UNITS)) != ACTION_UNITS:
+        raise ValueError(f"ACT runtime requires action_units={ACTION_UNITS!r}")
     if int(config.get("state_dim", STATE_DIM)) != STATE_DIM:
         raise ValueError(f"ACT runtime requires state_dim={STATE_DIM}")
     if int(config.get("action_dim", ACTION_DIM)) != ACTION_DIM:

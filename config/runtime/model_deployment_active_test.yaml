@@ -20,7 +20,8 @@ timeout_ms: 2000
 # take over. Keep E-stop reachable and record every run for review.
 max_delta_rad: 0.6
 max_step_rad: 0.6
-# Ramp the accepted model target at about 11.5 deg/s instead of jumping.
-max_step_rate_rad_s: 0.2
+# Cap slew at about 115 deg/s so a 10 Hz ACT candidate is not dragged down
+# to 11.5 deg/s.  max_delta_rad / max_step_rad still bound a single jump.
+max_step_rate_rad_s: 2.0
 # Active mode is still impossible without the CLI confirmation token.
 approval_token: ""

@@ -25,8 +25,8 @@ sys.path.insert(0, str(ROOT / "src"))
 from robot_teleop.deployment import (  # noqa: E402
     ActiveModelGate,
     ActionSupervisor,
-    DeploymentLimits,
     DeploymentMode,
+    limits_for_source,
 )
 
 
@@ -41,8 +41,9 @@ class ModelDeploymentSupervisor(Node):
         mode = mode_override or str(config.get("mode", "shadow"))
         self.mode = DeploymentMode(mode)
         self.active_model_control = bool(config.get("active_model_control", False))
-        self.max_delta_rad = float(config.get("max_delta_rad", 0.05))
-        self.max_step_rad = float(config.get("max_step_rad", 0.05))
+        limits = limits_for_source(self.source, config)
+        self.max_delta_rad = limits.max_delta_rad
+        self.max_step_rad = limits.max_step_rad
         self.max_step_rate_rad_s = float(config.get("max_step_rate_rad_s", 0.0))
         if self.active_model_control:
             if self.mode is not DeploymentMode.ACTIVE:
@@ -55,19 +56,13 @@ class ModelDeploymentSupervisor(Node):
         self.supervisor = ActionSupervisor(
             mode=self.mode,
             timeout_s=self.timeout_s,
-            limits=DeploymentLimits(
-                max_delta_rad=self.max_delta_rad,
-                max_step_rad=self.max_step_rad,
-            ),
+            limits=limits,
         )
         self.gate: ActiveModelGate | None = None
         if self.active_model_control:
             self.gate = ActiveModelGate(
                 timeout_s=self.timeout_s,
-                limits=DeploymentLimits(
-                    max_delta_rad=self.max_delta_rad,
-                    max_step_rad=self.max_step_rad,
-                ),
+                limits=limits,
                 max_step_rate_rad_s=self.max_step_rate_rad_s,
             )
         self.last_output_time: float | None = None

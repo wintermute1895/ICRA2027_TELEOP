@@ -6,6 +6,9 @@ import numpy as np
 from tools.act_arm7_contract import (
     CAMERA_KEYS,
     IMAGE_CHW,
+    normalize_action_units,
+    ros_joint_positions,
+    should_reset_action_chunk,
     validate_action,
     validate_image_chw,
     validate_policy_config,
@@ -53,6 +56,30 @@ class ActArm7ContractTest(unittest.TestCase):
             validate_state(np.zeros(13, dtype=np.float32))
         with self.assertRaises(ValueError):
             validate_image_chw(np.zeros((3, 480, 848), dtype=np.uint8))
+
+    def test_action_units_must_be_radians(self):
+        config = self.runtime_config()
+        validate_runtime_config(config)
+        config["action_units"] = "degrees"
+        with self.assertRaises(ValueError):
+            validate_runtime_config(config)
+        self.assertEqual(normalize_action_units("rad"), "radians")
+        converted = ros_joint_positions(np.array([0.0, np.pi], dtype=np.float32), "radians")
+        np.testing.assert_allclose(converted, [0.0, 180.0], atol=1e-4)
+
+    def test_late_inference_resets_action_chunk(self):
+        self.assertFalse(
+            should_reset_action_chunk(
+                last_timestamp_ns=0, timestamp_ns=100_000_000, inference_hz=10.0)
+        )
+        self.assertTrue(
+            should_reset_action_chunk(
+                last_timestamp_ns=0, timestamp_ns=200_000_000, inference_hz=10.0)
+        )
+        self.assertTrue(
+            should_reset_action_chunk(
+                last_timestamp_ns=0, timestamp_ns=50_000_000, inference_hz=10.0, requested=True)
+        )
 
 
 if __name__ == "__main__":

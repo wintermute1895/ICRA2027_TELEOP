@@ -315,7 +315,7 @@ if [[ "$MANAGER" == "tmux" ]]; then
   [[ -n "$TMUX_BIN" && -x "$TMUX_BIN" ]] || die "tmux is not installed"
 fi
 ROS_SETUP=""
-for distro in "${ROS_DISTRO:-}" jazzy humble; do
+for distro in "${ROS_DISTRO:-}" humble jazzy; do
   [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
   ROS_SETUP="/opt/ros/$distro/setup.bash"
   break

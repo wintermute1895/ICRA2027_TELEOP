@@ -72,7 +72,7 @@ TRAIN_PYTHON="$ENV_PREFIX/bin/python"
 [[ -x "$TRAIN_PYTHON" ]] || { echo "[FATAL] training Python not found; run scripts/install_lerobot.sh" >&2; exit 2; }
 ROS_PYTHON="${ROS_PYTHON:-/usr/bin/python3}"
 ROS_SETUP=""
-for distro in "${ROS_DISTRO:-}" jazzy humble; do
+for distro in "${ROS_DISTRO:-}" humble jazzy; do
   [[ -n "$distro" && -f "/opt/ros/$distro/setup.bash" ]] || continue
   ROS_SETUP="/opt/ros/$distro/setup.bash"
   break
