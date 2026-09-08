@@ -31,7 +31,26 @@ class CorrectionSegmentViewTest(unittest.TestCase):
             rows = [json.loads(line) for line in output.read_text().splitlines()]
             self.assertEqual([row["correction_mask"] for row in rows], [0, 1, 0])
             self.assertEqual(rows[1]["expert_action_target_rad"], [0.1, -0.1])
-            self.assertEqual(rows[1]["action_target_source"], "recorded_expert_action")
+            self.assertEqual(rows[1]["action_target_source"], "selected:controller_command_rad")
+
+    def test_preserves_assisted_executed_target(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            episode = root / "episode.jsonl"
+            episode.write_text(json.dumps({
+                "timestamp_ns": 100, "master_joint_raw": [0.0],
+                "executed_joint_command_rad": [0.2], "expert_action_target_rad": [0.2],
+                "action_target_source": "executed_assisted_action", "success": True,
+            }) + "\n")
+            output = root / "view.jsonl"
+            subprocess.run([
+                sys.executable, str(ROOT / "tools/build_correction_segment_view.py"),
+                "--episode", str(episode), "--expert-action-field", "master_joint_raw",
+                "--output", str(output),
+            ], check=True, text=True, capture_output=True)
+            row = json.loads(output.read_text())
+            self.assertEqual(row["expert_action_target_rad"], [0.2])
+            self.assertEqual(row["action_target_source"], "executed_assisted_action")
 
     def test_rejects_unmatched_correction_end(self):
         with tempfile.TemporaryDirectory() as temporary:

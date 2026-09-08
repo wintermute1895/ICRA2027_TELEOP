@@ -97,6 +97,16 @@ def main() -> int:
     command_stamps, command_rows = index_rows(commands)
     context_stamps, context_rows = index_rows(contexts)
     action_spec = manifest.get("action_spec", {})
+    provenance = manifest.get("collection_provenance", {})
+    collection_round = provenance.get("collection_round")
+    control_mode = provenance.get("control_mode")
+    filter_checkpoint = provenance.get("filter_checkpoint")
+    if not isinstance(collection_round, int) or collection_round < 0:
+        raise SystemExit("manifest must declare non-negative collection_provenance.collection_round")
+    if collection_round == 0 and control_mode != "raw_teleoperation":
+        raise SystemExit("round-0 data must declare raw_teleoperation control mode")
+    if collection_round > 0 and (control_mode != "learned_filter" or not isinstance(filter_checkpoint, str)):
+        raise SystemExit("assisted data must declare learned_filter mode and an immutable checkpoint")
     if action_spec.get("representation") not in {"joint_delta", "joint_position", "controller_native"}:
         raise SystemExit("this narrow adapter only supports joint-space/controller-native actions; project Cartesian actions separately")
     joint_names = action_spec.get("joint_names", [])
@@ -127,6 +137,9 @@ def main() -> int:
             "executed_joint_command_rad": get(control, "execution.observed_action"),
             "gripper_state": get(control, "gripper_state"),
             "robot_joint_state_rad": state, "success": True,
+            "collection_round": collection_round,
+            "control_mode": control_mode,
+            "filter_checkpoint": filter_checkpoint,
         }
         if isinstance(filtered, list):
             row["filter_output_action"] = filtered
@@ -134,16 +147,23 @@ def main() -> int:
             row["mapped_joint_command_rad"] = projected
         # The learned layer runs before the bridge, so both history and target
         # stay in LinkerTA master-joint coordinates.
-        row["expert_action_target_rad"] = raw
-        row["action_target_source"] = "recorded_expert_action"
         expert_action_target = get(
             control,
             "execution.expert_action_target_rad",
             "execution.expert_action_target",
         )
+        observed = get(control, "execution.observed_action")
+        if collection_round == 0:
+            row["expert_action_target_rad"] = raw
+            row["action_target_source"] = "human_command"
+        elif isinstance(observed, list):
+            row["expert_action_target_rad"] = observed
+            row["action_target_source"] = "executed_assisted_action"
+        else:
+            continue
         if isinstance(expert_action_target, list):
             row["expert_action_target_rad"] = expert_action_target
-            row["action_target_source"] = "recorded_expert_action"
+            row["action_target_source"] = "explicit_verified_expert_action"
         if context is not None:
             context_values = get(context, "filter_context")
             if not isinstance(context_values, list):

@@ -82,6 +82,10 @@ def select_events(run_dir: Path, prefer_reviewed: bool) -> Path | None:
 def prepare_episode(source: Path, config: FlywheelConfig, ros_command: list[str], train_python: Path) -> Path:
     run_dir, bag = resolve_capture(source)
     arm, cameras, task = capture_contract(run_dir, config)
+    capture_manifest = read_json(run_dir / "artifacts" / "teleop_capture_manifest.json")
+    collection = capture_manifest.get("collection_provenance") or {
+        "collection_round": 0, "control_mode": "raw_teleoperation", "filter_checkpoint": None,
+    }
     paths = stage_paths(run_dir, str(config.processing["derived_name"]))
     if paths["view"].is_file():
         print(f"[REUSE] {paths['view']}", flush=True)
@@ -126,13 +130,18 @@ def prepare_episode(source: Path, config: FlywheelConfig, ros_command: list[str]
                  "--camera-id", camera_id])
     canonical_manifest = paths["canonical"] / "episode.manifest.json"
     if not canonical_manifest.is_file():
-        run([*ros_command, str(ROOT / "tools/exported_jsonl_to_canonical_episode.py"),
+        canonical_command = [*ros_command, str(ROOT / "tools/exported_jsonl_to_canonical_episode.py"),
              "--export-jsonl", str(paths["export"]), "--output-dir", str(paths["canonical"]),
              "--source", "real" if config.processing["source_domain"] == "real" else "simulation",
              "--task-id", task["task_id"], "--task-family", task["task_family"],
              "--success-spec-version", task["success_spec"], "--collection-mode",
-             str(config.processing.get("collection_mode", "teleop_rule")), "--terminal-audit", str(audit),
-             "--events-jsonl", str(events)])
+             "teleop_learned" if collection["control_mode"] == "learned_filter" else "teleop_rule",
+             "--terminal-audit", str(audit),
+             "--events-jsonl", str(events), "--collection-round", str(collection["collection_round"]),
+             "--control-mode", str(collection["control_mode"])]
+        if collection.get("filter_checkpoint"):
+            canonical_command += ["--filter-checkpoint", str(collection["filter_checkpoint"])]
+        run(canonical_command)
     if not paths["filter"].is_file():
         run([*ros_command, str(ROOT / "tools/canonical_episode_to_filter_jsonl.py"),
              "--manifest", str(canonical_manifest), "--output", str(paths["filter"])])

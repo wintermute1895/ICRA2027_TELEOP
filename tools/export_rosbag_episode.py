@@ -340,6 +340,8 @@ def main() -> int:
             "mapped_joint_command_rad": None if command is None else [float(value) for value in command.position],
             "controller_command_rad": controller_command,
             "controller_command_source": controller_source,
+            "executed_joint_command_rad": controller_command,
+            "executed_action_source": controller_source or "recorded_vendor_command",
             "tcp_pose_base": tcp_pose,
             "tcp_pose_frame": tcp_frame,
             "task_context": context_value(context),

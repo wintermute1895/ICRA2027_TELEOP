@@ -11,6 +11,44 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class ExportedJsonlCanonicalTest(unittest.TestCase):
+    def test_assisted_round_uses_executed_action_target(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            exported = root / "episode.jsonl"
+            rows = []
+            for index in range(3):
+                rows.append({
+                    "episode_id": "assisted", "arm": "right", "header_stamp_ns": index + 1,
+                    "joint_names": ["j1"], "robot_joint_state_rad": [0.1],
+                    "master_joint_raw": [0.2], "master_joint_filtered_rad": [0.3],
+                    "mapped_joint_command_rad": [0.3], "controller_command_rad": [0.3],
+                    "executed_joint_command_rad": [0.3],
+                })
+            exported.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+            audit = root / "audit.json"
+            audit.write_text(json.dumps({
+                "success": True, "termination_reason": "reviewed_success",
+                "safety_violation": False, "unlogged_external_override": False,
+            }), encoding="utf-8")
+            canonical = root / "canonical"
+            subprocess.run([
+                sys.executable, str(ROOT / "tools/exported_jsonl_to_canonical_episode.py"),
+                "--export-jsonl", str(exported), "--output-dir", str(canonical),
+                "--source", "real", "--task-id", "alignment",
+                "--collection-mode", "teleop_learned", "--collection-round", "1",
+                "--control-mode", "learned_filter", "--filter-checkpoint", "sha256:abc",
+                "--terminal-audit", str(audit),
+            ], check=True, text=True, capture_output=True)
+            output = root / "filter.jsonl"
+            subprocess.run([
+                sys.executable, str(ROOT / "tools/canonical_episode_to_filter_jsonl.py"),
+                "--manifest", str(canonical / "episode.manifest.json"), "--output", str(output),
+            ], check=True, text=True, capture_output=True)
+            projected = [json.loads(line) for line in output.read_text().splitlines()]
+            self.assertEqual(projected[0]["expert_action_target_rad"], [0.3])
+            self.assertEqual(projected[0]["action_target_source"], "executed_assisted_action")
+            self.assertEqual(projected[0]["master_joint_raw"], [0.2])
+
     def test_missing_tcp_and_context_can_be_a_action_and_preserves_tactile(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

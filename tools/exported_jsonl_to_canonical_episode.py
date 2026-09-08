@@ -70,11 +70,20 @@ def main() -> int:
     parser.add_argument("--configuration-id", default="unspecified")
     parser.add_argument("--calibration-version", default="unrecorded")
     parser.add_argument("--collection-mode", choices=("generated", "teleop_rule", "teleop_learned", "replay"), default="teleop_rule")
+    parser.add_argument("--collection-round", type=int, default=0)
+    parser.add_argument("--control-mode", choices=("raw_teleoperation", "learned_filter"), default="raw_teleoperation")
+    parser.add_argument("--filter-checkpoint")
     parser.add_argument("--terminal-audit", type=Path, help="Explicit structured terminal audit JSON")
     parser.add_argument("--events-jsonl", type=Path, help="Auditor events sidecar exported from /teleop/events")
     parser.add_argument("--control-hz", type=float, default=100.0)
     parser.add_argument("--min-policy-complete-ratio", type=float, default=0.95)
     args = parser.parse_args()
+    if args.collection_round < 0:
+        raise SystemExit("--collection-round must be non-negative")
+    if args.collection_round == 0 and args.control_mode != "raw_teleoperation":
+        raise SystemExit("round 0 requires raw_teleoperation control mode")
+    if args.collection_round > 0 and (args.control_mode != "learned_filter" or not args.filter_checkpoint):
+        raise SystemExit("assisted rounds require learned_filter mode and --filter-checkpoint")
     if not 0.0 < args.min_policy_complete_ratio <= 1.0:
         raise SystemExit("--min-policy-complete-ratio must be in (0, 1]")
 
@@ -191,6 +200,8 @@ def main() -> int:
     policy_complete_ratio = policy_rows / len(rows)
     filter_rows = sum(cold_start_filter_row_complete(row) for row in rows)
     filter_complete_ratio = filter_rows / len(rows)
+    executed_rows = sum(isinstance(row.get("executed_joint_command_rad"), list) and bool(row["executed_joint_command_rad"]) for row in rows)
+    executed_complete_ratio = executed_rows / len(rows)
     # Geometry context and observed action are optional extensions.  The core
     # flywheel records command stages, measured state, outcome, and safety.
     context_complete = len(context_rows) == len(rows)
@@ -214,7 +225,15 @@ def main() -> int:
     # Recorded expert/controller actions are sufficient to train the first
     # residual filter; the stricter causal gate is for closed-loop rounds.
     cold_start_admitted = outcome_admitted and filter_complete_ratio >= args.min_policy_complete_ratio
-    filter_admitted = cold_start_admitted
+    assisted_admitted = (
+        outcome_admitted and causal_complete
+        and executed_complete_ratio >= args.min_policy_complete_ratio
+    )
+    filter_admitted = cold_start_admitted if args.collection_round == 0 else assisted_admitted
+    if args.collection_round > 0 and not causal_complete:
+        failed_gates.append("assisted_causal_record_incomplete")
+    if args.collection_round > 0 and executed_complete_ratio < args.min_policy_complete_ratio:
+        failed_gates.append("assisted_executed_action_incomplete")
     intended_uses = []
     if filter_admitted:
         intended_uses.append("filter_training")
@@ -227,6 +246,12 @@ def main() -> int:
     manifest = {
         "schema_version": "teleop_episode/v0.1", "episode_id": episode_id, "source": args.source,
         "collection_mode": args.collection_mode, "intended_uses": intended_uses,
+        "collection_provenance": {
+            "collection_round": args.collection_round,
+            "control_mode": args.control_mode,
+            "filter_enabled": args.control_mode == "learned_filter",
+            "filter_checkpoint": args.filter_checkpoint,
+        },
         "task": {"task_id": args.task_id, "task_family": args.task_family, "success_spec_version": args.success_spec_version},
         "configuration": {"configuration_id": args.configuration_id, "parameters": {"arm": arm}, "split": "unspecified"},
         "clock": {"clock_domain": "ros2_header", "control_hz": args.control_hz, "timestamp_unit": "ns", "alignment_tolerance_ns": 100_000_000},
@@ -253,6 +278,8 @@ def main() -> int:
             "causal_complete_rows": causal_rows,
             "filter_complete_rows": filter_rows,
             "filter_complete_ratio": filter_complete_ratio,
+            "executed_action_complete_rows": executed_rows,
+            "executed_action_complete_ratio": executed_complete_ratio,
             "policy_complete_rows": policy_rows,
             "policy_complete_ratio": policy_complete_ratio,
             "policy_minimum_complete_ratio": args.min_policy_complete_ratio,

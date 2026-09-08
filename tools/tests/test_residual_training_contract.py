@@ -18,6 +18,9 @@ def row(index: int, *, residual: bool) -> dict:
     result = {
         "episode_id": "residual-contract", "success": True,
         "master_joint_raw": [value, value],
+        "executed_joint_command_rad": [value, value],
+        "collection_round": 0,
+        "control_mode": "raw_teleoperation",
         "robot_joint_state_rad": [value, value],
         "controller_command_rad": [value, value],
         "action_target_source": "synthetic_smoke_only",
@@ -50,6 +53,7 @@ class ResidualTrainingContractTest(unittest.TestCase):
             for i in range(8):
                 item = row(i, residual=False)
                 item["expert_action_target_rad"] = [0.2, -0.2]
+                item["action_target_source"] = "human_command"
                 item["correction_interval"] = [3, 4]
                 rows.append(item)
             path.write_text("".join(json.dumps(item) + "\n" for item in rows))
@@ -57,7 +61,8 @@ class ResidualTrainingContractTest(unittest.TestCase):
                 path, history_length=3, horizon=1, context_dim=0, correction_loss_weight=2.0
             )
             self.assertEqual(windows.target_semantics, "recorded_expert_action")
-            self.assertEqual(windows.command_semantics, "master_joint_raw")
+            self.assertEqual(windows.command_semantics, "raw_and_executed_action_history")
+            self.assertEqual(windows.commands.shape[-1], 4)
             self.assertEqual(windows.targets.shape, (5, 1, 2))
             self.assertEqual(windows.correction_weights[:, 0, 0].tolist(), [3.0, 3.0, 1.0, 1.0, 1.0])
 
@@ -68,13 +73,14 @@ class ResidualTrainingContractTest(unittest.TestCase):
             for i in range(10):
                 item = row(i, residual=False)
                 item["expert_action_target_rad"] = [i / 10.0, -i / 10.0]
+                item["action_target_source"] = "human_command"
                 rows.append(item)
             path.write_text("".join(json.dumps(item) + "\n" for item in rows))
             windows = build_windows(path, history_length=3, horizon=4, context_dim=0)
             self.assertEqual(windows.targets.shape, (4, 4, 2))
             self.assertTrue(np.allclose(windows.current_commands[0], [0.03, 0.03]))
             self.assertTrue(np.allclose(windows.chunk_commands[0, -1], [0.06, 0.06]))
-            self.assertTrue(np.allclose(windows.commands[0, -1], [0.02, 0.02]))
+            self.assertTrue(np.allclose(windows.commands[0, -1], [0.02, 0.02, 0.02, 0.02]))
             self.assertTrue(np.allclose(windows.states[0, -1], [0.03, 0.03]))
 
 

@@ -100,8 +100,9 @@ def main() -> int:
         enriched["correction_active"] = active
         enriched["correction_mask"] = 1 if active else 0
         enriched["correction_segment_source"] = "human_verified" if args.events else "existing_episode_annotation"
-        enriched["expert_action_target_rad"] = target
-        enriched["action_target_source"] = "recorded_expert_action"
+        if not isinstance(enriched.get("expert_action_target_rad"), list):
+            enriched["expert_action_target_rad"] = target
+            enriched["action_target_source"] = f"selected:{args.expert_action_field}"
         output_rows.append(enriched)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(
@@ -114,7 +115,7 @@ def main() -> int:
         "source_events": None if args.events is None else str(args.events.resolve()),
         "source_events_sha256": None if args.events is None else hashlib.sha256(args.events.read_bytes()).hexdigest(),
         "expert_action_field": args.expert_action_field,
-        "action_target_source": "recorded_expert_action",
+        "action_target_source": "preserved_from_episode",
         "correction_segment_source": "human_verified" if args.events else "existing_episode_annotation",
         "correction_weight": args.correction_weight,
         "rows": len(output_rows),

@@ -40,7 +40,7 @@ class Worker:
         if not expected or actual != expected:
             raise ValueError("checkpoint_sha256 must match the promoted checkpoint")
         self.runtime = TrajectoryFilterRuntime.load(checkpoint, device=str(config.get("device", "cuda")))
-        if self.runtime.command_semantics != "master_joint_raw":
+        if self.runtime.command_semantics not in {"master_joint_raw", "raw_and_executed_action_history"}:
             raise ValueError(f"checkpoint command space is not deployable: {self.runtime.command_semantics}")
         provenance = self.runtime.visual_encoder or {}
         self.camera_ids = list(provenance.get("camera_ids") or [])
@@ -96,11 +96,12 @@ class Worker:
         self.states.append(state)
         self.visuals.append(visual)
         if len(self.commands) < self.runtime.config.history_length:
-            self.commands.append(baseline)
             projected = self.safety.project(
                 baseline, np.zeros_like(baseline), dt_s=1.0 / self.inference_hz,
                 model_age_ms=self._model_age_ms(request), measured_state_rad=state,
             )
+            history_action = np.concatenate([baseline, projected.command_rad])
+            self.commands.append(history_action if self.runtime.config.effective_command_dim == 2 * baseline.size else baseline)
             return {"ready": False, "reason": "history_warmup",
                     "command_rad": projected.command_rad.tolist(),
                     "residual_rad": projected.applied_residual_rad.tolist(),
@@ -138,7 +139,8 @@ class Worker:
             measured_state_rad=state,
         )
         self.previous_timestamp_ns = timestamp_ns
-        self.commands.append(baseline)
+        history_action = np.concatenate([baseline, projected.command_rad])
+        self.commands.append(history_action if self.runtime.config.effective_command_dim == 2 * baseline.size else baseline)
         return {
             "ready": True,
             "timestamp_ns": int(request["timestamp_ns"]),

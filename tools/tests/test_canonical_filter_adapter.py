@@ -24,12 +24,15 @@ class CanonicalFilterAdapterTest(unittest.TestCase):
                 "complete_causal_record": True,
                 "synchronization_valid": True,
             },
+            "collection_provenance": {
+                "collection_round": 0, "control_mode": "raw_teleoperation",
+                "filter_enabled": False, "filter_checkpoint": None,
+            },
         }
 
     def test_only_a_action_is_admitted(self):
         self.assertTrue(admitted(self._manifest()))
         self.assertFalse(admitted(self._manifest("A_audit")))
-
 
 if __name__ == "__main__":
     unittest.main()
