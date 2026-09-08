@@ -29,14 +29,17 @@ shared autonomy.
 **Change:** a causal history encoder feeds two heads:
 
 ```text
-CVAE action head:   p_theta(u_exp_t | h_t, z_t)
-gain head:          Delta alpha_t = r_alpha tanh(g_theta(h_t))
+CVAE action head:   p_theta(U_demo_t | h_t, z_t), U_demo_t in R^(H x d)
+gain head:          alpha_bar_t = alpha_max sigmoid(g_theta(h_t))
 ```
 
-The decoder predicts a candidate expert action. The gain head independently
-sets how much of its residual is applied to the human command.
+The decoder predicts a short chunk of demonstrated joint increments. Online
+collection uses receding-horizon execution: it applies the first action and
+predicts a new chunk after the next visual update. The gain head independently
+sets how much of the current residual is applied to the human command.
 
-**Required evidence:** deterministic action regression versus CVAE; shared
+**Required evidence:** deterministic action regression versus CVAE; $H=1$
+versus action chunks; open-loop versus receding-horizon execution; shared
 single-head baseline versus separate action/gain heads.
 
 ### 2. Continuous, rate-limited assistance state
@@ -50,8 +53,8 @@ control.
 **Change:**
 
 ```math
-alpha_t = clip(alpha_{t-1} + Delta alpha_t, 0, alpha_max),
-Delta alpha_t = r_alpha tanh(g_theta(h_t)).
+alpha_bar_t = alpha_max sigmoid(g_theta(h_t)),
+alpha_t = alpha_{t-1} + clip(alpha_bar_t - alpha_{t-1}, -r_alpha, r_alpha).
 ```
 
 The correction interval is weak supervision for higher assistance, while
@@ -72,8 +75,9 @@ without an explicit authority and safety boundary.
 **Change:**
 
 ```math
-delta_hat_t = u_hat_exp_t - u_raw_t,
-u_out_t = Pi_safe(u_raw_t + alpha_t delta_hat_t).
+delta_hat_t = clip(u_hat_demo_(t|t) - u_raw_t, -delta_max, delta_max),
+u_tilde_t = u_raw_t + alpha_t delta_hat_t,
+u_out_t = Pi_safe(u_tilde_t).
 ```
 
 `Pi_safe` is an independent position, velocity, rate, numerical-validity, and
@@ -115,14 +119,16 @@ from runtime-available inputs.
 |---|---|---|
 | Preserve nominal teleoperation | low-gain supervision and residual penalty | nominal deviation / false assistance |
 | Assist difficult local states continuously | separate rate-limited gain state | gain trajectory, correction timing, task outcome |
-| Produce plausible local corrections | CVAE action-distribution head | action error/NLL and deterministic-CVAE ablation |
+| Produce coherent local corrections | CVAE action-chunk head with receding-horizon execution | chunk error, $H=1$, deterministic-CVAE, and open-loop ablations |
 | Never grant unconstrained autonomy | bounded residual plus safety projection | clipping, fallback, safety events |
 | Improve collection rather than only policy rollout | cross-round admitted-data protocol | A_action episodes per operator-minute |
 
 ## Implementation Order
 
-1. Make the existing target-action source and action normalization explicit.
-2. Add and test separate action and gain heads.
-3. Add rate-limited gain integration and weak gain supervision.
-4. Add reporting for gain, residual, projection, latency, and fallback.
-5. Run Layer-1 ablations before considering Layer-2 extensions.
+1. Standardize raw, demonstration, composed, and executed commands as joint increments.
+2. Generalize the action target and decoder from one step to horizon $H>1$.
+3. Add receding-horizon runtime execution and test that only the first action is applied.
+4. Add and test the separate desired-gain head and rate-limited scalar state.
+5. Align chunk, gain-band, nominal, KL, and smoothness losses with the paper contract.
+6. Add reporting for chunk error, gain, residual, projection, latency, and fallback.
+7. Run Layer-1 ablations before considering Layer-2 extensions.

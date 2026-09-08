@@ -11,9 +11,17 @@ socket: /tmp/teleop_learned_filter.sock
 
 model_cache: /media/ilex/Cyan_data/ICRA2027_MODELS/huggingface
 inference_hz: 5.0
+execution_mode: receding_horizon # open_loop_chunk is the paper ablation
 input_timeout_ms: 300.0
-residual_blend: 0.10
-max_residual_rad: 0.01
+# The filter applies alpha_t to its bounded residual; no second blend factor is
+# used in the paper-aligned runtime.
+safety:
+  joint_min_rad: [-1.05, -3.49, -2.79, -0.21, -2.79, -1.57, -1.57]
+  joint_max_rad: [2.97, 0.35, 2.79, 2.355, 2.79, 1.57, 1.57]
+  max_residual_rad: 0.01
+  max_residual_rate_rad_s: 0.05
+  max_command_velocity_rad_s: 0.5
+  max_model_age_ms: 300.0
 
 arm: right
 master_input_topic: /right_arm_joint_control

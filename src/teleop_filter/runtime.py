@@ -23,6 +23,7 @@ class TrajectoryFilterPrediction:
     correction_probability: np.ndarray | None = None
     gain_delta: np.ndarray | None = None
     alpha: np.ndarray | None = None
+    desired_gain: np.ndarray | None = None
 
 
 class TrajectoryFilterRuntime:
@@ -77,10 +78,23 @@ class TrajectoryFilterRuntime:
         contexts: np.ndarray | None = None,
         visuals: np.ndarray | None = None,
         previous_alpha: float | np.ndarray | None = None,
+        current_command: np.ndarray | None = None,
         *,
         deterministic: bool | None = None,
     ) -> TrajectoryFilterPrediction:
         command_tensor = self._normalized("commands", commands)
+        current_command_physical = (
+            np.asarray(commands[:, -1, :], dtype=np.float32)
+            if current_command is None
+            else np.asarray(current_command, dtype=np.float32)
+        )
+        current_command_tensor = (
+            command_tensor[:, -1]
+            if current_command is None
+            else self._normalized(
+                "commands", np.asarray(current_command, dtype=np.float32)[:, None, :]
+            )[:, 0]
+        )
         state_tensor = self._normalized("states", states)
         context_tensor = None
         if self.config.context_dim:
@@ -100,6 +114,7 @@ class TrajectoryFilterRuntime:
             outputs = self.model.predict(
                 command_tensor, state_tensor, context_tensor, visual_tensor,
                 None if previous_alpha is None else torch.as_tensor(previous_alpha, dtype=torch.float32, device=self.device).reshape(-1, 1),
+                current_command=current_command_tensor,
                 deterministic=deterministic
             )
             target_stats = self.normalization["targets"]
@@ -111,7 +126,7 @@ class TrajectoryFilterRuntime:
             )
             predicted_actions = outputs["prediction"] * target_std + target_mean
             if self.target_semantics == "recorded_expert_action":
-                raw_current = torch.as_tensor(commands[:, -1:, :], dtype=torch.float32, device=self.device)
+                raw_current = torch.as_tensor(current_command_physical[:, None, :], dtype=torch.float32, device=self.device)
                 predicted_residuals = predicted_actions - raw_current
             else:
                 predicted_residuals = predicted_actions
@@ -122,4 +137,5 @@ class TrajectoryFilterRuntime:
             correction_probability=None if outputs.get("correction_probability") is None else outputs["correction_probability"].cpu().numpy(),
             gain_delta=None if outputs.get("gain_delta") is None else outputs["gain_delta"].cpu().numpy(),
             alpha=None if outputs.get("alpha") is None else outputs["alpha"].cpu().numpy(),
+            desired_gain=None if outputs.get("desired_gain") is None else outputs["desired_gain"].cpu().numpy(),
         )

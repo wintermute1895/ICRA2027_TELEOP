@@ -9,6 +9,7 @@ import json
 import os
 import socket
 import sys
+import time
 from collections import deque
 from pathlib import Path
 
@@ -18,7 +19,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from teleop_filter import TrajectoryFilterRuntime  # noqa: E402
+from teleop_filter import SafetyLimits, SafetyProjector, TrajectoryFilterRuntime  # noqa: E402
 from teleop_filter.online_visual import OnlineVisualEncoder  # noqa: E402
 
 
@@ -54,41 +55,110 @@ class Worker:
         self.commands: deque[np.ndarray] = deque(maxlen=length)
         self.states: deque[np.ndarray] = deque(maxlen=length)
         self.visuals: deque[np.ndarray] = deque(maxlen=length)
-        self.blend = float(config.get("residual_blend", 0.1))
-        self.limit = float(config.get("max_residual_rad", 0.01))
+        safety = config.get("safety")
+        if not isinstance(safety, dict):
+            raise ValueError("learned-filter runtime requires an explicit safety mapping")
+        self.safety = SafetyProjector(SafetyLimits(
+            joint_min_rad=np.asarray(safety["joint_min_rad"], dtype=np.float32),
+            joint_max_rad=np.asarray(safety["joint_max_rad"], dtype=np.float32),
+            max_residual_rad=float(safety["max_residual_rad"]),
+            max_residual_rate_rad_s=float(safety["max_residual_rate_rad_s"]),
+            max_command_velocity_rad_s=float(safety["max_command_velocity_rad_s"]),
+            max_model_age_ms=float(safety["max_model_age_ms"]),
+        ))
+        self.inference_hz = float(config.get("inference_hz", 5.0))
+        self.execution_mode = str(config.get("execution_mode", "receding_horizon"))
+        if self.execution_mode not in {"receding_horizon", "open_loop_chunk"}:
+            raise ValueError("execution_mode must be receding_horizon or open_loop_chunk")
+        self.open_loop_actions: deque[np.ndarray] = deque()
+        self.last_latent_variance = 0.0
+        self.last_desired_gain: float | None = None
         self.alpha = 0.0
+        self.previous_timestamp_ns: int | None = None
+
+    def reset_episode(self) -> None:
+        self.commands.clear()
+        self.states.clear()
+        self.visuals.clear()
+        self.open_loop_actions.clear()
+        self.alpha = 0.0
+        self.previous_timestamp_ns = None
+        self.safety.reset()
 
     def handle(self, request: dict) -> dict:
+        if request.get("reset_episode") is True:
+            self.reset_episode()
+            return {"ready": False, "reason": "episode_reset"}
         baseline = np.asarray(request["master_joint_raw_rad"], dtype=np.float32)
         state = np.asarray(request["robot_joint_state_rad"], dtype=np.float32)
         encoded = request.get("camera_jpeg_base64") or {}
         visual = self.encoder.encode_jpegs([base64.b64decode(encoded[name]) for name in self.camera_ids])
-        self.commands.append(baseline)
         self.states.append(state)
         self.visuals.append(visual)
         if len(self.commands) < self.runtime.config.history_length:
-            return {"ready": False, "reason": "history_warmup"}
-        prediction = self.runtime.predict(
-            np.stack(self.commands)[None, ...], np.stack(self.states)[None, ...],
-            visuals=np.stack(self.visuals)[None, ...], previous_alpha=self.alpha,
+            self.commands.append(baseline)
+            projected = self.safety.project(
+                baseline, np.zeros_like(baseline), dt_s=1.0 / self.inference_hz,
+                model_age_ms=self._model_age_ms(request), measured_state_rad=state,
+            )
+            return {"ready": False, "reason": "history_warmup",
+                    "command_rad": projected.command_rad.tolist(),
+                    "residual_rad": projected.applied_residual_rad.tolist(),
+                    "alpha": 0.0, "safety_reasons": list(projected.reasons)}
+        prediction = None
+        if self.execution_mode == "open_loop_chunk" and self.open_loop_actions:
+            predicted_action = self.open_loop_actions.popleft()
+            gate = 1.0
+        else:
+            prediction = self.runtime.predict(
+                np.stack(self.commands)[None, ...], np.stack(self.states)[None, ...],
+                visuals=np.stack(self.visuals)[None, ...], previous_alpha=self.alpha,
+                current_command=baseline[None, :],
+            )
+            gate = 1.0
+            if prediction.correction_probability is not None:
+                gate = float(prediction.correction_probability[0, 0])
+            if prediction.alpha is not None:
+                self.alpha = float(prediction.alpha[0, 0])
+            predicted_action = prediction.predicted_actions[0, 0]
+            self.last_latent_variance = float(prediction.latent_variance[0])
+            self.last_desired_gain = None if prediction.desired_gain is None else float(prediction.desired_gain[0, 0])
+            if self.execution_mode == "open_loop_chunk":
+                self.open_loop_actions.extend(prediction.predicted_actions[0, 1:])
+        authority = self.alpha if self.runtime.config.gain_enabled else gate
+        proposed_residual = (predicted_action - baseline) * authority
+        timestamp_ns = int(request["timestamp_ns"])
+        dt_s = (
+            1.0 / self.inference_hz
+            if self.previous_timestamp_ns is None
+            else max((timestamp_ns - self.previous_timestamp_ns) / 1_000_000_000.0, 1e-6)
         )
-        gate = 1.0
-        if prediction.correction_probability is not None:
-            gate = float(prediction.correction_probability[0, 0])
-        if prediction.alpha is not None:
-            self.alpha = float(prediction.alpha[0, 0])
-        authority = self.alpha if prediction.alpha is not None else gate
-        residual = np.clip(prediction.predicted_residuals[0, 0] * self.blend * authority, -self.limit, self.limit)
+        projected = self.safety.project(
+            baseline, proposed_residual, dt_s=dt_s, model_age_ms=self._model_age_ms(request),
+            measured_state_rad=state,
+        )
+        self.previous_timestamp_ns = timestamp_ns
+        self.commands.append(baseline)
         return {
             "ready": True,
             "timestamp_ns": int(request["timestamp_ns"]),
-            "command_rad": (baseline + residual).tolist(),
-            "residual_rad": residual.tolist(),
-            "latent_variance": float(prediction.latent_variance[0]),
+            "command_rad": projected.command_rad.tolist(),
+            "residual_rad": projected.applied_residual_rad.tolist(),
+            "latent_variance": self.last_latent_variance,
             "correction_probability": gate,
             "alpha": self.alpha,
-            "gain_delta": None if prediction.gain_delta is None else float(prediction.gain_delta[0, 0]),
+            "desired_gain": self.last_desired_gain,
+            "gain_delta": None if prediction is None or prediction.gain_delta is None else float(prediction.gain_delta[0, 0]),
+            "execution_mode": self.execution_mode,
+            "safety_reasons": list(projected.reasons),
         }
+
+    @staticmethod
+    def _model_age_ms(request: dict) -> float:
+        submitted = request.get("submitted_monotonic_ns")
+        if not isinstance(submitted, int):
+            return 0.0
+        return max((time.monotonic_ns() - submitted) / 1_000_000.0, 0.0)
 
 
 def main() -> int:

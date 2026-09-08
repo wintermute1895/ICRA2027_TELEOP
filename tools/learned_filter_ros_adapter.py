@@ -107,13 +107,10 @@ class Adapter(Node):
                 response_age = time.monotonic() - (self.pending_started or time.monotonic())
                 if response_age > self.timeout_s:
                     response = {"ready": False, "reason": "inference_timeout", "latency_s": response_age}
-                if response.get("ready") is True:
-                    if self.master_message is not None:
-                        candidate = np.asarray(response.get("command_rad"), dtype=np.float32)
-                        if candidate.shape == np.asarray(self.master_message.position).shape and np.isfinite(candidate).all():
-                            self.output_pub.publish(joint_state(self.master_message, np.rad2deg(candidate)))
-                else:
-                    pass
+                if self.master_message is not None and response.get("command_rad") is not None:
+                    candidate = np.asarray(response.get("command_rad"), dtype=np.float32)
+                    if candidate.shape == np.asarray(self.master_message.position).shape and np.isfinite(candidate).all():
+                        self.output_pub.publish(joint_state(self.master_message, np.rad2deg(candidate)))
                 self.get_logger().info(
                     "[diag] infer response ready="
                     + str(response.get("ready"))
@@ -147,6 +144,7 @@ class Adapter(Node):
         self.get_logger().info("[diag] infer submit request")
         request = {
             "timestamp_ns": self.get_clock().now().nanoseconds,
+            "submitted_monotonic_ns": time.monotonic_ns(),
             "master_joint_raw_rad": master.tolist(),
             "robot_joint_state_rad": list(state.position),
         }

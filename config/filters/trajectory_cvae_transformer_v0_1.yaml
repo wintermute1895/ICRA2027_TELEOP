@@ -1,7 +1,7 @@
 schema: robot_teleop.trajectory-filter-model/v0.1
 model:
   history_length: 16
-  horizon: 1
+  horizon: 8
   latent_dim: 8
   model_dim: 128
   num_heads: 4

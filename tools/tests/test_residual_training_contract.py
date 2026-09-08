@@ -5,6 +5,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import numpy as np
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 
@@ -58,6 +60,22 @@ class ResidualTrainingContractTest(unittest.TestCase):
             self.assertEqual(windows.command_semantics, "master_joint_raw")
             self.assertEqual(windows.targets.shape, (5, 1, 2))
             self.assertEqual(windows.correction_weights[:, 0, 0].tolist(), [3.0, 3.0, 1.0, 1.0, 1.0])
+
+    def test_multistep_chunk_uses_anchor_command_and_future_raw_commands(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "episode.jsonl"
+            rows = []
+            for i in range(10):
+                item = row(i, residual=False)
+                item["expert_action_target_rad"] = [i / 10.0, -i / 10.0]
+                rows.append(item)
+            path.write_text("".join(json.dumps(item) + "\n" for item in rows))
+            windows = build_windows(path, history_length=3, horizon=4, context_dim=0)
+            self.assertEqual(windows.targets.shape, (4, 4, 2))
+            self.assertTrue(np.allclose(windows.current_commands[0], [0.03, 0.03]))
+            self.assertTrue(np.allclose(windows.chunk_commands[0, -1], [0.06, 0.06]))
+            self.assertTrue(np.allclose(windows.commands[0, -1], [0.02, 0.02]))
+            self.assertTrue(np.allclose(windows.states[0, -1], [0.03, 0.03]))
 
 
 if __name__ == "__main__":

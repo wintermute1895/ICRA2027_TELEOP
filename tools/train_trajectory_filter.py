@@ -24,7 +24,12 @@ except ImportError:  # TensorBoard is an optional visualization dependency.
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from teleop_filter import ConditionalTrajectoryVAE, FilterTrainingConfig, trajectory_vae_loss  # noqa: E402
+from teleop_filter import (  # noqa: E402
+    ConditionalTrajectoryVAE,
+    FilterTrainingConfig,
+    trajectory_vae_loss,
+    unroll_rate_limited_gain,
+)
 
 
 @dataclass
@@ -34,8 +39,11 @@ class EpisodeWindows:
     contexts: np.ndarray | None
     visuals: np.ndarray | None
     targets: np.ndarray
+    current_commands: np.ndarray
+    chunk_commands: np.ndarray
     correction_mask: np.ndarray
     correction_weights: np.ndarray
+    episode_start: np.ndarray
     target_semantics: str
     command_semantics: str
     episode_id: str
@@ -49,8 +57,11 @@ class StackedWindows:
     contexts: np.ndarray | None
     visuals: np.ndarray | None
     targets: np.ndarray
+    current_commands: np.ndarray
+    chunk_commands: np.ndarray
     correction_mask: np.ndarray
     correction_weights: np.ndarray
+    episode_start: np.ndarray
 
 
 def read_jsonl(path: Path) -> list[dict]:
@@ -143,31 +154,34 @@ def build_windows(
         }
 
     command_name = "master_joint_raw"
-    command_windows, state_windows, context_windows, visual_windows, targets, masks, weights = [], [], [], [], [], [], []
+    command_windows, state_windows, context_windows, visual_windows = [], [], [], []
+    targets, current_commands, chunk_commands, masks, weights = [], [], [], [], []
     flags = correction_flags(rows)
     for anchor in range(history_length, len(rows) - horizon + 1):
-        history_rows = rows[anchor - history_length:anchor]
+        command_rows = rows[anchor - history_length:anchor]
+        observation_rows = rows[anchor - history_length + 1:anchor + 1]
         future_rows = rows[anchor:anchor + horizon]
-        commands = [vector(row, command_name, action_dim) for row in history_rows]
-        states = [vector(row, "robot_joint_state_rad", state_dim) for row in history_rows]
-        if int(horizon) != 1:
-            raise ValueError("the task-aware residual MVP requires horizon=1")
+        commands = [vector(row, command_name, action_dim) for row in command_rows]
+        states = [vector(row, "robot_joint_state_rad", state_dim) for row in observation_rows]
         future = [vector(row, target_name, action_dim) for row in future_rows]
-        if any(value is None for value in (*commands, *states, *future)):
+        raw_future = [vector(row, command_name, action_dim) for row in future_rows]
+        if any(value is None for value in (*commands, *states, *future, *raw_future)):
             continue
         contexts = None
         if context_dim:
-            contexts = [vector(row, "filter_context", context_dim) for row in history_rows]
+            contexts = [vector(row, "filter_context", context_dim) for row in observation_rows]
             if any(value is None for value in contexts):
                 continue
         visuals = None
         if visual_dim:
-            visuals = [vector(row, "vlm_embedding", visual_dim) for row in history_rows]
+            visuals = [vector(row, "vlm_embedding", visual_dim) for row in observation_rows]
             if any(value is None for value in visuals):
                 continue
         command_windows.append(np.stack(commands))
         state_windows.append(np.stack(states))
         targets.append(np.stack(future))
+        current_commands.append(raw_future[0])
+        chunk_commands.append(np.stack(raw_future))
         mask = flags[anchor:anchor + horizon]
         masks.append(mask)
         weights.append((1.0 + correction_loss_weight * mask)[..., None])
@@ -187,8 +201,11 @@ def build_windows(
         contexts=np.stack(context_windows) if context_dim else None,
         visuals=np.stack(visual_windows) if visual_dim else None,
         targets=np.stack(targets),
+        current_commands=np.stack(current_commands),
+        chunk_commands=np.stack(chunk_commands),
         correction_mask=np.stack(masks),
         correction_weights=np.stack(weights),
+        episode_start=np.asarray([True] + [False] * (len(targets) - 1)),
         target_semantics="recorded_expert_action" if target_name == "expert_action_target_rad" else "synthetic_smoke_residual",
         command_semantics=command_name,
         episode_id=episode_id,
@@ -216,12 +233,16 @@ def stack(items: list[EpisodeWindows]) -> StackedWindows:
     commands = np.concatenate([item.commands for item in items])
     states = np.concatenate([item.states for item in items])
     targets = np.concatenate([item.targets for item in items])
+    current_commands = np.concatenate([item.current_commands for item in items])
+    chunk_commands = np.concatenate([item.chunk_commands for item in items])
     correction_mask = np.concatenate([item.correction_mask for item in items])
     correction_weights = np.concatenate([item.correction_weights for item in items])
+    episode_start = np.concatenate([item.episode_start for item in items])
     contexts = None if items[0].contexts is None else np.concatenate([item.contexts for item in items])
     visuals = None if items[0].visuals is None else np.concatenate([item.visuals for item in items])
     return StackedWindows(
-        commands, states, contexts, visuals, targets, correction_mask, correction_weights
+        commands, states, contexts, visuals, targets, current_commands, chunk_commands,
+        correction_mask, correction_weights, episode_start
     )
 
 
@@ -243,11 +264,14 @@ def loader(
     contexts = arrays.contexts
     visuals = arrays.visuals
     targets = arrays.targets
+    current_commands = arrays.current_commands
+    chunk_commands = arrays.chunk_commands
     correction_mask = arrays.correction_mask
     correction_weights = arrays.correction_weights
     commands = (commands - normalization["commands"][0]) / normalization["commands"][1]
     states = (states - normalization["states"][0]) / normalization["states"][1]
     targets = (targets - normalization["targets"][0]) / normalization["targets"][1]
+    current_commands = (current_commands - normalization["commands"][0].reshape(-1)) / normalization["commands"][1].reshape(-1)
     tensors = [torch.from_numpy(commands), torch.from_numpy(states)]
     if contexts is not None:
         contexts = (contexts - normalization["contexts"][0]) / normalization["contexts"][1]
@@ -256,10 +280,11 @@ def loader(
         visuals = (visuals - normalization["visuals"][0]) / normalization["visuals"][1]
         tensors.append(torch.from_numpy(visuals))
     tensors.append(torch.from_numpy(targets))
+    tensors.append(torch.from_numpy(current_commands.astype(np.float32)))
+    tensors.append(torch.from_numpy(chunk_commands.astype(np.float32)))
     tensors.append(torch.from_numpy(correction_mask))
     tensors.append(torch.from_numpy(correction_weights))
-    # Physical baseline used by the nominal zero-residual regularizer.
-    tensors.append(torch.from_numpy(arrays.commands[:, -1:, :].astype(np.float32)))
+    tensors.append(torch.from_numpy(arrays.episode_start))
     return DataLoader(TensorDataset(*tensors), batch_size=batch_size, shuffle=shuffle)
 
 
@@ -276,6 +301,8 @@ def run_epoch(
     gain_weight: float,
     alpha_max: float,
     alpha_rate: float,
+    alpha_low: float,
+    alpha_high: float,
     zero_weight: float,
     target_mean: torch.Tensor,
     target_std: torch.Tensor,
@@ -285,6 +312,7 @@ def run_epoch(
     totals = {key: 0.0 for key in ("total", "reconstruction", "kl", "smoothness", "gate", "gain", "zero_residual", "correction_reconstruction", "background_reconstruction")}
     metric_counts = {"correction_reconstruction": 0, "background_reconstruction": 0}
     samples = 0
+    previous_alpha: torch.Tensor | None = None
     with torch.set_grad_enabled(optimizer is not None):
         for batch in batches:
             commands, states = batch[0].to(device), batch[1].to(device)
@@ -294,15 +322,34 @@ def run_epoch(
             visual = batch[offset].to(device) if visual_dim else None
             offset += int(bool(visual_dim))
             targets = batch[offset].to(device)
-            correction_mask = batch[offset + 1].to(device)
-            correction_weights = batch[offset + 2].to(device)
-            raw_commands = batch[offset + 3].to(device)
-            outputs = model(commands, states, targets, context, visual)
+            current_commands = batch[offset + 1].to(device)
+            raw_commands = batch[offset + 2].to(device)
+            correction_mask = batch[offset + 3].to(device)
+            correction_weights = batch[offset + 4].to(device)
+            episode_start = batch[offset + 5].to(device)
+            outputs = model(
+                commands, states, targets, context, visual,
+                current_command=current_commands,
+            )
+            if outputs.get("desired_gain") is not None:
+                alpha = unroll_rate_limited_gain(
+                    outputs["desired_gain"], episode_start,
+                    alpha_rate=alpha_rate, initial_alpha=previous_alpha,
+                )
+                prior_alpha = torch.cat([
+                    (alpha.new_zeros((1, 1)) if previous_alpha is None or bool(episode_start[0]) else previous_alpha.reshape(1, 1)),
+                    alpha[:-1],
+                ])
+                prior_alpha = torch.where(episode_start.reshape(-1, 1), torch.zeros_like(prior_alpha), prior_alpha)
+                outputs["alpha"] = alpha
+                outputs["gain_delta"] = alpha - prior_alpha
+                previous_alpha = alpha[-1].detach()
             losses = trajectory_vae_loss(
                 outputs, targets, beta_kl=beta_kl, smoothness_weight=smoothness_weight,
                 reconstruction_weights=correction_weights,
                 correction_mask=correction_mask, gate_weight=gate_weight, gain_weight=gain_weight,
                 alpha_max=alpha_max, alpha_rate=alpha_rate, zero_weight=zero_weight,
+                alpha_low=alpha_low, alpha_high=alpha_high,
                 raw_commands=raw_commands, target_mean=target_mean, target_std=target_std,
             )
             if optimizer is not None:
@@ -314,7 +361,9 @@ def run_epoch(
             samples += count
             for key in losses:
                 totals[key] += float(losses[key].detach()) * count
-            element_loss = F.smooth_l1_loss(outputs["prediction"], targets, reduction="none").mean(dim=-1)
+            predicted_physical = outputs["prediction"] * target_std + target_mean
+            target_physical = targets * target_std + target_mean
+            element_loss = F.smooth_l1_loss(predicted_physical, target_physical, reduction="none").mean(dim=-1)
             for name, selected in (("correction_reconstruction", correction_mask > 0.5), ("background_reconstruction", correction_mask <= 0.5)):
                 if selected.any():
                     selected_count = int(selected.sum())
@@ -414,7 +463,7 @@ def main() -> int:
     if args.tensorboard_logdir and SummaryWriter is None:
         raise SystemExit("TensorBoard requested but tensorboard is not installed; install tensorboard in the training environment")
     writer = SummaryWriter(str(args.tensorboard_logdir)) if args.tensorboard_logdir else None
-    train_loader = loader(train_arrays, normalization, args.batch_size, True)
+    train_loader = loader(train_arrays, normalization, args.batch_size, not config.gain_enabled)
     validation_loader = loader(stack(validation_episodes), normalization, args.batch_size, False) if validation_episodes else None
     history = []
     for epoch in range(1, args.epochs + 1):
@@ -426,6 +475,8 @@ def main() -> int:
             gain_weight=training_config.loss.gain_weight,
             alpha_max=config.alpha_max,
             alpha_rate=config.alpha_rate,
+            alpha_low=training_config.loss.alpha_low,
+            alpha_high=training_config.loss.alpha_high,
             zero_weight=training_config.loss.zero_weight,
             target_mean=target_mean,
             target_std=target_std,
@@ -439,6 +490,8 @@ def main() -> int:
             gain_weight=training_config.loss.gain_weight,
             alpha_max=config.alpha_max,
             alpha_rate=config.alpha_rate,
+            alpha_low=training_config.loss.alpha_low,
+            alpha_high=training_config.loss.alpha_high,
             zero_weight=training_config.loss.zero_weight,
             target_mean=target_mean,
             target_std=target_std,

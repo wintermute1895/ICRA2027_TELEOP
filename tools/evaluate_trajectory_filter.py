@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "tools"))
 
-from teleop_filter import TrajectoryFilterRuntime  # noqa: E402
+from teleop_filter import TrajectoryFilterPrediction, TrajectoryFilterRuntime  # noqa: E402
 from train_trajectory_filter import build_windows  # noqa: E402
 
 
@@ -38,8 +38,55 @@ def residual_targets(windows, target_semantics: str) -> np.ndarray:
     invalid error metric, so the conversion must also happen in evaluation.
     """
     if target_semantics == "recorded_expert_action":
-        return windows.targets - windows.commands[:, -1:, :]
+        return windows.targets - windows.current_commands[:, None, :]
     return windows.targets
+
+
+def average_precision(scores: np.ndarray, labels: np.ndarray) -> float | None:
+    positives = int(labels.sum())
+    if positives == 0:
+        return None
+    order = np.argsort(-scores, kind="stable")
+    ranked = labels[order]
+    precision = np.cumsum(ranked) / np.arange(1, len(ranked) + 1)
+    return float((precision * ranked).sum() / positives)
+
+
+def mean_available(rows: list[dict], key: str) -> float | None:
+    values = [float(row[key]) for row in rows if row.get(key) is not None]
+    return None if not values else float(np.mean(values))
+
+
+def predict_episode(runtime: TrajectoryFilterRuntime, windows, deterministic: bool) -> TrajectoryFilterPrediction:
+    if not runtime.config.gain_enabled:
+        return runtime.predict(
+            windows.commands,
+            windows.states,
+            windows.contexts,
+            windows.visuals,
+            current_command=windows.current_commands,
+            deterministic=deterministic,
+        )
+    rows = []
+    previous_alpha = 0.0
+    for index in range(len(windows.targets)):
+        result = runtime.predict(
+            windows.commands[index:index + 1], windows.states[index:index + 1],
+            None if windows.contexts is None else windows.contexts[index:index + 1],
+            None if windows.visuals is None else windows.visuals[index:index + 1],
+            previous_alpha=previous_alpha,
+            current_command=windows.current_commands[index:index + 1],
+            deterministic=deterministic,
+        )
+        previous_alpha = float(result.alpha[0, 0])
+        rows.append(result)
+    combine = lambda name: None if getattr(rows[0], name) is None else np.concatenate([getattr(row, name) for row in rows])
+    return TrajectoryFilterPrediction(**{
+        name: combine(name) for name in (
+            "predicted_actions", "predicted_residuals", "latent_variance",
+            "correction_probability", "gain_delta", "alpha", "desired_gain",
+        )
+    })
 
 
 def main() -> int:
@@ -49,6 +96,7 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--stochastic", action="store_true", help="sample the learned prior")
+    parser.add_argument("--gain-threshold", type=float, help="validation-frozen threshold for gain interval metrics")
     args = parser.parse_args()
     if args.output_dir.exists():
         raise SystemExit(f"refusing to overwrite output: {args.output_dir}")
@@ -71,14 +119,9 @@ def main() -> int:
             action_dim=runtime.config.action_dim,
             state_dim=runtime.config.state_dim,
         )
-        result = runtime.predict(
-            windows.commands,
-            windows.states,
-            windows.contexts,
-            windows.visuals,
-            deterministic=not args.stochastic,
-        )
+        result = predict_episode(runtime, windows, deterministic=not args.stochastic)
         targets = residual_targets(windows, runtime.target_semantics)
+        action_metrics = metrics(result.predicted_actions, windows.targets)
         summary = {
             "episode_id": windows.episode_id,
             "source": str(path.resolve()),
@@ -87,6 +130,8 @@ def main() -> int:
             "target_semantics": runtime.target_semantics,
             "metric_space": "residual_rad",
             **metrics(result.predicted_residuals, targets),
+            "action_mae_rad": action_metrics["mae_rad"],
+            "action_rmse_rad": action_metrics["rmse_rad"],
             "latent_variance_mean": float(result.latent_variance.mean()),
             "proposed_residual_abs_mean_rad": float(np.abs(result.predicted_residuals[:, 0]).mean()),
         }
@@ -98,6 +143,20 @@ def main() -> int:
                 "gate_accuracy_at_0_5": float(np.mean((probabilities >= 0.5) == (labels >= 0.5))),
                 "correction_probability_mean": float(probabilities.mean()),
             })
+        if result.alpha is not None:
+            alpha = result.alpha[:, 0]
+            labels = windows.correction_mask[:, 0].astype(bool)
+            nominal = ~labels
+            summary.update({
+                "gain_correction_mean": None if not labels.any() else float(alpha[labels].mean()),
+                "gain_nominal_mean": None if not nominal.any() else float(alpha[nominal].mean()),
+                "gain_mean_absolute_variation": 0.0 if len(alpha) < 2 else float(np.abs(np.diff(alpha)).mean()),
+                "gain_auprc": average_precision(alpha, labels.astype(np.float32)),
+            })
+            if args.gain_threshold is not None:
+                predicted = alpha >= args.gain_threshold
+                union = np.logical_or(predicted, labels).sum()
+                summary["gain_interval_iou"] = None if union == 0 else float(np.logical_and(predicted, labels).sum() / union)
         summaries.append(summary)
         error = result.predicted_residuals - targets
         absolute_error_sum += float(np.abs(error).sum())
@@ -132,6 +191,12 @@ def main() -> int:
             "mae_rad": absolute_error_sum / error_elements,
             "rmse_rad": float(np.sqrt(squared_error_sum / error_elements)),
             "first_step_mae_rad": first_absolute_error_sum / first_error_elements,
+            "action_mae_rad": mean_available(summaries, "action_mae_rad"),
+            "gain_correction_mean": mean_available(summaries, "gain_correction_mean"),
+            "gain_nominal_mean": mean_available(summaries, "gain_nominal_mean"),
+            "gain_mean_absolute_variation": mean_available(summaries, "gain_mean_absolute_variation"),
+            "gain_auprc": mean_available(summaries, "gain_auprc"),
+            "gain_interval_iou": mean_available(summaries, "gain_interval_iou"),
         },
         "episodes": summaries,
     }

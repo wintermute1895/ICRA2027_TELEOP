@@ -20,10 +20,12 @@ VARIANTS = {
     "full": {},
     "no_visual": {"model": {"visual_dim": 0, "gain_enabled": True}},
     "no_gain": {"model": {"gain_enabled": False}, "loss": {"gain_weight": 0.0}},
-    "no_gate": {"model": {"gate_enabled": False}, "loss": {"gate_weight": 0.0}},
+    "fixed_gain": {"model": {"gain_enabled": True, "fixed_gain": 0.25}, "loss": {"gain_weight": 0.0}},
+    "shared_head": {"model": {"shared_action_gain_head": True}},
     "nominal_only": {"loss": {"correction_weight": 0.0, "gain_weight": 0.0}},
     "correction_only": {"loss": {"zero_weight": 0.0}},
-    "fixed_gain": {"model": {"gain_enabled": False}, "loss": {"gain_weight": 0.0}},
+    "single_step": {"model": {"horizon": 1}},
+    "no_rate_limit": {"model": {"alpha_rate": 1.0}},
 }
 
 

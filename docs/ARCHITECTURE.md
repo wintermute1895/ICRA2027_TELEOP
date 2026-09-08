@@ -103,15 +103,18 @@ SDK remain unchanged.
 和有界残差组合；`tools/evaluate_trajectory_filter.py` 只读生成预测与误差报告。该运行时
 不导入 ROS 或具体仿真器，因此 MuJoCo 和未来其他 simulator adapter 共享同一模型语义。
 
-The current task-aware model is correction-aware: it predicts an expert action
-and, when enabled in the versioned model config, a correction probability. The
-training view keeps nominal and corrective windows together. Corrective windows
-receive higher action weight and gate supervision; nominal windows receive a
-small zero-residual regularizer. At deployment, residual composition is gated:
-`u_out = SafetyProjector(u_raw + alpha * p(correction) * (u_expert - u_raw))`.
-This gate is only as meaningful as the recorded target: a correction interval
-with `expert_action_target_rad == master_joint_raw` teaches timing but cannot
-teach a non-zero corrective action.
+The current task-aware model predicts an expert joint-position action chunk and a
+separate continuous desired gain. The gain head receives the encoded transition
+history and current raw command; its desired value is passed through the same
+bounded, rate-limited recurrence used by collection. Nominal and corrective
+windows remain in one training view: corrective windows receive higher action
+weight and a high gain-band term, while nominal windows receive a low gain-band
+and zero-residual regularizer. At deployment, residual composition is
+`u_out = SafetyProjector(u_raw + alpha * clip(u_expert - u_raw))`; the projector
+uses measured state, previous output, joint limits, residual limits, command
+velocity, and model-age checks. The legacy correction-probability gate remains
+available only for loading old v0.1 checkpoints and is disabled in the paper
+configuration.
 
 任务飞轮的视觉支路由 `tools/encode_images_with_vlm.py` 和
 `tools/attach_vlm_embeddings.py` 固定下来：外部 VLM 对解码图像生成冻结 embedding，

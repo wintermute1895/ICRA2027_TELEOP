@@ -19,7 +19,10 @@ class FilterTrainingConfigTest(unittest.TestCase):
         self.assertEqual(config.visual_dim, 1536)
         self.assertEqual(config.loss.correction_weight, 2.0)
         self.assertFalse(config.data.allow_synthetic_smoke)
-        self.assertEqual(config.model_config(action_dim=7, state_dim=7).action_dim, 7)
+        model = config.model_config(action_dim=7, state_dim=7)
+        self.assertEqual(model.action_dim, 7)
+        self.assertEqual(model.horizon, 8)
+        self.assertTrue(model.gain_current_command)
 
     def test_rejects_undeclared_target_semantics(self):
         payload = yaml.safe_load((ROOT / "config/filters/trajectory_cvae_transformer_v0_1.yaml").read_text())

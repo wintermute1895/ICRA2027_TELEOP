@@ -17,6 +17,7 @@ from teleop_filter import (  # noqa: E402
     bounded_residual_command,
     trajectory_vae_loss,
     TrajectoryFilterRuntime,
+    unroll_rate_limited_gain,
 )
 
 
@@ -105,7 +106,10 @@ class TrajectoryCVAEModelTest(unittest.TestCase):
             model.gain_head.bias.fill_(10.0)
         commands = torch.zeros(2, 3, 2)
         states = torch.zeros(2, 3, 2)
-        first = model.predict(commands, states, previous_alpha=torch.tensor([[0.55], [0.0]]))
+        first = model.predict(
+            commands, states, previous_alpha=torch.tensor([[0.55], [0.0]]),
+            current_command=commands[:, -1],
+        )
         self.assertTrue(torch.all(first["gain_delta"] <= config.alpha_rate))
         self.assertTrue(torch.allclose(first["alpha"], torch.tensor([[0.6], [0.1]]), atol=1e-4))
 
@@ -121,14 +125,49 @@ class TrajectoryCVAEModelTest(unittest.TestCase):
         }
         labels = torch.tensor([[1.0], [0.0]])
         good = trajectory_vae_loss(
-            {**common, "gain_delta": torch.tensor([[0.1], [-0.1]])}, prediction,
-            correction_mask=labels, gain_weight=1.0, alpha_rate=0.1,
+            {**common, "alpha": torch.tensor([[0.6], [0.0]])}, prediction,
+            correction_mask=labels, gain_weight=1.0, alpha_max=1.0,
         )
         wrong = trajectory_vae_loss(
-            {**common, "gain_delta": torch.tensor([[-0.1], [0.1]])}, prediction,
-            correction_mask=labels, gain_weight=1.0, alpha_rate=0.1,
+            {**common, "alpha": torch.tensor([[0.0], [0.6]])}, prediction,
+            correction_mask=labels, gain_weight=1.0, alpha_max=1.0,
         )
         self.assertLess(good["gain"], wrong["gain"])
+
+    def test_gain_unroll_resets_at_episode_boundaries(self):
+        desired = torch.tensor([[0.8], [0.8], [0.0], [0.8]])
+        alpha = unroll_rate_limited_gain(
+            desired, torch.tensor([True, False, False, True]), alpha_rate=0.1,
+        )
+        self.assertTrue(torch.allclose(alpha, torch.tensor([[0.1], [0.2], [0.1], [0.1]])))
+
+    def test_shared_action_gain_decoder_outputs_both(self):
+        config = TrajectoryFilterConfig(
+            action_dim=2, state_dim=2, history_length=3, horizon=4,
+            latent_dim=2, model_dim=8, num_heads=2, num_layers=1,
+            dropout=0.0, gain_enabled=True, gain_current_command=True,
+            shared_action_gain_head=True,
+        )
+        model = ConditionalTrajectoryVAE(config)
+        commands = torch.zeros(2, 3, 2)
+        states = torch.zeros(2, 3, 2)
+        result = model.predict(commands, states, current_command=commands[:, -1])
+        self.assertEqual(tuple(result["prediction"].shape), (2, 4, 2))
+        self.assertEqual(tuple(result["desired_gain"].shape), (2, 1))
+
+    def test_fixed_gain_is_rate_limited(self):
+        config = TrajectoryFilterConfig(
+            action_dim=2, state_dim=2, history_length=3, horizon=2,
+            latent_dim=2, model_dim=8, num_heads=2, num_layers=1,
+            dropout=0.0, gain_enabled=True, gain_current_command=True,
+            alpha_rate=0.1, fixed_gain=0.4,
+        )
+        model = ConditionalTrajectoryVAE(config)
+        commands = torch.zeros(1, 3, 2)
+        states = torch.zeros(1, 3, 2)
+        result = model.predict(commands, states, current_command=commands[:, -1])
+        self.assertTrue(torch.allclose(result["desired_gain"], torch.tensor([[0.4]])))
+        self.assertTrue(torch.allclose(result["alpha"], torch.tensor([[0.1]])))
 
     def test_checkpoint_runtime_normalizes_and_bounds(self):
         config = TrajectoryFilterConfig(
@@ -157,6 +196,7 @@ class TrajectoryCVAEModelTest(unittest.TestCase):
             result = runtime.predict(
                 np.zeros((4, 3, 2), dtype=np.float32),
                 np.zeros((4, 3, 2), dtype=np.float32),
+                current_command=np.full((4, 2), 0.25, dtype=np.float32),
             )
         self.assertEqual(result.predicted_residuals.shape, (4, 1, 2))
 

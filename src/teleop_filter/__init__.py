@@ -5,6 +5,7 @@ from .trajectory_vae import (
     TrajectoryFilterConfig,
     bounded_residual_command,
     trajectory_vae_loss,
+    unroll_rate_limited_gain,
 )
 from .runtime import TrajectoryFilterPrediction, TrajectoryFilterRuntime
 from .safety import ProjectionResult, SafetyLimits, SafetyProjector
@@ -15,6 +16,7 @@ __all__ = [
     "TrajectoryFilterConfig",
     "bounded_residual_command",
     "trajectory_vae_loss",
+    "unroll_rate_limited_gain",
     "TrajectoryFilterPrediction",
     "TrajectoryFilterRuntime",
     "ProjectionResult",

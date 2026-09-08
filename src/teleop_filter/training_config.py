@@ -18,6 +18,8 @@ class LossConfig:
     gate_weight: float = 0.0
     gain_weight: float = 0.0
     zero_weight: float = 0.0
+    alpha_low: float = 0.05
+    alpha_high: float = 0.5
 
     def validate(self) -> None:
         if min(self.beta_kl, self.smoothness_weight, self.correction_weight, self.gate_weight, self.gain_weight, self.zero_weight) < 0.0:
@@ -62,6 +64,8 @@ class FilterTrainingConfig:
                 gate_weight=float(loss.get("gate_weight", 0.0)),
                 gain_weight=float(loss.get("gain_weight", 0.0)),
                 zero_weight=float(loss.get("zero_weight", 0.0)),
+                alpha_low=float(loss.get("alpha_low", 0.05)),
+                alpha_high=float(loss.get("alpha_high", 0.5)),
             ),
             data=DataConfig(bool((payload.get("data") or {}).get("allow_synthetic_smoke", False))),
             runtime=dict(runtime),
@@ -72,8 +76,11 @@ class FilterTrainingConfig:
 
     def validate(self) -> None:
         self.loss.validate()
-        if int(self.model["horizon"]) != 1:
-            raise ValueError("the task-aware action-filter MVP requires horizon=1")
+        alpha_max = float(self.model.get("alpha_max", 1.0))
+        if not 0.0 <= self.loss.alpha_low < self.loss.alpha_high <= alpha_max:
+            raise ValueError("loss gain bands must satisfy 0 <= alpha_low < alpha_high <= alpha_max")
+        if int(self.model["horizon"]) < 1:
+            raise ValueError("model.horizon must be positive")
         if self.runtime.get("deployment") != "offline_and_simulation_only":
             raise ValueError("training config is not authorized for offline/simulation runtime")
         if "expert_action_target_rad" not in str(self.semantics.get("target", "")):
@@ -112,4 +119,7 @@ class FilterTrainingConfig:
             gain_enabled=bool(self.model.get("gain_enabled", False)),
             alpha_max=float(self.model.get("alpha_max", 1.0)),
             alpha_rate=float(self.model.get("alpha_rate", 0.1)),
+            gain_current_command=bool(self.model.get("gain_current_command", False)),
+            shared_action_gain_head=bool(self.model.get("shared_action_gain_head", False)),
+            fixed_gain=(None if self.model.get("fixed_gain") is None else float(self.model["fixed_gain"])),
         )

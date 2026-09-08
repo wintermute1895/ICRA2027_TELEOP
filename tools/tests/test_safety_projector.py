@@ -39,6 +39,19 @@ class SafetyProjectorTest(unittest.TestCase):
         self.assertIn("model_timeout", result.reasons)
         self.assertTrue(np.allclose(result.command_rad, [0.3]))
 
+    def test_first_command_rate_limit_uses_measured_state(self):
+        projector = SafetyProjector(SafetyLimits(
+            joint_min_rad=np.array([-1.0]), joint_max_rad=np.array([1.0]),
+            max_residual_rad=1.0, max_residual_rate_rad_s=0.0,
+            max_command_velocity_rad_s=0.5, max_model_age_ms=100.0,
+        ))
+        result = projector.project(
+            np.array([0.8]), np.array([0.0]), dt_s=0.1, model_age_ms=0.0,
+            measured_state_rad=np.array([0.0]),
+        )
+        self.assertTrue(np.allclose(result.command_rad, [0.05]))
+        self.assertIn("command_velocity_limited", result.reasons)
+
 
 if __name__ == "__main__":
     unittest.main()
