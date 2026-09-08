@@ -95,14 +95,18 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
     args = parser.parse_args()
+    socket_path: Path | None = None
     try:
         config = load_config(args.config)
+        # Remove any stale socket from a previous run before the slow model
+        # load begins; start_learned_filter.sh only waits for the socket file.
+        socket_path = Path(config["socket"])
+        if socket_path.exists():
+            socket_path.unlink()
         worker = Worker(config)
     except (KeyError, OSError, ValueError) as error:
         raise SystemExit(str(error)) from error
-    socket_path = Path(config["socket"])
-    if socket_path.exists():
-        socket_path.unlink()
+    assert socket_path is not None
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server.bind(str(socket_path))
     os.chmod(socket_path, 0o600)

@@ -84,6 +84,11 @@ def main() -> int:
         from PIL import Image
         from transformers import AutoModel, AutoProcessor
     except ImportError as error:
+        import sys as _sys
+        print(
+            f"VLM import failed: {type(error).__name__}: {error}",
+            file=_sys.stderr,
+        )
         raise SystemExit(
             "VLM dependencies are missing; install requirements-vlm.txt in the training environment"
         ) from error

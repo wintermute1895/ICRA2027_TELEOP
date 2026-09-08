@@ -94,6 +94,12 @@ def topics(arms: list[str], cameras: list[str], robot_ns: str, teleop_ns: str) -
     return list(dict.fromkeys(result))
 
 
+def extra_filter_topics() -> list[str]:
+    """Topics exported by capture_manager when a learned filter is deployed."""
+    raw = os.environ.get("TELEOP_CAP_FILTER_TOPICS", "")
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
 def write_capture_manifest(run_dir: Path, args: argparse.Namespace, topic_list: list[str]) -> None:
     arms = list(args.arms)
     arm_topics = lambda suffix: ",".join(f"{args.teleop_ns}/{arm}/{suffix}" for arm in arms)
@@ -500,6 +506,9 @@ def main() -> int:
         }, domain="robotics")
         mark_running(run_dir); write_host_capture(run_dir, "start", "standard")
         topic_list = topics(args.arms, args.cameras, args.robot_ns, args.teleop_ns)
+        for extra in extra_filter_topics():
+            if extra not in topic_list:
+                topic_list.append(extra)
         try:
             ok, wall_seconds = record_one(args, run_dir, topic_list)
             exit_code = 0 if ok else 3

@@ -453,6 +453,11 @@ if (( REAL )); then ARMED_ARG="true"; fi
 
 if [[ "$MANAGER" != "tmux" ]]; then
   [[ "$MANAGER" == "gui" && -z "${DISPLAY:-}" && -z "${WAYLAND_DISPLAY:-}" ]] && die "--manager=gui requires a graphical session (DISPLAY/WAYLAND_DISPLAY is empty)"
+  MANAGER_LOG_DIR="$RUN_ROOT/system/supervisor"
+  mkdir -p "$MANAGER_LOG_DIR"
+  MANAGER_LOG="$MANAGER_LOG_DIR/${SESSION}-manager-$(date -u +%Y%m%dT%H%M%SZ).log"
+  exec > >(tee "$MANAGER_LOG") 2>&1
+  log "manager console log: $MANAGER_LOG"
   ANNOTATION_STATE="$RUN_ROOT/.annotation_state.json"
   export TELEOP_CAP_ROOT_DIR="$ROOT_DIR"
   export TELEOP_CAP_RUN_ROOT="$RUN_ROOT"
@@ -490,6 +495,8 @@ if [[ "$MANAGER" != "tmux" ]]; then
   export TELEOP_CAP_EVENT_PUBLISHER_PYTHON="$SYSTEM_PYTHON"
   export TELEOP_CAP_ANNOTATION_STATE="$ANNOTATION_STATE"
   export TELEOP_CAP_ROBOT_IP="$ROBOT_IP"
+  export TELEOP_CAP_LEARNED_FILTER_CONFIG="$LEARNED_FILTER_CONFIG"
+  export TELEOP_CAP_MODEL_DEPLOYMENT_CONFIG="$MODEL_DEPLOYMENT_CONFIG"
   log "manager=$MANAGER python=$SYSTEM_PYTHON state_dir=$RUN_ROOT/system/supervisor"
   exec "$SYSTEM_PYTHON" "$ROOT_DIR/tools/capture_manager.py" "$MANAGER"
 fi

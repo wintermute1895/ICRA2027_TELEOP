@@ -54,7 +54,8 @@ class Adapter(Node):
         self.pending: Future | None = None
         self.pending_started: float | None = None
         self.master_message: JointState | None = None
-        self.executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="learned-filter")
+        self.last_skip_diag = 0.0
+        self.thread_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="learned-filter")
 
         self.output_pub = self.create_publisher(JointState, config["master_output_topic"], 10)
         self.raw_pub = self.create_publisher(JointState, config["raw_observation_topic"], 10)
@@ -113,6 +114,12 @@ class Adapter(Node):
                             self.output_pub.publish(joint_state(self.master_message, np.rad2deg(candidate)))
                 else:
                     pass
+                self.get_logger().info(
+                    "[diag] infer response ready="
+                    + str(response.get("ready"))
+                    + " reason="
+                    + str(response.get("reason"))
+                )
                 self.diagnose(**response)
             except (OSError, ValueError, json.JSONDecodeError) as error:
                 self.diagnose(ready=False, reason=f"worker_unavailable:{type(error).__name__}")
@@ -121,21 +128,33 @@ class Adapter(Node):
 
         names = ["master", "state", *self.camera_ids]
         now = time.monotonic()
-        if any(name not in self.values or now - self.values[name][0] > self.timeout_s for name in names):
+        missing = [name for name in names if name not in self.values]
+        stale = {
+            name: round(now - self.values[name][0], 3)
+            for name in names
+            if name in self.values and now - self.values[name][0] > self.timeout_s
+        }
+        if missing or stale:
+            if now - self.last_skip_diag >= 1.0:
+                self.last_skip_diag = now
+                self.get_logger().info(
+                    f"[diag] infer skipped missing={missing} stale_ages_s={stale}"
+                )
             return
         master = self.values["master"][1]
         state = self.values["state"][1]
         images = {name: self.values[name][1] for name in self.camera_ids}
+        self.get_logger().info("[diag] infer submit request")
         request = {
             "timestamp_ns": self.get_clock().now().nanoseconds,
             "master_joint_raw_rad": master.tolist(),
             "robot_joint_state_rad": list(state.position),
         }
-        self.pending = self.executor.submit(self.exchange, request, images)
+        self.pending = self.thread_pool.submit(self.exchange, request, images)
         self.pending_started = now
 
     def destroy_node(self) -> None:
-        self.executor.shutdown(wait=False, cancel_futures=True)
+        self.thread_pool.shutdown(wait=False, cancel_futures=True)
         self.stream.close()
         self.connection.close()
         super().destroy_node()
@@ -154,7 +173,12 @@ def main() -> int:
         rclpy.spin(node)
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        try:
+            rclpy.shutdown()
+        except Exception:
+            # A forced shutdown (SIGTERM/timeout) can already shut rclpy down;
+            # a second call only adds noise to the deployment log.
+            pass
     return 0
 
 

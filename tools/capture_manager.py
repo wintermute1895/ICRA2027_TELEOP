@@ -107,6 +107,8 @@ class ManagerConfig:
         event_publisher_python: str,
         annotation_state: str,
         robot_ip: str,
+        learned_filter_config: str = "",
+        model_deployment_config: str = "",
     ) -> None:
         self.root_dir = Path(root_dir)
         self.run_root = Path(run_root)
@@ -144,6 +146,70 @@ class ManagerConfig:
         self.event_publisher_python = event_publisher_python
         self.annotation_state = Path(annotation_state)
         self.robot_ip = robot_ip
+        self.learned_filter_config = (
+            Path(learned_filter_config).resolve()
+            if learned_filter_config.strip()
+            else None
+        )
+        model_deployment = model_deployment_config.strip()
+        self.model_deployment_config = (
+            Path(model_deployment).resolve() if model_deployment else None
+        )
+
+    @staticmethod
+    def _yaml_mapping(path: Path | None) -> dict[str, object]:
+        if path is None or not path.is_file():
+            return {}
+        try:
+            import yaml
+
+            value = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+            return value if isinstance(value, dict) else {}
+        except (OSError, ImportError, ValueError):
+            return {}
+
+    @property
+    def model_deployment_enabled(self) -> bool:
+        """The model supervisor should be launched only when a learned-filter
+        runtime config is pinned and both runtime configs are enabled."""
+        if self.learned_filter_config is None or self.model_deployment_config is None:
+            return False
+        learned = self._yaml_mapping(self.learned_filter_config)
+        deployment = self._yaml_mapping(self.model_deployment_config)
+        if learned.get("enabled") is not True:
+            return False
+        if deployment.get("enabled") is not True:
+            return False
+        return True
+
+    @property
+    def filter_arm(self) -> str | None:
+        if self.learned_filter_config is None:
+            return None
+        arm = str(self._yaml_mapping(self.learned_filter_config).get("arm", "")).lower()
+        return arm if arm in {"left", "right"} else None
+
+    @property
+    def deployment_output_topic(self) -> str | None:
+        if self.model_deployment_config is None:
+            return None
+        return str(self._yaml_mapping(self.model_deployment_config).get("output_topic", "")).strip() or None
+
+    @property
+    def filter_extra_topics(self) -> list[str]:
+        """Candidate/diagnostic topics published by the learned-filter ROS
+        adapter. They are not part of the baseline capture topic list but are
+        required to audit model predictions offline."""
+        if self.learned_filter_config is None or self.filter_arm is None:
+            return []
+        mapping = self._yaml_mapping(self.learned_filter_config)
+        names = (
+            "master_output_topic",
+            "diagnostics_topic",
+            "raw_observation_topic",
+            "filtered_observation_topic",
+        )
+        return [str(mapping[name]) for name in names if str(mapping.get(name, "")).strip()]
 
     @property
     def camera_namespaces(self) -> str:
@@ -230,6 +296,8 @@ class ManagerConfig:
                 "TELEOP_CAP_ANNOTATION_STATE", str(Path(os.environ["TELEOP_CAP_RUN_ROOT"]) / ".annotation_state.json")
             ),
             robot_ip=os.environ.get("TELEOP_CAP_ROBOT_IP", ""),
+            learned_filter_config=os.environ.get("TELEOP_CAP_LEARNED_FILTER_CONFIG", ""),
+            model_deployment_config=os.environ.get("TELEOP_CAP_MODEL_DEPLOYMENT_CONFIG", ""),
         )
 
 
@@ -560,6 +628,43 @@ class CaptureSession:
 
             # LinkerTA + mapping/safety bridge (driver is already running)
             armed = "true" if config.real else "false"
+            model_launch = config.model_deployment_enabled and config.filter_arm is not None
+            if config.learned_filter_config is not None and not config.model_deployment_enabled:
+                raise RuntimeError(
+                    "learned-filter runtime config is pinned but not enabled: "
+                    + str(config.learned_filter_config)
+                )
+            if model_launch and config.model_deployment_config is not None:
+                # The GPU worker/adapter run from the repository's teleop
+                # conda stack regardless of how capture_manager itself was
+                # launched.
+                os.environ.setdefault(
+                    "LEROBOT_ENV_NAME",
+                    os.environ.get("CONDA_DEFAULT_ENV", "teleop"),
+                )
+                deployment_args = [
+                    "bash",
+                    str(config.root_dir / "scripts/start_model_deployment.sh"),
+                    str(config.model_deployment_config),
+                    "--shadow",
+                    "--source=filter",
+                    "--filter-config=" + str(config.learned_filter_config),
+                ]
+                self._start_component("deployment", deployment_args)
+
+            master_left_topic = "/left_arm_joint_control"
+            master_right_topic = "/right_arm_joint_control"
+            if model_launch:
+                output_topic = config.deployment_output_topic
+                if not output_topic:
+                    raise RuntimeError(
+                        "model deployment config has no output_topic: "
+                        + str(config.model_deployment_config)
+                    )
+                if config.filter_arm == "right":
+                    master_right_topic = output_topic
+                elif config.filter_arm == "left":
+                    master_left_topic = output_topic
             self._start_component(
                 "teleop",
                 [
@@ -571,16 +676,24 @@ class CaptureSession:
                     f"armed:={armed}",
                     f"enable_left_arm:={'true' if config.left_enabled else 'false'}",
                     f"enable_right_arm:={'true' if config.right_enabled else 'false'}",
+                    f"master_left_topic:={master_left_topic}",
+                    f"master_right_topic:={master_right_topic}",
                 ],
             )
             if config.left_enabled:
                 if not self._wait_for_topic("/left_arm_joint_control", 20):
                     raise RuntimeError("/left_arm_joint_control did not appear")
+                if model_launch and config.filter_arm == "left" and master_left_topic != "/left_arm_joint_control":
+                    if not self._wait_for_topic(master_left_topic, 25):
+                        raise RuntimeError(f"model deployment output did not appear: {master_left_topic}")
                 if not self._wait_for_topic("/teleop/left/mapped_joint_command", 20):
                     raise RuntimeError("/teleop/left/mapped_joint_command did not appear")
             if config.right_enabled:
                 if not self._wait_for_topic("/right_arm_joint_control", 20):
                     raise RuntimeError("/right_arm_joint_control did not appear")
+                if model_launch and config.filter_arm == "right" and master_right_topic != "/right_arm_joint_control":
+                    if not self._wait_for_topic(master_right_topic, 25):
+                        raise RuntimeError(f"model deployment output did not appear: {master_right_topic}")
                 if not self._wait_for_topic("/teleop/right/mapped_joint_command", 20):
                     raise RuntimeError("/teleop/right/mapped_joint_command did not appear")
             if config.real:
@@ -589,11 +702,33 @@ class CaptureSession:
                         "LinkerTA master arm is not publishing /left_arm_joint_control; "
                         "check its log for 'No available devices' and verify the master CAN/power connection"
                     )
+                if (
+                    model_launch
+                    and config.left_enabled
+                    and config.filter_arm == "left"
+                    and master_left_topic != "/left_arm_joint_control"
+                ):
+                    if not self._wait_for_live_control_sample(master_left_topic, 30):
+                        raise RuntimeError(
+                            f"model deployment output has no live sample on {master_left_topic}; "
+                            "check the learned-filter/deployment component logs"
+                        )
                 if config.right_enabled and not self._wait_for_live_control_sample("/right_arm_joint_control", 30):
                     raise RuntimeError(
                         "LinkerTA master arm is not publishing /right_arm_joint_control; "
                         "check its log for 'No available devices' and verify the master CAN/power connection"
                     )
+                if (
+                    model_launch
+                    and config.right_enabled
+                    and config.filter_arm == "right"
+                    and master_right_topic != "/right_arm_joint_control"
+                ):
+                    if not self._wait_for_live_control_sample(master_right_topic, 30):
+                        raise RuntimeError(
+                            f"model deployment output has no live sample on {master_right_topic}; "
+                            "check the learned-filter/deployment component logs"
+                        )
 
             # optional hand adapter (disarmed; never a motion owner)
             if config.hand_sdk:
@@ -789,6 +924,7 @@ class CaptureSession:
                 "RUNEVIDENCE_BAG_COMPRESSION_FORMAT": "zstd",
                 "RUNEVIDENCE_ROOT": str(config.run_root),
                 "RUNEVIDENCE_BIN": config.runevidence_bin,
+                "TELEOP_CAP_FILTER_TOPICS": ",".join(config.filter_extra_topics),
             }
         )
         return env
