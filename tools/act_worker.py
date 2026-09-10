@@ -112,6 +112,8 @@ def main() -> int:
     config = yaml.safe_load(args.config.read_text(encoding="utf-8")) or {}
     if config.get("enabled") is not True:
         raise SystemExit("ACT runtime is disabled")
+    from paths_env import expand_config_paths
+    config = expand_config_paths(config)
     started = time.monotonic()
     socket_path = Path(config["socket"])
     # Drop a leftover socket before the slow CUDA load so readiness checks

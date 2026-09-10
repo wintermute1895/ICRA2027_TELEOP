@@ -48,6 +48,24 @@ bash scripts/start_capture_gui.sh \
 
 Safe observation mode (no `--real`) does not need the E-stop confirmation.
 
+### Learned-filter-assisted capture
+
+Pin a promoted filter runtime YAML explicitly for one session. The launcher
+validates both runtime files and requires the model deployment confirmation:
+
+```bash
+bash scripts/start_capture_gui.sh \
+  --config=config/capture_session_task2.env \
+  --learned-filter-config=/absolute/path/to/filter-promoted-round1.yaml \
+  --model-confirm=I_UNDERSTAND_MODEL_DEPLOYMENT \
+  --real \
+  --physical-estop-ready \
+  --confirm=I_UNDERSTAND_REAL_ROBOT
+```
+
+Run `scripts/start_learned_filter.sh <promoted.yaml>` as a readiness smoke test
+before the hardware session.
+
 ### Foreground Python supervisor (no GUI)
 
 This is also the default backend, so `--manager=python` can be omitted.

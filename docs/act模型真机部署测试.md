@@ -51,6 +51,8 @@
 
 **教训**:这已经是第三次盘漂移(Seagate → Cyan → robot_data)。部署前检查单里固定一条:"确认 yaml 里的路径指向当前实际挂载点"。
 
+**根治(2026-09-09 已实施)**:yaml 改用 `${TELEOP_DATA_ROOT}` 占位符 + `scripts/resolve_data_disk.sh` 启动时按优先级自动探测挂载盘(robot_data > Cyan_data > Seagate Hub),换盘零改动。详见个人笔记「针对挂载盘数据管理」。
+
 ### 问题 3(流程级):部署边界收敛到 active
 
 **背景**:ACT 是开环推理,不接真机时模型看不到自己动作的后果;离线候选输出不构成性能验收。
@@ -112,3 +114,9 @@ bash scripts/evaluate_model_rollout.sh --bag "/media/fanshihao/robot_data/ICRA20
 
 - 频率链未闭环:相机 15Hz / ACT 10Hz / 机械臂 50Hz(见 `~/Desktop/knowledge/ICRA2027/数采+act+推理问题.md`),旧模型真机效果差疑与此有关;新模型(50Hz 数据训练)是否改善待真机验证。
 - 新模型训练集含 09-08 新采的 episode,与旧 button_A 的数据分布有差异,真机表现不可直接类比。
+
+当前 v2 快捷命令:
+
+```bash
+bash scripts/run_act_task2_real.sh v2
+```

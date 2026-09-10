@@ -28,7 +28,8 @@ def load_config(path: Path) -> dict:
         raise ValueError("unsupported learned-filter runtime config")
     if value.get("enabled") is not True:
         raise ValueError("learned filter is disabled in runtime config")
-    return value
+    from paths_env import expand_config_paths
+    return expand_config_paths(value)
 
 
 class Worker:

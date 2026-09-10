@@ -19,6 +19,12 @@ if [[ -z "${ROS_LOG_DIR:-}" ]]; then
 fi
 export ROS_LOG_DIR
 mkdir -p "$ROS_LOG_DIR"
+# Resolve the removable data disk (mount points drift between sessions);
+# runtime YAMLs reference it via ${TELEOP_DATA_ROOT}.
+if [[ -z "${TELEOP_DATA_ROOT:-}" ]]; then
+  TELEOP_DATA_ROOT="$(bash "$ROOT_DIR/scripts/resolve_data_disk.sh" 2>/dev/null || true)"
+  [[ -n "$TELEOP_DATA_ROOT" ]] && export TELEOP_DATA_ROOT
+fi
 CONFIG="${1:-$ROOT_DIR/config/runtime/learned_filter.yaml}"
 source "$ROOT_DIR/scripts/lib/training_env.sh"
 # Drop ROS/system dist-packages from PYTHONPATH so the teleop interpreter uses

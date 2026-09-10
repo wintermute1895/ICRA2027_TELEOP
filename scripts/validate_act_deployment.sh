@@ -6,6 +6,12 @@ set -Eeuo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG="${1:-$ROOT_DIR/config/runtime/act-button-A.yaml}"
 [[ -f "$CONFIG" ]] || { echo "[FATAL] config not found: $CONFIG" >&2; exit 2; }
+# Runtime YAMLs may reference ${TELEOP_DATA_ROOT}; resolve the mounted disk
+# first so missing-disk errors are explicit instead of leaking into paths.
+if grep -q '\${TELEOP_DATA_ROOT}' "$CONFIG" && [[ -z "${TELEOP_DATA_ROOT:-}" ]]; then
+  TELEOP_DATA_ROOT="$(bash "$ROOT_DIR/scripts/resolve_data_disk.sh")" || exit 2
+  export TELEOP_DATA_ROOT
+fi
 
 /usr/bin/python3 - "$CONFIG" "$ROOT_DIR/tools" <<'PY'
 import sys
@@ -20,6 +26,8 @@ config_path = Path(sys.argv[1]).resolve()
 config = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
 if config.get("enabled") is not True:
     raise SystemExit(f"[FATAL] ACT runtime is disabled: {config_path}")
+from paths_env import expand_config_paths
+config = expand_config_paths(config)
 validate_runtime_config(config)
 
 checkpoint = Path(str(config["checkpoint"])).expanduser().resolve()

@@ -2,6 +2,12 @@
 # Start ACT's GPU worker and ROS candidate adapter. No bridge is touched here.
 set -Eeuo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Resolve the removable data disk (mount points drift between sessions);
+# runtime YAMLs reference it via ${TELEOP_DATA_ROOT}.
+if [[ -z "${TELEOP_DATA_ROOT:-}" ]]; then
+  TELEOP_DATA_ROOT="$(bash "$ROOT_DIR/scripts/resolve_data_disk.sh" 2>/dev/null || true)"
+  [[ -n "$TELEOP_DATA_ROOT" ]] && export TELEOP_DATA_ROOT
+fi
 CONFIG="${1:-$ROOT_DIR/config/runtime/act-button-A.yaml}"
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
   echo "usage: $0 [config/runtime/act-button-A.yaml]"
@@ -17,7 +23,8 @@ SOCKET="$($ENV_PREFIX/bin/python - "$CONFIG" "$ROOT_DIR/tools" <<'PY'
 import sys, yaml
 sys.path.insert(0, sys.argv[2])
 from act_arm7_contract import validate_runtime_config
-c=yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+from paths_env import expand_config_paths
+c=expand_config_paths(yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {})
 if c.get("enabled") is not True: raise SystemExit("[FATAL] ACT runtime is disabled")
 try:
   validate_runtime_config(c)

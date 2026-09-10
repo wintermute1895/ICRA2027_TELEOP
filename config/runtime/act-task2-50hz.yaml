@@ -1,6 +1,6 @@
 schema: robot_teleop.act-runtime/v1
 enabled: true
-checkpoint: /media/fanshihao/robot_data/ICRA2027_Data/act_checkpoints/task2_button_press_50hz_20260908T171908Z/checkpoints/466900/pretrained_model
+checkpoint: ${TELEOP_DATA_ROOT}/act_checkpoints/task2_button_press_50hz_20260908T171908Z/checkpoints/466900/pretrained_model
 checkpoint_sha256: 8ed6d32a7300bd8d5696eec42047522a830bee3d8ee6c7ab76c4ac6ab46f60cb
 device: cuda
 socket: /tmp/teleop_act.sock
@@ -20,4 +20,4 @@ state_key: observation.state
 camera_keys:
   observation.images.main_rgb: /camera/camera/color/image_raw
   observation.images.auxiliary_rgb: /camera2/camera/color/image_raw
-dataset_stats: /media/fanshihao/robot_data/ICRA2027_Data/converted/lerobot_task2_button_press_50hz/meta/stats.json
+dataset_stats: ${TELEOP_DATA_ROOT}/converted/lerobot_task2_button_press_50hz/meta/stats.json
