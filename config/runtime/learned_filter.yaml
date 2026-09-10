@@ -9,7 +9,7 @@ checkpoint_sha256: ""
 device: cuda
 socket: /tmp/teleop_learned_filter.sock
 
-model_cache: /media/ilex/Cyan_data/ICRA2027_MODELS/huggingface
+model_cache: /media/fanshihao/Cyan_data/ICRA2027_MODELS/huggingface
 inference_hz: 5.0
 input_timeout_ms: 300.0
 residual_blend: 0.10

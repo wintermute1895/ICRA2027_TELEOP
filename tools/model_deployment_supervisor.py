@@ -25,36 +25,30 @@ sys.path.insert(0, str(ROOT / "src"))
 from robot_teleop.deployment import (  # noqa: E402
     ActiveModelGate,
     ActionSupervisor,
-    DeploymentMode,
     limits_for_source,
 )
 
 
 class ModelDeploymentSupervisor(Node):
-    def __init__(self, config: dict, *, mode_override: str | None = None, source_override: str | None = None) -> None:
+    def __init__(self, config: dict, *, source_override: str | None = None) -> None:
         super().__init__("model_deployment_supervisor")
         self.config = config
         self.arm = str(config.get("arm", "right"))
         self.source = str(source_override or config.get("source", "teleop")).lower()
         self.units = str(config.get("input_units", "degrees")).lower()
         self.timeout_s = float(config.get("timeout_ms", 300.0)) / 1000.0
-        mode = mode_override or str(config.get("mode", "shadow"))
-        self.mode = DeploymentMode(mode)
         self.active_model_control = bool(config.get("active_model_control", False))
         limits = limits_for_source(self.source, config)
         self.max_delta_rad = limits.max_delta_rad
         self.max_step_rad = limits.max_step_rad
         self.max_step_rate_rad_s = float(config.get("max_step_rate_rad_s", 0.0))
         if self.active_model_control:
-            if self.mode is not DeploymentMode.ACTIVE:
-                raise SystemExit("active_model_control=true requires mode=active")
             if self.source not in {"act", "hybrid", "auto"}:
                 raise SystemExit(
                     f"active_model_control=true requires a model candidate source, got source={self.source}")
             if not config.get("state_topic"):
                 raise SystemExit("active_model_control=true requires state_topic")
         self.supervisor = ActionSupervisor(
-            mode=self.mode,
             timeout_s=self.timeout_s,
             limits=limits,
         )
@@ -88,7 +82,7 @@ class ModelDeploymentSupervisor(Node):
         if self.active_model_control:
             self.get_logger().info(
                 "state=WAITING_FOR_MODEL fallback suppressed because active model deployment "
-                f"(mode={self.mode.value} source={self.source})")
+                f"(source={self.source})")
 
     def _positions_rad(self, msg: JointState) -> np.ndarray | None:
         try:
@@ -311,24 +305,19 @@ class ModelDeploymentSupervisor(Node):
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
-    parser.add_argument("--mode", choices=["shadow", "active"])
     parser.add_argument("--source", choices=["teleop", "fallback", "none", "filter", "act", "hybrid", "auto"])
-    parser.add_argument("--confirm", default="")
     args = parser.parse_args()
     config = yaml.safe_load(args.config.read_text(encoding="utf-8")) or {}
     if config.get("schema") != "robot_teleop.model-deployment/v1":
         raise SystemExit("unsupported model deployment config schema")
     if config.get("enabled") is not True:
         raise SystemExit("model deployment is disabled in runtime config")
-    mode = args.mode or str(config.get("mode", "shadow"))
-    if mode == "active" and args.confirm != "I_UNDERSTAND_MODEL_DEPLOYMENT":
-        raise SystemExit("active deployment requires --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT")
     rclpy.init()
-    node = ModelDeploymentSupervisor(config, mode_override=mode, source_override=args.source)
+    node = ModelDeploymentSupervisor(config, source_override=args.source)
     # rclpy's RcutilsLogger accepts one already-formatted message; it does
     # not implement the stdlib logger's printf-style positional arguments.
     node.get_logger().info(
-        f"deployment supervisor: mode={mode} source={node.source} output={config['output_topic']}"
+        f"deployment supervisor: source={node.source} output={config['output_topic']}"
     )
     try:
         rclpy.spin(node)

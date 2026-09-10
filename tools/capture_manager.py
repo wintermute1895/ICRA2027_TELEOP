@@ -109,6 +109,7 @@ class ManagerConfig:
         robot_ip: str,
         learned_filter_config: str = "",
         model_deployment_config: str = "",
+        model_deployment_confirm: str = "",
     ) -> None:
         self.root_dir = Path(root_dir)
         self.run_root = Path(run_root)
@@ -155,6 +156,7 @@ class ManagerConfig:
         self.model_deployment_config = (
             Path(model_deployment).resolve() if model_deployment else None
         )
+        self.model_deployment_confirm = model_deployment_confirm
 
     @staticmethod
     def _yaml_mapping(path: Path | None) -> dict[str, object]:
@@ -298,6 +300,7 @@ class ManagerConfig:
             robot_ip=os.environ.get("TELEOP_CAP_ROBOT_IP", ""),
             learned_filter_config=os.environ.get("TELEOP_CAP_LEARNED_FILTER_CONFIG", ""),
             model_deployment_config=os.environ.get("TELEOP_CAP_MODEL_DEPLOYMENT_CONFIG", ""),
+            model_deployment_confirm=os.environ.get("TELEOP_CAP_MODEL_DEPLOYMENT_CONFIRM", ""),
         )
 
 
@@ -580,7 +583,7 @@ class CaptureSession:
             f"depth_module.depth_profile:={profile}",
         ]
 
-    def start_background_components(self) -> bool:
+    def start_background_components(self, *, start_preview_processes: bool = True) -> bool:
         config = self.config
         self.state_dir.mkdir(parents=True, exist_ok=True)
         # Keep each launch under this session's own ROS log directory.  Writing
@@ -642,11 +645,15 @@ class CaptureSession:
                     "LEROBOT_ENV_NAME",
                     os.environ.get("CONDA_DEFAULT_ENV", "teleop"),
                 )
+                if config.model_deployment_confirm != "I_UNDERSTAND_MODEL_DEPLOYMENT":
+                    raise RuntimeError(
+                        "learned-filter deployment requires model deployment confirmation"
+                    )
                 deployment_args = [
                     "bash",
                     str(config.root_dir / "scripts/start_model_deployment.sh"),
                     str(config.model_deployment_config),
-                    "--shadow",
+                    "--confirm=" + config.model_deployment_confirm,
                     "--source=filter",
                     "--filter-config=" + str(config.learned_filter_config),
                 ]
@@ -778,7 +785,9 @@ class CaptureSession:
                 )
 
             # Optional image previews are independent GUI processes; closing them is not fatal.
-            if config.preview:
+            # GUI mode may supply an embedded preview instead, so callers can
+            # avoid spawning duplicate rqt_image_view windows.
+            if config.preview and start_preview_processes:
                 if os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
                     try:
                         prefix = subprocess.run(
@@ -1007,6 +1016,63 @@ def _sample_topic_text(topic: str, field: str | None = None) -> str:
     return f"no data ({detail[:180]})"
 
 
+def _camera_preview_available() -> bool:
+    """Return whether the GUI process can subscribe and draw camera frames."""
+    try:
+        import cv2  # noqa: F401
+        import numpy  # noqa: F401
+        from PIL import ImageTk  # noqa: F401
+        import rclpy  # noqa: F401
+        from sensor_msgs.msg import Image  # noqa: F401
+    except (ImportError, ModuleNotFoundError):
+        return False
+    return True
+
+
+def _preview_rgb_image(message: object) -> object | None:
+    """Decode a tightly packed sensor_msgs/Image into an RGB preview ndarray."""
+    try:
+        import cv2
+        import numpy as np
+    except ImportError:
+        return None
+    encoding = str(getattr(message, "encoding", ""))
+    channels = {
+        "mono8": 1,
+        "rgb8": 3,
+        "bgr8": 3,
+        "rgba8": 4,
+        "bgra8": 4,
+    }.get(encoding)
+    if channels is None:
+        return None
+    height = int(getattr(message, "height", 0))
+    width = int(getattr(message, "width", 0))
+    step = int(getattr(message, "step", width * channels))
+    if width <= 0 or height <= 0 or step < width * channels:
+        return None
+    payload = bytes(getattr(message, "data", b""))
+    expected_bytes = height * step
+    if len(payload) < expected_bytes:
+        return None
+    raw = np.frombuffer(payload[:expected_bytes], dtype=np.uint8).reshape(height, step)
+    image = np.ascontiguousarray(raw[:, : width * channels].reshape(height, width, channels))
+    if encoding == "bgr8":
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    elif encoding == "bgra8":
+        image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGB)
+    elif encoding == "rgba8":
+        image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)
+    elif encoding == "mono8":
+        image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
+    preview_long = 360
+    if max(width, height) > preview_long:
+        scale = preview_long / max(width, height)
+        target = (max(1, int(round(width * scale))), max(1, int(round(height * scale))))
+        image = cv2.resize(image, target, interpolation=cv2.INTER_AREA)
+    return image
+
+
 def run_headless(config: ManagerConfig) -> int:
     session = CaptureSession(config)
     if not sys.stdin.isatty():
@@ -1049,15 +1115,19 @@ def run_gui(config: ManagerConfig) -> int:
 
     import queue
     import pty
+    embedded_camera_preview = bool(config.preview) and _camera_preview_available()
+    if embedded_camera_preview:
+        from PIL import Image, ImageTk
 
     class CaptureManagerApp(tk.Tk):
         def __init__(self) -> None:
             super().__init__()
             self.title(f"Teleop Capture Manager - {config.session}")
-            self.geometry("1080x700")
+            self.geometry("1280x900")
             self.protocol("WM_DELETE_WINDOW", self.on_close)
 
             self.output_queue: queue.Queue[object] = queue.Queue()
+            self.camera_preview_queue: queue.Queue[tuple[str, object]] = queue.Queue(maxsize=4)
             self.session = CaptureSession(
                 config,
                 on_event=lambda text: self.output_queue.put(("log", text)),
@@ -1068,9 +1138,16 @@ def run_gui(config: ManagerConfig) -> int:
             self.stopping = False
             self.topic_status: dict[str, str] = {}
             self.topic_threads: list[threading.Thread] = []
+            self.embedded_camera_preview = embedded_camera_preview
+            self.camera_preview_node: object | None = None
+            self.camera_preview_thread: threading.Thread | None = None
+            self.camera_preview_canvases: dict[str, object] = {}
+            self.camera_preview_photos: dict[str, object] = {}
+            self.camera_preview_states: dict[str, str] = {}
 
             self._build_ui()
             self.after(200, self._drain_output)
+            self.after(150, self._drain_camera_previews)
             self.after(500, self._poll)
             self.worker = threading.Thread(target=self._worker, name="capture-supervisor", daemon=True)
             self.worker.start()
@@ -1098,6 +1175,54 @@ def run_gui(config: ManagerConfig) -> int:
             tk.Label(status_row, textvariable=self.status_var, fg="#b23", anchor="w").pack(side=tk.LEFT, fill=tk.X, expand=True)
             tk.Label(status_row, textvariable=self.state_var, anchor="e").pack(side=tk.RIGHT)
 
+            audit_row = tk.Frame(self, padx=8, pady=4)
+            audit_row.pack(fill=tk.X)
+            self.audit_status_var = tk.StringVar(value="审计状态：等待录制结束")
+            tk.Label(audit_row, textvariable=self.audit_status_var, width=30, anchor="w").pack(
+                side=tk.LEFT,
+                padx=(0, 8),
+            )
+            self.audit_skip = tk.Button(audit_row, text="跳过审计", command=lambda: self.send_audit(None), width=12)
+            self.audit_skip.pack(side=tk.LEFT, padx=2)
+            self.audit_ok = tk.Button(audit_row, text="审计: 成功", command=lambda: self.send_audit(True), width=12)
+            self.audit_ok.pack(side=tk.LEFT, padx=2)
+            self.audit_fail = tk.Button(audit_row, text="审计: 失败", command=lambda: self.send_audit(False), width=12)
+            self.audit_fail.pack(side=tk.LEFT, padx=2)
+            self.audit_buttons = (self.audit_skip, self.audit_ok, self.audit_fail)
+
+            camera_topics = [
+                namespace.rstrip("/") + "/color/image_raw"
+                for namespace in config.camera_namespaces.split(",")
+                if namespace.strip()
+            ]
+            if camera_topics:
+                preview_bar = tk.Frame(self, bg="#181818", padx=8, pady=6)
+                preview_bar.pack(fill=tk.X)
+                for index, topic in enumerate(camera_topics):
+                    card = tk.LabelFrame(
+                        preview_bar,
+                        text=topic,
+                        labelanchor="n",
+                        fg="#d9d9d9",
+                        bg="#1d1d1d",
+                        bd=1,
+                        relief="groove",
+                    )
+                    card.grid(row=0, column=index, padx=4, pady=2, sticky="nsew")
+                    preview_bar.grid_columnconfigure(index, weight=1, uniform="camera")
+                    canvas = tk.Canvas(card, width=360, height=270, bg="#111111", highlightthickness=0)
+                    canvas.pack(padx=4, pady=4)
+                    canvas.create_text(
+                        180,
+                        135,
+                        text="waiting camera frame",
+                        fill="#888888",
+                        font=("monospace", 10),
+                    )
+                    self.camera_preview_canvases[topic] = canvas
+                    self.camera_preview_photos[topic] = None
+                    self.camera_preview_states[topic] = "waiting"
+
             middle = tk.Frame(self)
             middle.pack(fill=tk.BOTH, expand=True, padx=8, pady=4)
 
@@ -1118,13 +1243,6 @@ def run_gui(config: ManagerConfig) -> int:
 
             self.episode_button = tk.Button(controls, text="开始 Episode", command=self.toggle_episode, width=16)
             self.episode_button.grid(row=0, column=0, padx=2)
-            self.audit_skip = tk.Button(controls, text="跳过审计", command=lambda: self.send_audit(None), width=12)
-            self.audit_skip.grid(row=0, column=1, padx=2)
-            self.audit_ok = tk.Button(controls, text="审计: 成功", command=lambda: self.send_audit(True), width=12)
-            self.audit_ok.grid(row=0, column=2, padx=2)
-            self.audit_fail = tk.Button(controls, text="审计: 失败", command=lambda: self.send_audit(False), width=12)
-            self.audit_fail.grid(row=0, column=3, padx=2)
-            self.audit_buttons = (self.audit_skip, self.audit_ok, self.audit_fail)
             self.stop_button = tk.Button(controls, text="安全停止并退出", command=self.request_stop, width=18)
             self.stop_button.grid(row=0, column=7, padx=2)
 
@@ -1155,13 +1273,106 @@ def run_gui(config: ManagerConfig) -> int:
             ).pack(side=tk.LEFT, padx=8)
             self.bind_all("<KeyPress>", self._on_global_key)
 
+        def _start_camera_previews(self) -> None:
+            if not self.embedded_camera_preview:
+                return
+            try:
+                import rclpy
+                from rclpy.qos import HistoryPolicy, QoSProfile, ReliabilityPolicy
+                from sensor_msgs.msg import Image
+
+                if not rclpy.ok():
+                    rclpy.init(args=[])
+                node = rclpy.create_node("capture_gui_camera_preview")
+                qos = QoSProfile(
+                    depth=2,
+                    reliability=ReliabilityPolicy.BEST_EFFORT,
+                    history=HistoryPolicy.KEEP_LAST,
+                )
+                for topic in self.camera_preview_canvases:
+                    node.create_subscription(
+                        Image,
+                        topic,
+                        lambda message, name=topic: self._on_camera_image(name, message),
+                        qos,
+                    )
+                self.camera_preview_node = node
+                self.camera_preview_thread = threading.Thread(
+                    target=rclpy.spin,
+                    args=(node,),
+                    name="capture-gui-camera-preview",
+                    daemon=True,
+                )
+                self.camera_preview_thread.start()
+                self.output_queue.put(("log", "[camera preview] embedded camera preview started\n"))
+            except Exception as error:
+                self.output_queue.put(
+                    (
+                        "log",
+                        "[camera preview] embedded camera preview unavailable: "
+                        + f"{type(error).__name__}: {error}\n",
+                    )
+                )
+
+        def _stop_camera_previews(self) -> None:
+            if not self.embedded_camera_preview and self.camera_preview_node is None:
+                return
+            try:
+                import rclpy
+
+                node = self.camera_preview_node
+                if node is not None:
+                    node.destroy_node()
+                    self.camera_preview_node = None
+                if rclpy.ok():
+                    rclpy.shutdown()
+                thread = self.camera_preview_thread
+                if thread is not None and thread.is_alive():
+                    thread.join(timeout=1.0)
+            except Exception:
+                pass
+            self.camera_preview_thread = None
+
+        def _on_camera_image(self, topic: str, message: object) -> None:
+            frame = _preview_rgb_image(message)
+            if frame is None:
+                return
+            try:
+                self.camera_preview_queue.put_nowait((topic, frame))
+            except queue.Full:
+                pass
+
+        def _drain_camera_previews(self) -> None:
+            try:
+                while True:
+                    try:
+                        topic, frame = self.camera_preview_queue.get_nowait()
+                    except queue.Empty:
+                        break
+                    canvas = self.camera_preview_canvases.get(topic)
+                    if canvas is None:
+                        continue
+                    photo = ImageTk.PhotoImage(Image.fromarray(frame))
+                    self.camera_preview_photos[topic] = photo
+                    canvas.delete("all")
+                    canvas.create_image(0, 0, anchor="nw", image=photo)
+                    canvas.image = photo
+                    self.camera_preview_states[topic] = "live"
+            except Exception:
+                pass
+            self.after(100, self._drain_camera_previews)
+
         def _worker(self) -> None:
             import pty
 
             try:
-                if not self.session.start_background_components():
+                start_preview_processes = not self.embedded_camera_preview
+                if not self.session.start_background_components(
+                    start_preview_processes=start_preview_processes
+                ):
                     self.output_queue.put(("status", "startup failed"))
                     return
+                self._start_camera_previews()
                 self._start_topic_monitors()
                 command = self.session.build_recorder_command()
                 env = self.session.recorder_environment()
@@ -1214,6 +1425,7 @@ def run_gui(config: ManagerConfig) -> int:
                         self.session.emit("stopping recorder after component failure/stop request")
                         _terminate_recorder(recorder)
                         self.session.stop()
+                        self._stop_camera_previews()
                 finally:
                     reader_thread.join(timeout=2)
                     pty_log.close()
@@ -1221,6 +1433,7 @@ def run_gui(config: ManagerConfig) -> int:
             except Exception as error:
                 self.output_queue.put(("status", f"error: {error}"))
                 self.session.stop()
+                self._stop_camera_previews()
 
         def _drain_output(self) -> None:
             import queue as _queue
@@ -1378,6 +1591,10 @@ def run_gui(config: ManagerConfig) -> int:
 
             recorder_state = state.get("status", "unknown")
             self.state_var.set(f"recorder: {recorder_state}")
+            if recorder_state == "finalizing":
+                self.audit_status_var.set("审计阶段：等待选择成功/失败")
+            elif recorder_state == "ready":
+                self.audit_status_var.set("审计状态：等待录制结束")
             recording = state.get("active") is True or recorder_state == "recording"
             if recording:
                 self.episode_button.configure(text="结束 Episode")
@@ -1435,6 +1652,7 @@ def run_gui(config: ManagerConfig) -> int:
                 if recorder.poll() is None:
                     _terminate_recorder(recorder)
             self.session.stop()
+            self._stop_camera_previews()
             self.output_queue.put(("status", "session stopped"))
             self.output_queue.put(("quit", None))
 

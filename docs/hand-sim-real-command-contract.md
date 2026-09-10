@@ -65,10 +65,10 @@ left/right options are retained for diagnostic use; they are not a statement
 that the deployed platform has one L10 and one O6.
 
 Only after the SDK connection, CAN interface, hand state, emergency stop, and
-first-command checks pass should `armed` be enabled. Running both backends
-with the same command topic is a deliberate shadow configuration: simulation
-will mirror the command while the real backend remains `armed:=false` until
-the operator explicitly approves it.
+first-command checks pass should `armed` be enabled. Running both backends with
+the same command topic is a deliberate parallel verification configuration:
+simulation mirrors the command while the real backend remains `armed:=false`
+until the operator explicitly approves it.
 
 The current MuJoCo asset is an L10 visual hand on both arms. O6 commands are
 supported at the semantic topic level and drive the six corresponding primary

@@ -41,10 +41,10 @@ source JointState
   → One-Euro filter (rad)
   → per-arm direction mapping
   → finite/limit/rate/armed safety gate
-  → hardware command or shadow output
+  → hardware command
 ```
 
-新增控制算法必须支持 `shadow` 模式。方向映射、单位和限位只能来自显式配置，不得
+新增控制算法必须通过 active 部署边界执行。方向映射、单位和限位只能来自显式配置，不得
 散落在实验脚本或评估代码中。
 
 ## Data ownership and projections
@@ -91,13 +91,13 @@ future action chunk only during training. KL therefore regularizes two learned
 conditional distributions; it is not a hand-authored definition of a good
 trajectory or proof of a fixed low-dimensional manifold.
 
-The current learned model is `offline_and_simulation_only`. ACT and learned
-filter adapters publish candidates to the shared `model_deployment_supervisor`;
-they never connect directly to `teleop_control_bridge`. The supervisor is
-shadow by default and requires pinned checkpoints, bounded correction, shadow
-evaluation and explicit approval before active selection. Warmup, stale inputs,
-invalid values and worker errors fall back to LinkerTA. The bridge and vendor
-SDK remain unchanged.
+ACT and learned filter adapters publish candidates to the shared
+`model_deployment_supervisor`; they never connect directly to
+`teleop_control_bridge`. The supervisor runs active control only, requires
+pinned checkpoints and explicit approval, and rejects warmup, stale inputs,
+invalid values and worker errors. ACT-only active deployment suppresses the
+LinkerTA fallback; learned filters fall back to LinkerTA when a candidate is
+missing or unsafe. The bridge and vendor SDK remain unchanged.
 
 `src/teleop_filter/runtime.py` 负责版本化 checkpoint 加载、训练集统计归一化、先验推理
 和有界残差组合；`tools/evaluate_trajectory_filter.py` 只读生成预测与误差报告。该运行时
@@ -118,7 +118,8 @@ teach a non-zero corrective action.
 按 ROS 时间戳与 filter-training 行对齐并记录模型 provenance；encoder 一次加载模型即可
 处理多路命名相机，attach 可以消费一个合并的 embedding JSONL；
 `TrajectoryFilterConfig.visual_dim > 0` 时，Transformer token 同时融合动作、状态和
-`vlm_embedding`。VLM 不进入真实机器人实时控制闭环，在线阶段只允许 shadow 记录。
+`vlm_embedding`。VLM 只能作为版本化 filter 的冻结特征输入；进入真机 active 控制
+前必须通过同一部署边界、限幅和人工安全确认。
 `tools/encode_images_with_vlm.py` 提供通用的 CLIP/SigLIP embedding adapter，默认使用
 SigLIP2；VLM 依赖单独列在 `requirements-vlm.txt`，`scripts/install_vlm.sh` 负责本地
 Conda 环境和可选权重缓存，避免把具体权重和网络下载强行绑定到 ROS/LeRobot 环境。

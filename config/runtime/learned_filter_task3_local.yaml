@@ -9,7 +9,7 @@ checkpoint_sha256: ""
 device: cuda
 socket: /tmp/teleop_learned_filter.sock
 
-# Local SigLIP2 cache used by this host (task2 training machine).
+# Local SigLIP2 cache used by this host (task3 training machine).
 model_cache: /media/fanshihao/Cyan_data/ICRA2027_MODELS/huggingface
 inference_hz: 5.0
 input_timeout_ms: 300.0

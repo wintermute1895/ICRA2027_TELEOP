@@ -3,6 +3,22 @@
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# Keep ROS node logs on a mounted data disk; the default ~/.ros/log lives on
+# the small system disk and grows during long deployments. Fall back through
+# candidates so a missing/unwritable disk never blocks startup.
+if [[ -z "${ROS_LOG_DIR:-}" ]]; then
+  for candidate in \
+    "/media/${USER:-$(id -un)}/Cyan_data/ICRA2027_DATA/ros_logs" \
+    "/media/${USER:-$(id -un)}/robot_data/ICRA2027_Data/ros_logs" \
+    "/tmp/teleop_ros_logs"; do
+    if mkdir -p "$candidate" 2>/dev/null; then
+      ROS_LOG_DIR="$candidate"
+      break
+    fi
+  done
+fi
+export ROS_LOG_DIR
+mkdir -p "$ROS_LOG_DIR"
 CONFIG="${1:-$ROOT_DIR/config/runtime/learned_filter.yaml}"
 source "$ROOT_DIR/scripts/lib/training_env.sh"
 # Drop ROS/system dist-packages from PYTHONPATH so the teleop interpreter uses

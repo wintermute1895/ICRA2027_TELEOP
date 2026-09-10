@@ -55,7 +55,7 @@ python tools/promote_runtime_model.py --kind act \
 
 The output config must contain the checkpoint SHA-256 listed above.
 
-## Shadow / adapter startup
+## Adapter startup
 
 Full inference still requires the `teleop-train` environment with LeRobot and
 CUDA.  Once available:

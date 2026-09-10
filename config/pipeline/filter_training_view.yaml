@@ -15,7 +15,7 @@ vlm:
   enabled: true
   model_id: google/siglip2-base-patch16-224
   revision: 75de2d55ec2d0b4efc50b3e9ad70dba96a7b2fa2
-  cache_dir: /media/ilex/Cyan_data/ICRA2027_MODELS/huggingface
+  cache_dir: /media/fanshihao/Cyan_data/ICRA2027_MODELS/huggingface
   device: cpu
   batch_size: 32
   max_age_ms: 100.0

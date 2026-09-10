@@ -85,6 +85,7 @@ RIGHT_TOUCH="false"
 ARMS="left,right"
 LEARNED_FILTER_CONFIG=""
 MODEL_DEPLOYMENT_CONFIG="$ROOT_DIR/config/runtime/model_deployment.yaml"
+MODEL_CONFIRM=""
 
 usage() {
   cat >&2 <<'EOF'
@@ -98,6 +99,9 @@ Options:
   --real                         allow armed=true (still requires both confirmations)
   --physical-estop-ready        confirm physical E-stop is reachable
   --confirm=I_UNDERSTAND_REAL_ROBOT
+  --learned-filter-config PATH  promoted learned-filter runtime YAML
+  --model-confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
+                                 required with --learned-filter-config
   --duration-s SEC               timed episode duration / metadata field (default: 30)
   --episodes N                   number of episodes; 0 keeps the recorder ready until q (default: 2)
   --manual-segments              recorder window: Enter=start, Enter=stop/save, q=end session
@@ -175,6 +179,8 @@ if [[ -n "$LEARNED_FILTER_CONFIG" && "$LEARNED_FILTER_CONFIG" != /* ]]; then
   LEARNED_FILTER_CONFIG="$ROOT_DIR/$LEARNED_FILTER_CONFIG"
 fi
 if [[ "$MODEL_DEPLOYMENT_CONFIG" != /* ]]; then MODEL_DEPLOYMENT_CONFIG="$ROOT_DIR/$MODEL_DEPLOYMENT_CONFIG"; fi
+MODEL_CONFIRM_CONFIG="${CAPTURE_MODEL_CONFIRM:-}"
+[[ -n "$MODEL_CONFIRM_CONFIG" ]] && MODEL_CONFIRM="$MODEL_CONFIRM_CONFIG"
 
 for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
   arg="${ARGS[arg_index]}"
@@ -185,6 +191,16 @@ for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
     --real) REAL=1 ;;
     --physical-estop-ready) ESTOP_READY=1 ;;
     --confirm=*) CONFIRM="${arg#*=}" ;;
+    --learned-filter-config=*) LEARNED_FILTER_CONFIG="${arg#*=}" ;;
+    --learned-filter-config)
+      ((arg_index += 1))
+      LEARNED_FILTER_CONFIG="${ARGS[arg_index]:-}"
+      ;;
+    --model-confirm=*) MODEL_CONFIRM="${arg#*=}" ;;
+    --model-confirm)
+      ((arg_index += 1))
+      MODEL_CONFIRM="${ARGS[arg_index]:-}"
+      ;;
     --duration-s=*) DURATION_S="${arg#*=}" ;;
     --episodes=*) EPISODES="${arg#*=}" ;;
     --manual-segments) CAPTURE_MODE="manual" ;;
@@ -216,6 +232,10 @@ done
 if [[ -n "$TASK_PROFILE" && "$TASK_PROFILE" != /* ]]; then
   TASK_PROFILE="$ROOT_DIR/$TASK_PROFILE"
 fi
+if [[ -n "$LEARNED_FILTER_CONFIG" && "$LEARNED_FILTER_CONFIG" != /* ]]; then
+  LEARNED_FILTER_CONFIG="$ROOT_DIR/$LEARNED_FILTER_CONFIG"
+fi
+if [[ "$MODEL_DEPLOYMENT_CONFIG" != /* ]]; then MODEL_DEPLOYMENT_CONFIG="$ROOT_DIR/$MODEL_DEPLOYMENT_CONFIG"; fi
 
 [[ "$DURATION_S" =~ ^[1-9][0-9]*$ ]] || die "--duration-s must be a positive integer"
 [[ "$TMUX_DEBUG" == 0 || "$TMUX_DEBUG" == 1 ]] || die "TELEOP_TMUX_DEBUG must be 0 or 1"
@@ -225,6 +245,22 @@ fi
 (( ${#SESSION} <= 40 )) || die "tmux session name is too long"
 [[ "$SESSION" =~ ^[A-Za-z0-9._-]+$ ]] || die "--session may contain only letters, digits, '.', '_' or '-'"
 [[ -f "$EXPERIMENT_PROFILE" ]] || die "experiment profile not found: $EXPERIMENT_PROFILE"
+if [[ -n "$LEARNED_FILTER_CONFIG" ]]; then
+  [[ -f "$LEARNED_FILTER_CONFIG" ]] || die "learned-filter config not found: $LEARNED_FILTER_CONFIG"
+  [[ "$MODEL_CONFIRM" == "I_UNDERSTAND_MODEL_DEPLOYMENT" ]] || {
+    die "learned-filter deployment requires --model-confirm=I_UNDERSTAND_MODEL_DEPLOYMENT"
+  }
+  [[ -f "$MODEL_DEPLOYMENT_CONFIG" ]] || die "model deployment config not found: $MODEL_DEPLOYMENT_CONFIG"
+  "$SYSTEM_PYTHON" - "$LEARNED_FILTER_CONFIG" "$MODEL_DEPLOYMENT_CONFIG" <<'PY' || die "model runtime configs must be enabled"
+import sys
+import yaml
+
+for argument in sys.argv[1:]:
+    config = yaml.safe_load(open(argument, encoding="utf-8")) or {}
+    if config.get("enabled") is not True:
+        raise SystemExit(1)
+PY
+fi
 if [[ -n "$TASK_PROFILE" ]]; then
   [[ -f "$TASK_PROFILE" || -d "$TASK_PROFILE" ]] || die "task profile not found: $TASK_PROFILE"
   TASK_BUNDLE_JSON="$($SYSTEM_PYTHON "$ROOT_DIR/tools/resolve_task_bundle.py" --task "$TASK_PROFILE")" || die "invalid task bundle: $TASK_PROFILE"
@@ -497,6 +533,7 @@ if [[ "$MANAGER" != "tmux" ]]; then
   export TELEOP_CAP_ROBOT_IP="$ROBOT_IP"
   export TELEOP_CAP_LEARNED_FILTER_CONFIG="$LEARNED_FILTER_CONFIG"
   export TELEOP_CAP_MODEL_DEPLOYMENT_CONFIG="$MODEL_DEPLOYMENT_CONFIG"
+  export TELEOP_CAP_MODEL_DEPLOYMENT_CONFIRM="$MODEL_CONFIRM"
   log "manager=$MANAGER python=$SYSTEM_PYTHON state_dir=$RUN_ROOT/system/supervisor"
   exec "$SYSTEM_PYTHON" "$ROOT_DIR/tools/capture_manager.py" "$MANAGER"
 fi
@@ -601,7 +638,7 @@ config = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
 if config.get("enabled") is not True:
     raise SystemExit(1)
 PY
-  launch_cmd deployment "bash \"$ROOT_DIR/scripts/start_model_deployment.sh\" \"$MODEL_DEPLOYMENT_CONFIG\" --shadow --source=$MODEL_SOURCE $MODEL_CANDIDATE_ARGS"
+  launch_cmd deployment "bash \"$ROOT_DIR/scripts/start_model_deployment.sh\" \"$MODEL_DEPLOYMENT_CONFIG\" --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT --source=$MODEL_SOURCE $MODEL_CANDIDATE_ARGS"
 fi
 MASTER_LEFT_TOPIC=/left_arm_joint_control
 if (( RIGHT_ENABLED )) && [[ "$MODEL_SOURCE" != teleop ]]; then MASTER_RIGHT_TOPIC=/model_deployment/right_arm_joint_control; fi

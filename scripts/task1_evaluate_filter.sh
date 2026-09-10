@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
-# Evaluate a Task2 filter checkpoint on the held-out views recorded by the
+# Evaluate a Task1 filter checkpoint on the held-out views recorded by the
 # train script (last 3 sorted views).
 # Run inside the teleop conda environment:
 #   conda activate teleop
-#   bash scripts/task2_evaluate_filter.sh         # evaluates round1
-#   TASK2_ROUND=round2 bash scripts/task2_evaluate_filter.sh
+#   bash scripts/task1_evaluate_filter.sh         # evaluates round1
+#   TASK1_ROUND=round2 bash scripts/task1_evaluate_filter.sh
 # Log is written automatically next to the model outputs under
 # <run_root>/logs/ while still being printed to the terminal.
-# Overrides: TASK2_RUN_ROOT, TASK2_ROUND, TASK2_DEVICE, TASK2_LOG_DIR
+# Overrides: TASK1_RUN_ROOT, TASK1_ROUND, TASK1_DEVICE, TASK1_LOG_DIR
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-RUN_ROOT="${TASK2_RUN_ROOT:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/Task2_Data/filter_runs}"
-LOG_DIR="${TASK2_LOG_DIR:-$RUN_ROOT/logs}"
-ROUND="${TASK2_ROUND:-round1}"
-DEVICE="${TASK2_DEVICE:-cuda}"
+RUN_ROOT="${TASK1_RUN_ROOT:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/Task1_Data/filter_runs}"
+LOG_DIR="${TASK1_LOG_DIR:-$RUN_ROOT/logs}"
+ROUND="${TASK1_ROUND:-round1}"
+DEVICE="${TASK1_DEVICE:-cuda}"
 
 # Drop ROS/system dist-packages from PYTHONPATH so the teleop interpreter uses
 # its own numpy/sympy stack.
@@ -41,7 +41,7 @@ fi
 
 if [[ -e "$ROUND_DIR/evaluation" ]]; then
   echo "[FATAL] refusing to overwrite existing evaluation: $ROUND_DIR/evaluation" >&2
-  echo "Set TASK2_ROUND to a new round or remove the directory." >&2
+  echo "Set TASK1_ROUND to a new round or remove the directory." >&2
   exit 2
 fi
 

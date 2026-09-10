@@ -12,7 +12,7 @@ LinkerTA/keyboard → teleop_control_bridge → validated FollowJoint
 The default simulation launch never starts `lbot_driver` and cannot send a
 robot command. `follow_joint` mode consumes the exact payload that the real
 driver would receive. `vendor_command` mode consumes the explicit command
-event published by `lbot_driver` immediately before its SDK call, for shadow
+event published by `lbot_driver` immediately before its SDK call, for command-parity
 comparison.
 
 ## Hand command parity
@@ -93,7 +93,7 @@ ros2 launch sim_robot_driver sim_teleop.launch.py render:=false
 ros2 topic echo /sim/robot1/left_arm/joint_states --once
 ```
 
-## Shadow mode
+## Simulation-only mirror mode
 
 Start the normal hardware launch with the operator-controlled `armed` policy,
 then start only the mirror with:
@@ -113,6 +113,6 @@ The simulation package intentionally does not install or launch the former
 causal command-prior filter. That experiment is preserved under
 `legacy/causal_command_filter_v0/` for historical baseline comparison only.
 The current algorithm is the task-conditioned residual model in
-`src/teleop_filter/`, which must be integrated through a separate shadow-first
-adapter before any deployment claim. The legacy filter is intentionally absent
-from the launch and package entry points.
+`src/teleop_filter/`, which must be integrated through the active
+`model_deployment_supervisor` before any deployment claim. The legacy filter is
+intentionally absent from the launch and package entry points.

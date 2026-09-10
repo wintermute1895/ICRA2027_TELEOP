@@ -3,16 +3,10 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from enum import Enum
 import time
 from typing import Any
 
 import numpy as np
-
-
-class DeploymentMode(str, Enum):
-    SHADOW = "shadow"
-    ACTIVE = "active"
 
 
 @dataclass(frozen=True)
@@ -71,11 +65,9 @@ class ActionSupervisor:
     and hardware gate; this boundary only selects and bounds a candidate.
     """
 
-    def __init__(self, *, mode: DeploymentMode = DeploymentMode.SHADOW,
-                 timeout_s: float = 0.3, limits: DeploymentLimits | None = None):
+    def __init__(self, *, timeout_s: float = 0.3, limits: DeploymentLimits | None = None):
         if timeout_s <= 0:
             raise ValueError("timeout_s must be positive")
-        self.mode = DeploymentMode(mode)
         self.timeout_s = float(timeout_s)
         self.limits = limits or DeploymentLimits()
         if self.limits.max_delta_rad < 0 or self.limits.max_step_rad <= 0:
@@ -96,8 +88,6 @@ class ActionSupervisor:
         fallback = np.asarray(fallback_rad, dtype=np.float32)
         if fallback.ndim != 1 or not np.isfinite(fallback).all():
             raise ValueError("fallback command must be a finite vector")
-        if self.mode is DeploymentMode.SHADOW:
-            return DeploymentDecision(fallback, False, "fallback", "shadow_mode")
         if candidate_rad is None or candidate_time is None or now - float(candidate_time) > self.timeout_s:
             return DeploymentDecision(fallback, False, "fallback", "candidate_stale_or_missing")
         candidate = self._vector(candidate_rad, fallback.shape)
@@ -132,11 +122,7 @@ class ActiveModelGate:
                  max_step_rate_rad_s: float = 0.0):
         if max_step_rate_rad_s < 0.0:
             raise ValueError("max_step_rate_rad_s must be non-negative")
-        self._decider = ActionSupervisor(
-            mode=DeploymentMode.ACTIVE,
-            timeout_s=timeout_s,
-            limits=limits,
-        )
+        self._decider = ActionSupervisor(timeout_s=timeout_s, limits=limits)
         self._max_step_rate_rad_s = float(max_step_rate_rad_s)
         self._published_once = False
 

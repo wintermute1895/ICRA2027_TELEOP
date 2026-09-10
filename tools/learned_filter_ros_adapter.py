@@ -55,6 +55,11 @@ class Adapter(Node):
         self.pending_started: float | None = None
         self.master_message: JointState | None = None
         self.last_skip_diag = 0.0
+        # Log inference submit/response only on state transitions (plus a slow
+        # heartbeat while healthy) so 5 Hz operation does not flood the log.
+        self.last_infer_state: tuple[object, object] | None = None
+        self.last_ready_log = 0.0
+        self.ready_log_period_s = 60.0
         self.thread_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="learned-filter")
 
         self.output_pub = self.create_publisher(JointState, config["master_output_topic"], 10)
@@ -114,15 +119,27 @@ class Adapter(Node):
                             self.output_pub.publish(joint_state(self.master_message, np.rad2deg(candidate)))
                 else:
                     pass
-                self.get_logger().info(
-                    "[diag] infer response ready="
-                    + str(response.get("ready"))
-                    + " reason="
-                    + str(response.get("reason"))
-                )
+                state = (response.get("ready"), response.get("reason"))
+                now = time.monotonic()
+                if state != self.last_infer_state or (
+                    state == (True, None) and now - self.last_ready_log >= self.ready_log_period_s
+                ):
+                    self.get_logger().info(
+                        "[diag] infer response ready="
+                        + str(response.get("ready"))
+                        + " reason="
+                        + str(response.get("reason"))
+                    )
+                    if state == (True, None):
+                        self.last_ready_log = now
+                self.last_infer_state = state
                 self.diagnose(**response)
             except (OSError, ValueError, json.JSONDecodeError) as error:
-                self.diagnose(ready=False, reason=f"worker_unavailable:{type(error).__name__}")
+                reason = f"worker_unavailable:{type(error).__name__}"
+                if (False, reason) != self.last_infer_state:
+                    self.get_logger().info(f"[diag] infer response ready=False reason={reason}")
+                self.last_infer_state = (False, reason)
+                self.diagnose(ready=False, reason=reason)
             self.pending = None
             self.pending_started = None
 
@@ -144,7 +161,8 @@ class Adapter(Node):
         master = self.values["master"][1]
         state = self.values["state"][1]
         images = {name: self.values[name][1] for name in self.camera_ids}
-        self.get_logger().info("[diag] infer submit request")
+        if self.last_infer_state != (True, None):
+            self.get_logger().info("[diag] infer submit request")
         request = {
             "timestamp_ns": self.get_clock().now().nanoseconds,
             "master_joint_raw_rad": master.tolist(),

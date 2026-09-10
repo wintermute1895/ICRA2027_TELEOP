@@ -54,8 +54,10 @@ and TensorBoard events.
 ## Runtime boundary
 
 ACT and the learned filter are candidate producers. Both feed the single
-`model_deployment_supervisor`, which handles shadow/active mode, freshness,
-shape, finite-value, delta and step checks, and immediate fallback to LinkerTA.
+`model_deployment_supervisor`, which runs active control only and handles
+freshness, shape, finite-value, delta and step checks. ACT-only active
+deployment suppresses the LinkerTA fallback; other sources fall back when a
+candidate is missing or unsafe.
 Only the supervisor output is connected to `teleop_control_bridge`. The bridge
 remains responsible for mapping, direction signs, One-Euro filtering, limits,
 arming, and hardware publication. SDK/vendor packages are not part of this

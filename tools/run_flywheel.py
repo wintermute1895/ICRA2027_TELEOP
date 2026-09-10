@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -207,6 +208,11 @@ def main() -> int:
     parser.add_argument("--prepare-only", action="store_true", help="prepare and validate the training view without starting training")
     args = parser.parse_args()
     config = load_flywheel_config(args.config, ROOT)
+    # Rosbag zstd decompression goes through tempfile; default TMPDIR to the
+    # data-disk run_root so standalone runs do not fill the system disk.
+    tmp_default = config.run_root / "tmp"
+    tmp_default.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("TMPDIR", str(tmp_default))
     ros_command = [str(ROOT / "skills/ros2-python-env/scripts/run_ros2_python.sh"), "/usr/bin/python3"]
     train_python = Path(sys.executable)
     try:

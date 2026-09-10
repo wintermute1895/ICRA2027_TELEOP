@@ -141,9 +141,9 @@ and bounded residual composition. Residual composition is only the deployment
 mechanism; the model is trained on nominal and corrective expert-action windows.
 It is currently
 authorized only for offline evaluation and simulation. An independent ROS2
-adapter is available for shadow/runtime integration between LinkerTA and the
-bridge. It is disabled by default and requires a pinned checkpoint, shadow
-validation, bounded correction, safety projection, and explicit approval.
+adapter is available for runtime integration between LinkerTA and the
+bridge. It is disabled by default and requires a pinned checkpoint, smoke
+readiness validation, bounded correction, safety projection, and explicit approval.
 
 ```bash
 PYTHONPATH=src conda run -n teleop-train python \
@@ -184,26 +184,35 @@ python tools/build_correction_segment_view.py \
 ## ACT / filter deployment
 
 ACT 和 learned filter 都只能发布 candidate。统一监督层
-`tools/model_deployment_supervisor.py` 负责 shadow/active 选择、超时、维度、
+`tools/model_deployment_supervisor.py` 只执行 active 控制，并负责超时、维度、
 NaN、幅度和步长检查；bridge 只订阅 `/model_deployment/right_arm_joint_control`，
-继续负责单位映射、One-Euro、限位、首次 MoveJ 和 armed gate。默认配置是 shadow：
+继续负责单位映射、One-Euro、限位、首次 MoveJ 和 armed gate。
+
+部署前先用冒烟测试确认 worker/adapter 就绪（看到 `[READY]` 即过关），再在
+人工安全确认下直接真机 active。冒烟示例：
 
 ```bash
-bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml --shadow
+bash scripts/start_act_adapter.sh config/runtime/act-button-A.yaml      # ACT
+bash scripts/start_learned_filter.sh <promoted-filter.yaml>             # filter
 ```
 
 ACT 的 GPU worker 与 ROS2 adapter 分离，启动方式和 filter 相同，详见
 `docs/engineering/MODEL_DEPLOYMENT.md`。当前没有任何模型被声明为真机安全可用；
-active 之前必须完成 held-out 评估、shadow 运行和人工安全确认。
+active 之前必须完成 held-out 评估、冒烟验证和人工安全确认。
 
-完整 rollout（录制、部署、评测）使用统一入口：
+真机 rollout（录制、部署、评测）使用统一入口，需双重确认且人在场：
 
 ```bash
-bash scripts/start_model_rollout.sh --config config/runtime/rollout.yaml --shadow \
-  --record-dir /media/ilex/Cyan_data/ICRA2027_TELEOP_DATA/rollouts/<timestamp>
+# ACT(filter 用 --config config/runtime/rollout.yaml + --source filter --filter-config <yaml>,门限 0.05)
+bash scripts/start_model_rollout.sh --config config/runtime/rollout_active_test.yaml \
+  --source act --act-config config/runtime/act-button-A.yaml \
+  --real --physical-estop-ready \
+  --confirm=I_UNDERSTAND_REAL_ROLLOUT \
+  --model-confirm=I_UNDERSTAND_MODEL_DEPLOYMENT \
+  --record-dir <数据盘>/act_rollouts/<task>/<round>
 # Ctrl-C 停止后：
 bash scripts/evaluate_model_rollout.sh \
-  --bag /media/ilex/Cyan_data/ICRA2027_TELEOP_DATA/rollouts/<timestamp>
+  --bag <数据盘>/act_rollouts/<task>/<round>
 ```
 
 评测是只读的 rosbag 导出和轨迹质量检查，不会自动把 review 结果当成成功，也不会解除真机 armed gate。
@@ -212,9 +221,10 @@ bash scripts/evaluate_model_rollout.sh \
 
 ```bash
 bash scripts/promote_model_checkpoint.sh --kind act \
-  --checkpoint /path/to/policy --output /media/ilex/Cyan_data/ICRA2027_TELEOP/config/act-promoted.yaml
-bash scripts/start_model_rollout.sh --source act \
-  --act-config /media/ilex/Cyan_data/ICRA2027_TELEOP/config/act-promoted.yaml --shadow
+  --checkpoint /path/to/policy \
+  --dataset-stats /path/to/dataset/meta/stats.json \
+  --output config/runtime/act-<task>-<round>.yaml
+bash scripts/validate_act_deployment.sh config/runtime/act-<task>-<round>.yaml
 ```
 
 ## Standalone USB-C insertion scene

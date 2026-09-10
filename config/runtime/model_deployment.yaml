@@ -1,6 +1,5 @@
 schema: robot_teleop.model-deployment/v1
 enabled: true
-mode: shadow
 source: teleop
 arm: right
 input_units: degrees

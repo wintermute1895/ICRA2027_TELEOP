@@ -373,7 +373,7 @@ produce a recommendation-only next-round plan:
 
 The registry treats an episode as analysis eligible only if both its data and
 trajectory gates pass. The planner prioritizes failed quality records for
-repair, failed trajectory records for shadow replay, and valid hard-case
+repair, failed trajectory records for offline replay, and valid hard-case
 segments for targeted coverage. `condition_id` comes from the capture manifest;
 exports outside a RunEvidence directory remain `unassigned` and are excluded
 from A/B aggregates.

@@ -17,7 +17,7 @@ corresponding official SDK call. Its `source` value is
 “the robot has completed the motion”.
 
 `sim_robot_driver` never writes `/robot1/...` state topics. It uses
-`/sim/robot1/...` so a shadow run can record hardware and simulation states at
+`/sim/robot1/...` so a parallel run can record hardware and simulation states at
 the same time. `MoveJ` is visualized with a smooth ideal interpolation; the
 interpolation is not yet a calibrated model of the vendor servo dynamics.
 

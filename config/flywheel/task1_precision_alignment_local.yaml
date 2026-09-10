@@ -1,12 +1,16 @@
 schema: robot_teleop.flywheel-config/v1
 
 storage:
-  data_root: /media/ilex/Cyan_data/ICRA2027_TELEOP_DATA
-  run_root: /media/ilex/Cyan_data/ICRA2027_TELEOP/filter_runs
+  # Task1 episodes are stored directly under this directory rather than in an
+  # evidence/teleop hierarchy. Derived outputs stay beside their source run.
+  data_root: /media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/Task1_Data
+  run_root: /media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/Task1_Data/filter_runs
   model_cache: /media/fanshihao/Cyan_data/ICRA2027_MODELS/huggingface
 
 processing:
-  derived_name: flywheel_v1
+  task_id: precision_alignment
+  task_revision: precision_alignment_v1
+  derived_name: task1_precision_alignment_v1
   arm: right
   source_domain: real
   collection_mode: teleop_rule
@@ -29,16 +33,14 @@ vlm:
 
 training:
   enabled: true
-  # Main policy contract. Use arm7_hand6 only for exploratory O6 runs.
   action_contract: arm7
-  exploratory_action_contracts: [arm7_hand6]
   model_config: config/filters/trajectory_cvae_transformer_v0_2_vlm.yaml
   model_config_no_vlm: config/filters/trajectory_cvae_transformer_v0_1.yaml
   device: cuda
   require_cuda: true
   epochs: 50
-  batch_size: 128
-  validation_episodes: 1
+  batch_size: 64
+  validation_episodes: 3
 
 control:
   deployment_config: config/runtime/learned_filter.yaml

@@ -61,9 +61,9 @@ def render(source: Path, output: Path, mesh_root: Path | None, target: list[floa
     if not any(item.name == "debug_floor" for item in spec.geoms):
         world.add_geom(name="debug_floor", type=mujoco.mjtGeom.mjGEOM_PLANE, pos=[0, 0, -0.72], size=[2.5, 2.5, 0.1], rgba=[0.16, 0.18, 0.20, 1])
     if not any(item.name == "debug_key" for item in spec.lights):
-        world.add_light(name="debug_key", type=mujoco.mjtLightType.mjLIGHT_DIRECTIONAL, pos=[1.0, -1.5, 2.4], dir=[-0.25, 0.35, -1.0], ambient=[0.35, 0.35, 0.35], diffuse=[0.85, 0.85, 0.85], specular=[0.15, 0.15, 0.15], castshadow=1)
+        world.add_light(name="debug_key", type=mujoco.mjtLightType.mjLIGHT_DIRECTIONAL, pos=[1.0, -1.5, 2.4], dir=[-0.25, 0.35, -1.0], ambient=[0.35, 0.35, 0.35], diffuse=[0.85, 0.85, 0.85], specular=[0.15, 0.15, 0.15])
     if not any(item.name == "debug_fill" for item in spec.lights):
-        world.add_light(name="debug_fill", type=mujoco.mjtLightType.mjLIGHT_DIRECTIONAL, pos=[-1.0, 1.0, 1.6], dir=[0.3, -0.25, -1.0], ambient=[0.18, 0.18, 0.18], diffuse=[0.45, 0.48, 0.52], specular=[0.05, 0.05, 0.05], castshadow=0)
+        world.add_light(name="debug_fill", type=mujoco.mjtLightType.mjLIGHT_DIRECTIONAL, pos=[-1.0, 1.0, 1.6], dir=[0.3, -0.25, -1.0], ambient=[0.18, 0.18, 0.18], diffuse=[0.45, 0.48, 0.52], specular=[0.05, 0.05, 0.05])
     model = spec.compile()
     data = mujoco.MjData(model)
     mujoco.mj_forward(model, data)

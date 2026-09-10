@@ -1,28 +1,28 @@
 #!/usr/bin/env bash
 # Train the task-aware residual filter (v0.2 + SigLIP2) over all prepared
-# Task2 views. The last 3 sorted views are held out as validation.
+# Task3 views. The last 10 sorted views are held out as validation.
 # Run inside the teleop conda environment:
 #   conda activate teleop
-#   bash scripts/task2_train_filter.sh            # round1, 50 epochs, batch 64
-#   TASK2_ROUND=round2 TASK2_EPOCHS=80 bash scripts/task2_train_filter.sh
+#   bash scripts/task3_train_filter.sh            # round1, 50 epochs, batch 64
+#   TASK3_ROUND=round2 TASK3_EPOCHS=80 bash scripts/task3_train_filter.sh
 # Log is written automatically next to the model outputs under
 # <run_root>/logs/ while still being printed to the terminal.
-# Overrides: TASK2_DATA_DIR, TASK2_DERIVED_NAME, TASK2_RUN_ROOT,
-#            TASK2_MODEL_CONFIG, TASK2_ROUND, TASK2_EPOCHS, TASK2_BATCH,
-#            TASK2_VALIDATION_COUNT, TASK2_DEVICE, TASK2_LOG_DIR
+# Overrides: TASK3_DATA_DIR, TASK3_DERIVED_NAME, TASK3_RUN_ROOT,
+#            TASK3_MODEL_CONFIG, TASK3_ROUND, TASK3_EPOCHS, TASK3_BATCH,
+#            TASK3_VALIDATION_COUNT, TASK3_DEVICE, TASK3_LOG_DIR
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DATA_DIR="${TASK2_DATA_DIR:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/Task2_Data}"
-DERIVED_NAME="${TASK2_DERIVED_NAME:-task2_button_press_v1}"
-RUN_ROOT="${TASK2_RUN_ROOT:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/Task2_Data/filter_runs}"
-LOG_DIR="${TASK2_LOG_DIR:-$RUN_ROOT/logs}"
-MODEL_CONFIG="${TASK2_MODEL_CONFIG:-$ROOT_DIR/config/filters/trajectory_cvae_transformer_v0_2_vlm.yaml}"
-ROUND="${TASK2_ROUND:-round1}"
-EPOCHS="${TASK2_EPOCHS:-50}"
-BATCH="${TASK2_BATCH:-64}"
-VALIDATION_COUNT="${TASK2_VALIDATION_COUNT:-3}"
-DEVICE="${TASK2_DEVICE:-cuda}"
+DATA_DIR="${TASK3_DATA_DIR:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/task3_Data}"
+DERIVED_NAME="${TASK3_DERIVED_NAME:-task3_screwdriver_v1}"
+RUN_ROOT="${TASK3_RUN_ROOT:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/task3_Data/filter_runs}"
+LOG_DIR="${TASK3_LOG_DIR:-$RUN_ROOT/logs}"
+MODEL_CONFIG="${TASK3_MODEL_CONFIG:-$ROOT_DIR/config/filters/trajectory_cvae_transformer_v0_2_vlm.yaml}"
+ROUND="${TASK3_ROUND:-round1}"
+EPOCHS="${TASK3_EPOCHS:-50}"
+BATCH="${TASK3_BATCH:-64}"
+VALIDATION_COUNT="${TASK3_VALIDATION_COUNT:-10}"
+DEVICE="${TASK3_DEVICE:-cuda}"
 
 export LEROBOT_ENV_NAME="${LEROBOT_ENV_NAME:-${CONDA_DEFAULT_ENV:-teleop}}"
 # Drop ROS/system dist-packages from PYTHONPATH so the teleop interpreter uses
@@ -50,14 +50,14 @@ mapfile -t VIEWS < <(
 total="${#VIEWS[@]}"
 if (( total < VALIDATION_COUNT + 1 )); then
   echo "[FATAL] need at least $((VALIDATION_COUNT + 1)) prepared views, found $total" >&2
-  echo "Run scripts/task2_prepare_filter_data.sh first." >&2
+  echo "Run scripts/task3_prepare_filter_data.sh first." >&2
   exit 2
 fi
 
 ROUND_DIR="$RUN_ROOT/$ROUND"
 if [[ -e "$ROUND_DIR/model" ]]; then
   echo "[FATAL] refusing to overwrite existing model: $ROUND_DIR/model" >&2
-  echo "Set TASK2_ROUND=round2 (or another name) to retrain." >&2
+  echo "Set TASK3_ROUND=round2 (or another name) to retrain." >&2
   exit 2
 fi
 mkdir -p "$ROUND_DIR"

@@ -74,7 +74,7 @@ def main() -> int:
     spec = mujoco.MjSpec.from_file(str(args.urdf.resolve()))
     world = spec.worldbody
     world.add_geom(name="debug_floor", type=mujoco.mjtGeom.mjGEOM_PLANE, pos=[0, 0, -0.75], size=[2.5, 2.5, 0.1], rgba=[0.16, 0.18, 0.20, 1])
-    world.add_light(name="key_light", type=mujoco.mjtLightType.mjLIGHT_DIRECTIONAL, pos=[1, -1.5, 2.4], dir=[-0.25, 0.35, -1], ambient=[0.35, 0.35, 0.35], diffuse=[0.85, 0.85, 0.85], castshadow=1)
+    world.add_light(name="key_light", type=mujoco.mjtLightType.mjLIGHT_DIRECTIONAL, pos=[1, -1.5, 2.4], dir=[-0.25, 0.35, -1], ambient=[0.35, 0.35, 0.35], diffuse=[0.85, 0.85, 0.85])
     add_world_camera(spec, "global_scene_rgb", [1.65, -2.35, 1.25], [0, 0, 0.75], 58.0)
     head = calibration["head_d435i_rgb"]
     spec.worldbody.add_camera(name="head_d435i_rgb", pos=head["pos"], quat=head["quat"], resolution=[640, 480], fovy=head["fovy"])

@@ -1,12 +1,14 @@
 schema: robot_teleop.flywheel-config/v1
 
 storage:
-  # Task2 数据直接位于 act_train_ready 下，无需 evidence/teleop 软链池。
-  data_root: /media/fanshihao/UBUNTU 20_0/task_button_press/act_train_ready
-  run_root: /media/fanshihao/UBUNTU 20_0/task_button_press/filter_runs
-  model_cache: /media/fanshihao/Seagate Hub/ICRA2027_DATA_TASK2/vlm_cache
+  # Task2 数据直接位于 task2_Data 下，无需 evidence/teleop 软链池。
+  data_root: /media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/Task2_Data
+  run_root: /media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/Task2_Data/filter_runs
+  model_cache: /media/fanshihao/Cyan_data/ICRA2027_MODELS/huggingface
 
 processing:
+  task_id: power_button_press_v1
+  task_revision: power_button_press_v1
   derived_name: task2_button_press_v1
   arm: right
   source_domain: real

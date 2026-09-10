@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
-# Prepare every Task2 (button press) episode into a filter-training VLM view.
+# Prepare every Task3 (screwdriver alignment) episode into a filter-training VLM view.
 # Run inside the teleop conda environment:
 #   conda activate teleop
-#   bash scripts/task2_prepare_filter_data.sh
+#   bash scripts/task3_prepare_filter_data.sh
 # Log is written automatically next to the model outputs under
 # <run_root>/logs/ while still being printed to the terminal.
-# Overrides: TASK2_DATA_DIR, TASK2_FLYWHEEL_CONFIG, TASK2_DERIVED_NAME,
-#            TASK2_RUN_ROOT, TASK2_LOG_DIR
+# Overrides: TASK3_DATA_DIR, TASK3_FLYWHEEL_CONFIG, TASK3_DERIVED_NAME,
+#            TASK3_RUN_ROOT, TASK3_LOG_DIR
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DATA_DIR="${TASK2_DATA_DIR:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/Task2_Data}"
-CONFIG="${TASK2_FLYWHEEL_CONFIG:-$ROOT_DIR/config/flywheel/task2_button_press_local.yaml}"
-DERIVED_NAME="${TASK2_DERIVED_NAME:-task2_button_press_v1}"
-RUN_ROOT="${TASK2_RUN_ROOT:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/Task2_Data/filter_runs}"
-LOG_DIR="${TASK2_LOG_DIR:-$RUN_ROOT/logs}"
+DATA_DIR="${TASK3_DATA_DIR:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/task3_Data}"
+CONFIG="${TASK3_FLYWHEEL_CONFIG:-$ROOT_DIR/config/flywheel/task3_screwdriver_local.yaml}"
+DERIVED_NAME="${TASK3_DERIVED_NAME:-task3_screwdriver_v1}"
+RUN_ROOT="${TASK3_RUN_ROOT:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/task3_Data/filter_runs}"
+LOG_DIR="${TASK3_LOG_DIR:-$RUN_ROOT/logs}"
 
 export LEROBOT_ENV_NAME="${LEROBOT_ENV_NAME:-${CONDA_DEFAULT_ENV:-teleop}}"
 # Drop ROS/system dist-packages from PYTHONPATH so the teleop interpreter uses
 # its own numpy/sympy/transformers stack.
 export PYTHONPATH=""
 # Rosbag zstd 解压会写到临时目录;默认放到数据盘,避免占满本机系统盘。
-export TMPDIR="${TASK2_TMPDIR:-${TMPDIR:-$RUN_ROOT/tmp}}"
+export TMPDIR="${TASK3_TMPDIR:-${TMPDIR:-$RUN_ROOT/tmp}}"
 mkdir -p "$TMPDIR"
 
 mkdir -p "$LOG_DIR"
