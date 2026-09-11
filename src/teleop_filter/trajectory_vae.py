@@ -9,10 +9,39 @@ from torch import Tensor, nn
 from torch.nn import functional as F
 
 
+def unroll_rate_limited_gain(
+    desired_gain: Tensor,
+    episode_start: Tensor,
+    *,
+    alpha_rate: float,
+    initial_alpha: Tensor | None = None,
+) -> Tensor:
+    """Chronologically unroll scalar gain, resetting at episode boundaries."""
+    if desired_gain.ndim != 2 or desired_gain.shape[1] != 1:
+        raise ValueError("desired_gain must have shape [time, 1]")
+    starts = episode_start.reshape(-1).to(dtype=torch.bool, device=desired_gain.device)
+    if starts.shape[0] != desired_gain.shape[0]:
+        raise ValueError("episode_start must align with desired_gain")
+    previous = (
+        desired_gain.new_zeros((1,))
+        if initial_alpha is None
+        else initial_alpha.to(desired_gain).reshape(1)
+    )
+    values = []
+    for index in range(desired_gain.shape[0]):
+        if starts[index]:
+            previous = desired_gain.new_zeros((1,))
+        target = desired_gain[index]
+        previous = previous + (target - previous).clamp(-alpha_rate, alpha_rate)
+        values.append(previous)
+    return torch.stack(values)
+
+
 @dataclass(frozen=True)
 class TrajectoryFilterConfig:
     action_dim: int
     state_dim: int
+    command_dim: int | None = None
     history_length: int = 16
     horizon: int = 8
     context_dim: int = 0
@@ -23,6 +52,18 @@ class TrajectoryFilterConfig:
     num_layers: int = 3
     dropout: float = 0.1
     gate_enabled: bool = False
+    gain_enabled: bool = False
+    alpha_max: float = 1.0
+    alpha_rate: float = 0.1
+    gain_current_command: bool = False
+    shared_action_gain_head: bool = False
+    fixed_gain: float | None = None
+    model_type: str = "cvae_rate_limited"
+    authority_mode: str = "rate_limited"
+    risk_use_discrepancy: bool = True
+    risk_use_dispersion: bool = True
+    risk_use_correction_probability: bool = True
+    zero_initialize_action_head: bool = False
 
     def validate(self) -> None:
         integer_fields = (
@@ -35,9 +76,27 @@ class TrajectoryFilterConfig:
             raise ValueError("model_dim must be divisible by num_heads")
         if not 0.0 <= self.dropout < 1.0:
             raise ValueError("dropout must be in [0, 1)")
+        if self.alpha_max < 0.0 or self.alpha_rate < 0.0:
+            raise ValueError("alpha_max and alpha_rate must be non-negative")
+        if self.fixed_gain is not None and not 0.0 <= self.fixed_gain <= self.alpha_max:
+            raise ValueError("fixed_gain must be within [0, alpha_max]")
+        if self.shared_action_gain_head and not self.gain_enabled:
+            raise ValueError("shared_action_gain_head requires gain_enabled")
+        if self.model_type not in {"deterministic_action", "cvae_rate_limited", "risk_conditioned_authority"}:
+            raise ValueError("unsupported model_type")
+        if self.authority_mode not in {"zero", "fixed", "binary_gate", "framewise", "rate_limited"}:
+            raise ValueError("unsupported authority_mode")
+        if self.authority_mode == "fixed" and self.fixed_gain is None:
+            raise ValueError("fixed authority_mode requires fixed_gain")
+        if self.model_type == "risk_conditioned_authority" and not self.gain_enabled:
+            raise ValueError("risk-conditioned authority requires gain_enabled")
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+    @property
+    def effective_command_dim(self) -> int:
+        return self.action_dim if self.command_dim is None else self.command_dim
 
 
 class ConditionalTrajectoryVAE(nn.Module):
@@ -47,7 +106,7 @@ class ConditionalTrajectoryVAE(nn.Module):
         super().__init__()
         config.validate()
         self.config = config
-        token_dim = config.action_dim + config.state_dim + config.context_dim + config.visual_dim
+        token_dim = config.effective_command_dim + config.state_dim + config.context_dim + config.visual_dim
         self.input_projection = nn.Linear(token_dim, config.model_dim)
         self.position = nn.Parameter(torch.zeros(1, config.history_length, config.model_dim))
         layer = nn.TransformerEncoderLayer(
@@ -61,7 +120,20 @@ class ConditionalTrajectoryVAE(nn.Module):
         )
         self.history_encoder = nn.TransformerEncoder(layer, num_layers=config.num_layers)
         self.history_norm = nn.LayerNorm(config.model_dim)
-        self.gate_head = nn.Linear(config.model_dim, 1) if config.gate_enabled else None
+        needs_gate = config.gate_enabled or (
+            config.model_type == "risk_conditioned_authority" and config.risk_use_correction_probability
+        ) or config.authority_mode == "binary_gate"
+        self.gate_head = nn.Linear(config.model_dim, 1) if needs_gate else None
+        gain_dim = config.model_dim + (config.action_dim if config.gain_current_command else 0)
+        risk_features = int(config.risk_use_discrepancy) + int(config.risk_use_dispersion) + int(config.risk_use_correction_probability)
+        self.risk_head = (
+            nn.Linear(gain_dim + risk_features, 1)
+            if config.model_type == "risk_conditioned_authority" else None
+        )
+        self.gain_head = (
+            nn.Linear(gain_dim, 1)
+            if config.gain_enabled and not config.shared_action_gain_head and self.risk_head is None else None
+        )
         self.prior = nn.Linear(config.model_dim, 2 * config.latent_dim)
         self.posterior = nn.Sequential(
             nn.Linear(config.model_dim + config.horizon * config.action_dim, 2 * config.model_dim),
@@ -72,9 +144,15 @@ class ConditionalTrajectoryVAE(nn.Module):
             nn.Linear(config.model_dim + config.latent_dim, 2 * config.model_dim),
             nn.GELU(),
             nn.Dropout(config.dropout),
-            nn.Linear(2 * config.model_dim, config.horizon * config.action_dim),
+            nn.Linear(2 * config.model_dim, config.horizon * config.action_dim + int(config.shared_action_gain_head)),
         )
         nn.init.normal_(self.position, std=0.02)
+        if config.zero_initialize_action_head:
+            output_layer = self.decoder[-1]
+            action_width = config.horizon * config.action_dim
+            with torch.no_grad():
+                output_layer.weight[:action_width].zero_()
+                output_layer.bias[:action_width].zero_()
 
     def encode_history(
         self,
@@ -84,7 +162,7 @@ class ConditionalTrajectoryVAE(nn.Module):
         visual: Tensor | None = None,
     ) -> Tensor:
         cfg = self.config
-        expected_commands = (commands.shape[0], cfg.history_length, cfg.action_dim)
+        expected_commands = (commands.shape[0], cfg.history_length, cfg.effective_command_dim)
         expected_states = (states.shape[0], cfg.history_length, cfg.state_dim)
         if tuple(commands.shape) != expected_commands or tuple(states.shape) != expected_states:
             raise ValueError("commands/states do not match configured batch, history, or feature dimensions")
@@ -125,6 +203,9 @@ class ConditionalTrajectoryVAE(nn.Module):
         target_actions: Tensor,
         context: Tensor | None = None,
         visual: Tensor | None = None,
+        current_command: Tensor | None = None,
+        previous_alpha: Tensor | None = None,
+        discrepancy_command: Tensor | None = None,
     ) -> dict[str, Tensor]:
         cfg = self.config
         if tuple(target_actions.shape) != (commands.shape[0], cfg.horizon, cfg.action_dim):
@@ -133,9 +214,21 @@ class ConditionalTrajectoryVAE(nn.Module):
         prior_mean, prior_log_variance = self._distribution(self.prior(history))
         posterior_input = torch.cat([history, target_actions.flatten(start_dim=1)], dim=-1)
         posterior_mean, posterior_log_variance = self._distribution(self.posterior(posterior_input))
-        latent = self._sample(posterior_mean, posterior_log_variance)
-        prediction = self.decoder(torch.cat([history, latent], dim=-1)).view(
-            -1, cfg.horizon, cfg.action_dim
+        if cfg.model_type == "deterministic_action":
+            posterior_mean, posterior_log_variance = prior_mean, prior_log_variance
+        latent = (
+            torch.zeros_like(posterior_mean)
+            if cfg.model_type == "deterministic_action" else self._sample(posterior_mean, posterior_log_variance)
+        )
+        decoded = self.decoder(torch.cat([history, latent], dim=-1))
+        prediction = decoded[:, :cfg.horizon * cfg.action_dim].view(-1, cfg.horizon, cfg.action_dim)
+        shared_gain_logit = decoded[:, -1:] if cfg.shared_action_gain_head else None
+        correction_probability = None if self.gate_head is None else torch.sigmoid(self.gate_head(history).view(-1, 1))
+        dispersion = torch.exp(0.5 * prior_log_variance).mean(dim=-1, keepdim=True)
+        desired_gain, alpha, gain_delta = self._gain_outputs(
+            history, current_command, previous_alpha, shared_gain_logit,
+            prediction=prediction, dispersion=dispersion, correction_probability=correction_probability,
+            discrepancy_command=discrepancy_command,
         )
         return {
             "prediction": prediction,
@@ -144,7 +237,96 @@ class ConditionalTrajectoryVAE(nn.Module):
             "posterior_mean": posterior_mean,
             "posterior_log_variance": posterior_log_variance,
             "gate_logits": self.gate_head(history).view(-1, 1) if self.gate_head is not None else None,
+            "desired_gain": desired_gain,
+            "alpha": alpha,
+            "gain_delta": gain_delta,
+            "uncertainty": None if cfg.model_type == "deterministic_action" else dispersion,
+            "uncertainty_type": None if cfg.model_type == "deterministic_action" else "cvae_multimodal_dispersion",
         }
+
+    def _gain_outputs(
+        self, history: Tensor, current_command: Tensor | None, previous_alpha: Tensor | None,
+        shared_gain_logit: Tensor | None = None, *, prediction: Tensor | None = None,
+        dispersion: Tensor | None = None, correction_probability: Tensor | None = None,
+        discrepancy_command: Tensor | None = None,
+    ) -> tuple[Tensor | None, Tensor | None, Tensor | None]:
+        if self.config.authority_mode == "zero":
+            zero = history.new_zeros((history.shape[0], 1))
+            return zero, zero, zero
+        if self.config.authority_mode == "binary_gate":
+            if correction_probability is None:
+                raise ValueError("binary_gate authority requires correction probability")
+            desired = (correction_probability >= 0.5).to(history) * self.config.alpha_max
+            return desired, desired, desired - self._previous_gain(desired, previous_alpha)
+        if self.config.fixed_gain is not None:
+            desired = history.new_full((history.shape[0], 1), self.config.fixed_gain)
+            alpha = self._apply_authority_dynamics(desired, previous_alpha)
+            previous = self._previous_gain(alpha, previous_alpha)
+            return desired, alpha, alpha - previous
+        if self.config.shared_action_gain_head:
+            if shared_gain_logit is None:
+                raise ValueError("shared gain logit is required")
+            desired = torch.sigmoid(shared_gain_logit) * self.config.alpha_max
+            alpha = self._apply_authority_dynamics(desired, previous_alpha)
+            previous = self._previous_gain(alpha, previous_alpha)
+            return desired, alpha, alpha - previous
+        if self.risk_head is not None:
+            if current_command is None or prediction is None:
+                raise ValueError("risk authority requires current command and action prediction")
+            comparison = current_command if discrepancy_command is None else discrepancy_command
+            features = [history]
+            if self.config.gain_current_command:
+                features.append(current_command)
+            if self.config.risk_use_discrepancy:
+                features.append((prediction[:, 0] - comparison).abs().mean(dim=-1, keepdim=True))
+            if self.config.risk_use_dispersion:
+                if dispersion is None: raise ValueError("risk authority requires dispersion")
+                features.append(dispersion)
+            if self.config.risk_use_correction_probability:
+                if correction_probability is None: raise ValueError("risk authority requires correction probability")
+                features.append(correction_probability)
+            desired = torch.sigmoid(self.risk_head(torch.cat(features, dim=-1))) * self.config.alpha_max
+            alpha = self._apply_authority_dynamics(desired, previous_alpha)
+            return desired, alpha, alpha - self._previous_gain(alpha, previous_alpha)
+        if self.gain_head is None:
+            return None, None, None
+        if correction_probability is not None and self.config.authority_mode in {"rate_limited", "framewise"}:
+            desired = correction_probability * self.config.alpha_max
+            alpha = self._apply_authority_dynamics(desired, previous_alpha)
+            return desired, alpha, alpha - self._previous_gain(alpha, previous_alpha)
+        if not self.config.gain_current_command:
+            gain_delta = torch.tanh(self.gain_head(history)) * self.config.alpha_rate
+            previous = self._previous_gain(gain_delta, previous_alpha)
+            alpha = (previous + gain_delta).clamp(0.0, self.config.alpha_max)
+            return None, alpha, alpha - previous
+        if current_command is None or tuple(current_command.shape) != (history.shape[0], self.config.action_dim):
+            raise ValueError("current_command is required and must match the action dimension when gain is enabled")
+        desired = torch.sigmoid(self.gain_head(torch.cat([history, current_command], dim=-1))) * self.config.alpha_max
+        alpha = self._apply_authority_dynamics(desired, previous_alpha)
+        previous = self._previous_gain(alpha, previous_alpha)
+        return desired, alpha, alpha - previous
+
+    @staticmethod
+    def _previous_gain(reference: Tensor, previous_alpha: Tensor | None) -> Tensor:
+        if previous_alpha is None:
+            return torch.zeros_like(reference)
+        previous = previous_alpha.to(reference)
+        if previous.numel() == 1:
+            return previous.reshape(1, 1).expand_as(reference)
+        if tuple(previous.shape) != tuple(reference.shape):
+            raise ValueError("previous_alpha must be scalar or align with the batch")
+        return previous
+
+    def _rate_limited_gain(self, desired_gain: Tensor | None, previous_alpha: Tensor | None) -> Tensor | None:
+        if desired_gain is None:
+            return None
+        previous = self._previous_gain(desired_gain, previous_alpha)
+        return previous + (desired_gain - previous).clamp(-self.config.alpha_rate, self.config.alpha_rate)
+
+    def _apply_authority_dynamics(self, desired_gain: Tensor, previous_alpha: Tensor | None) -> Tensor:
+        if self.config.authority_mode == "framewise":
+            return desired_gain
+        return self._rate_limited_gain(desired_gain, previous_alpha)
 
     @torch.no_grad()
     def predict(
@@ -153,16 +335,30 @@ class ConditionalTrajectoryVAE(nn.Module):
         states: Tensor,
         context: Tensor | None = None,
         visual: Tensor | None = None,
+        previous_alpha: Tensor | None = None,
+        current_command: Tensor | None = None,
+        discrepancy_command: Tensor | None = None,
         *,
         deterministic: bool = True,
     ) -> dict[str, Tensor]:
         history = self.encode_history(commands, states, context, visual)
         prior_mean, prior_log_variance = self._distribution(self.prior(history))
-        latent = prior_mean if deterministic else self._sample(prior_mean, prior_log_variance)
-        prediction = self.decoder(torch.cat([history, latent], dim=-1)).view(
-            -1, self.config.horizon, self.config.action_dim
+        latent = (
+            torch.zeros_like(prior_mean) if self.config.model_type == "deterministic_action"
+            else (prior_mean if deterministic else self._sample(prior_mean, prior_log_variance))
         )
+        decoded = self.decoder(torch.cat([history, latent], dim=-1))
+        action_width = self.config.horizon * self.config.action_dim
+        prediction = decoded[:, :action_width].view(-1, self.config.horizon, self.config.action_dim)
+        shared_gain_logit = decoded[:, -1:] if self.config.shared_action_gain_head else None
         gate_logits = self.gate_head(history).view(-1, 1) if self.gate_head is not None else None
+        correction_probability = None if gate_logits is None else torch.sigmoid(gate_logits)
+        dispersion = torch.exp(0.5 * prior_log_variance).mean(dim=-1, keepdim=True)
+        desired_gain, alpha, gain_delta = self._gain_outputs(
+            history, current_command, previous_alpha, shared_gain_logit,
+            prediction=prediction, dispersion=dispersion, correction_probability=correction_probability,
+            discrepancy_command=discrepancy_command,
+        )
         return {
             "prediction": prediction,
             "prior_mean": prior_mean,
@@ -170,6 +366,11 @@ class ConditionalTrajectoryVAE(nn.Module):
             "latent_variance": torch.exp(prior_log_variance).mean(dim=-1),
             "gate_logits": gate_logits,
             "correction_probability": torch.sigmoid(gate_logits) if gate_logits is not None else None,
+            "gain_delta": gain_delta,
+            "desired_gain": desired_gain,
+            "alpha": alpha,
+            "uncertainty": None if self.config.model_type == "deterministic_action" else dispersion,
+            "uncertainty_type": None if self.config.model_type == "deterministic_action" else "cvae_multimodal_dispersion",
         }
 
 
@@ -195,30 +396,50 @@ def trajectory_vae_loss(
     reconstruction_weights: Tensor | None = None,
     correction_mask: Tensor | None = None,
     gate_weight: float = 0.0,
+    gain_weight: float = 0.0,
+    alpha_max: float = 1.0,
+    alpha_rate: float = 0.1,
+    alpha_low: float = 0.05,
+    alpha_high: float = 0.5,
     zero_weight: float = 0.0,
     raw_commands: Tensor | None = None,
     target_mean: Tensor | None = None,
     target_std: Tensor | None = None,
+    action_anchor: Tensor | None = None,
+    correction_loss_type: str = "unbalanced_hinge",
+    focal_gamma: float = 2.0,
+    ranking_weight: float = 0.0,
+    ranking_margin: float = 0.1,
+    episode_start: Tensor | None = None,
 ) -> dict[str, Tensor]:
-    if beta_kl < 0.0 or smoothness_weight < 0.0 or gate_weight < 0.0 or zero_weight < 0.0:
+    if beta_kl < 0.0 or smoothness_weight < 0.0 or gate_weight < 0.0 or gain_weight < 0.0 or zero_weight < 0.0:
         raise ValueError("loss weights must be non-negative")
+    if not 0.0 <= alpha_low < alpha_high <= alpha_max:
+        raise ValueError("gain bands must satisfy 0 <= alpha_low < alpha_high <= alpha_max")
     prediction = outputs["prediction"]
+    if target_mean is not None and target_std is not None:
+        prediction_for_action = prediction * target_std + target_mean
+        target_for_action = target_actions * target_std + target_mean
+    else:
+        prediction_for_action = prediction
+        target_for_action = target_actions
     if reconstruction_weights is None:
-        reconstruction = F.smooth_l1_loss(prediction, target_actions)
+        reconstruction = F.smooth_l1_loss(prediction_for_action, target_for_action)
     else:
         if reconstruction_weights.shape != target_actions.shape[:-1] + (1,):
             raise ValueError("reconstruction_weights must align with target batch/horizon")
         if not torch.isfinite(reconstruction_weights).all() or torch.any(reconstruction_weights < 0.0):
             raise ValueError("reconstruction_weights must be finite and non-negative")
-        element_loss = F.smooth_l1_loss(prediction, target_actions, reduction="none")
+        element_loss = F.smooth_l1_loss(prediction_for_action, target_for_action, reduction="none")
         weights = reconstruction_weights.to(dtype=element_loss.dtype)
         reconstruction = (element_loss * weights).sum() / weights.expand_as(element_loss).sum().clamp_min(1e-6)
     kl = diagonal_gaussian_kl(
         outputs["posterior_mean"], outputs["posterior_log_variance"],
         outputs["prior_mean"], outputs["prior_log_variance"],
     ).mean()
-    smoothness = prediction.diff(dim=1).square().mean() if prediction.shape[1] > 1 else prediction.new_zeros(())
+    smoothness = prediction_for_action.diff(dim=1).square().mean() if prediction.shape[1] > 1 else prediction.new_zeros(())
     gate = prediction.new_zeros(())
+    rank = prediction.new_zeros(())
     if gate_weight and outputs.get("gate_logits") is not None:
         if correction_mask is None:
             raise ValueError("correction_mask is required when gate_weight is non-zero")
@@ -226,17 +447,63 @@ def trajectory_vae_loss(
         logits = outputs["gate_logits"]
         if logits.shape != labels.shape:
             logits = logits.expand_as(labels)
-        gate = F.binary_cross_entropy_with_logits(logits, labels)
+        first_labels = labels[:, :1] if labels.ndim > 1 else labels.reshape(-1, 1)
+        first_logits = logits[:, :1] if logits.ndim > 1 else logits.reshape(-1, 1)
+        if correction_loss_type in {"balanced_bce", "bce_ranking"}:
+            positives = first_labels.sum()
+            negatives = first_labels.numel() - positives
+            pos_weight = (negatives / positives.clamp_min(1.0)).detach()
+            gate = F.binary_cross_entropy_with_logits(first_logits, first_labels, pos_weight=pos_weight)
+        elif correction_loss_type == "focal":
+            bce = F.binary_cross_entropy_with_logits(first_logits, first_labels, reduction="none")
+            probability = torch.sigmoid(first_logits)
+            pt = first_labels * probability + (1.0 - first_labels) * (1.0 - probability)
+            gate = ((1.0 - pt).pow(focal_gamma) * bce).mean()
+        elif correction_loss_type not in {"ranking", "unbalanced_hinge"}:
+            raise ValueError(f"unsupported correction loss: {correction_loss_type}")
+        elif correction_loss_type == "unbalanced_hinge":
+            gate = F.binary_cross_entropy_with_logits(first_logits, first_labels)
+        if correction_loss_type in {"ranking", "bce_ranking"}:
+            starts = torch.zeros(first_labels.shape[0], dtype=torch.bool, device=first_labels.device)
+            starts[0] = True
+            if episode_start is not None:
+                starts |= episode_start.reshape(-1).to(dtype=torch.bool, device=starts.device)
+            groups = starts.cumsum(0)
+            terms = []
+            scores = torch.sigmoid(first_logits).reshape(-1)
+            flat_labels = first_labels.reshape(-1)
+            for group in groups.unique():
+                selected = groups == group
+                positive_scores = scores[selected & (flat_labels > 0.5)]
+                negative_scores = scores[selected & (flat_labels <= 0.5)]
+                if positive_scores.numel() and negative_scores.numel():
+                    terms.append(F.relu(ranking_margin - positive_scores[:, None] + negative_scores[None, :]).mean())
+            if terms:
+                rank = torch.stack(terms).mean()
+    gain = prediction.new_zeros(())
+    if gain_weight and outputs.get("alpha") is not None:
+        if correction_mask is None:
+            raise ValueError("correction_mask is required when gain_weight is non-zero")
+        labels = correction_mask.to(dtype=prediction.dtype)
+        if labels.ndim > 1:
+            labels = labels[:, :1]
+        alpha = outputs["alpha"]
+        gain = (labels * F.relu(alpha_high - alpha) + (1.0 - labels) * F.relu(alpha - alpha_low)).mean()
     zero = prediction.new_zeros(())
     if zero_weight:
         if correction_mask is None or raw_commands is None or target_mean is None or target_std is None:
             raise ValueError("raw_commands, target statistics and correction_mask are required for zero-residual loss")
-        predicted_physical = prediction * target_std + target_mean
+        predicted_physical = prediction_for_action
+        if action_anchor is not None:
+            base = action_anchor.to(dtype=prediction.dtype)
+            if base.ndim == 2:
+                base = base[:, None, :]
+            predicted_physical = predicted_physical + base
         residual = predicted_physical - raw_commands.to(dtype=prediction.dtype)
         nominal = (1.0 - correction_mask.to(dtype=prediction.dtype)).unsqueeze(-1)
         zero = (residual.abs() * nominal).sum() / nominal.expand_as(residual).sum().clamp_min(1e-6)
-    total = reconstruction + beta_kl * kl + smoothness_weight * smoothness + gate_weight * gate + zero_weight * zero
-    return {"total": total, "reconstruction": reconstruction, "kl": kl, "smoothness": smoothness, "gate": gate, "zero_residual": zero}
+    total = reconstruction + beta_kl * kl + smoothness_weight * smoothness + gate_weight * gate + ranking_weight * rank + gain_weight * gain + zero_weight * zero
+    return {"total": total, "reconstruction": reconstruction, "kl": kl, "smoothness": smoothness, "gate": gate, "ranking": rank, "gain": gain, "zero_residual": zero}
 
 
 def bounded_residual_command(

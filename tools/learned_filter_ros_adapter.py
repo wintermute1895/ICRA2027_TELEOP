@@ -55,11 +55,6 @@ class Adapter(Node):
         self.pending_started: float | None = None
         self.master_message: JointState | None = None
         self.last_skip_diag = 0.0
-        # Log inference submit/response only on state transitions (plus a slow
-        # heartbeat while healthy) so 5 Hz operation does not flood the log.
-        self.last_infer_state: tuple[object, object] | None = None
-        self.last_ready_log = 0.0
-        self.ready_log_period_s = 60.0
         self.thread_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="learned-filter")
 
         self.output_pub = self.create_publisher(JointState, config["master_output_topic"], 10)
@@ -90,7 +85,6 @@ class Adapter(Node):
         self.master_message = message
 
         self.raw_pub.publish(joint_state(message, raw_rad))
-        self.filtered_pub.publish(joint_state(message, raw_rad))
 
     def exchange(self, request: dict, images: dict[str, Image]) -> dict:
         request["camera_jpeg_base64"] = {
@@ -112,34 +106,20 @@ class Adapter(Node):
                 response_age = time.monotonic() - (self.pending_started or time.monotonic())
                 if response_age > self.timeout_s:
                     response = {"ready": False, "reason": "inference_timeout", "latency_s": response_age}
-                if response.get("ready") is True:
-                    if self.master_message is not None:
-                        candidate = np.asarray(response.get("command_rad"), dtype=np.float32)
-                        if candidate.shape == np.asarray(self.master_message.position).shape and np.isfinite(candidate).all():
-                            self.output_pub.publish(joint_state(self.master_message, np.rad2deg(candidate)))
-                else:
-                    pass
-                state = (response.get("ready"), response.get("reason"))
-                now = time.monotonic()
-                if state != self.last_infer_state or (
-                    state == (True, None) and now - self.last_ready_log >= self.ready_log_period_s
-                ):
-                    self.get_logger().info(
-                        "[diag] infer response ready="
-                        + str(response.get("ready"))
-                        + " reason="
-                        + str(response.get("reason"))
-                    )
-                    if state == (True, None):
-                        self.last_ready_log = now
-                self.last_infer_state = state
+                if self.master_message is not None and response.get("command_rad") is not None:
+                    candidate = np.asarray(response.get("command_rad"), dtype=np.float32)
+                    if candidate.shape == np.asarray(self.master_message.position).shape and np.isfinite(candidate).all():
+                        self.output_pub.publish(joint_state(self.master_message, np.rad2deg(candidate)))
+                        self.filtered_pub.publish(joint_state(self.master_message, candidate))
+                self.get_logger().info(
+                    "[diag] infer response ready="
+                    + str(response.get("ready"))
+                    + " reason="
+                    + str(response.get("reason"))
+                )
                 self.diagnose(**response)
             except (OSError, ValueError, json.JSONDecodeError) as error:
-                reason = f"worker_unavailable:{type(error).__name__}"
-                if (False, reason) != self.last_infer_state:
-                    self.get_logger().info(f"[diag] infer response ready=False reason={reason}")
-                self.last_infer_state = (False, reason)
-                self.diagnose(ready=False, reason=reason)
+                self.diagnose(ready=False, reason=f"worker_unavailable:{type(error).__name__}")
             self.pending = None
             self.pending_started = None
 
@@ -161,10 +141,10 @@ class Adapter(Node):
         master = self.values["master"][1]
         state = self.values["state"][1]
         images = {name: self.values[name][1] for name in self.camera_ids}
-        if self.last_infer_state != (True, None):
-            self.get_logger().info("[diag] infer submit request")
+        self.get_logger().info("[diag] infer submit request")
         request = {
             "timestamp_ns": self.get_clock().now().nanoseconds,
+            "submitted_monotonic_ns": time.monotonic_ns(),
             "master_joint_raw_rad": master.tolist(),
             "robot_joint_state_rad": list(state.position),
         }
