@@ -1,0 +1,752 @@
+{
+  "schema": "robot_teleop.filter-evidence-freeze/v1",
+  "redaction": "paths_and_raw_data_omitted",
+  "raw_data_uploaded": false,
+  "run_count": 12,
+  "runs": [
+    {
+      "artifact_id": "formal_reference/cvae_seed17",
+      "task": "button",
+      "model": "cvae",
+      "seed": "17",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "dd1b3417550dcfcb7f02fe2527f36d00adc20d0da81b2e53f5d7a99dea556b0a"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "961959c250daee0cc1486bb0e88551119ecef64a42fad87256b0753c5d73f2d8"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "99ec2495d5205e166e53a43129f986a48418be1bbba64b961a98bfdcba900027"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "4f4010650840b65e43ac12936a7f8d62f6d1bca8afbee81b4209633d216d7459"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "5c5179e8b7a1cf3e3fd9fdee1c42d3cfeeefeb25eecd6c8e8581b85017532d86"
+        }
+      },
+      "config_sha256": "655b4e1acc76c55789a074af383f45a287da97e948fe5c8eb1836ef5b815d603",
+      "split_manifest_sha256": "10209f08f7de7904bea52ce7dbb2e53c77b1de101d3d74125be7835f959b02f0",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "52e693f5bc3f8b2dff04d0b4b46fa758a629334291c8ca693cc84971b4f59a8b",
+      "evaluation_aggregate": {
+        "episodes": 14,
+        "windows": 9196,
+        "mae_rad": 0.0065987875335206,
+        "rmse_rad": 0.014708095426156515,
+        "first_step_mae_rad": 0.00416242976322884,
+        "action_mae_rad": 0.006611515019488122,
+        "persistence_mae_rad": 0.006514349004386791,
+        "constant_velocity_mae_rad": 0.0038655275717206098,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/cvae_seed27",
+      "task": "button",
+      "model": "cvae",
+      "seed": "27",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "d86a2cef3faacc093595b11305b3728bf6c276e57114f30581c190016f656b9e"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "827e25c18919c8b9f5cc9a024794c92e65764b3f32b5351af73ba894f33655de"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "9ef6971cb4b4339defcdcab1e4a30446a4ab9bf70912ae003892ba3ca685e933"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "1eb035feb21425068aed272bdde3259f8564db8a0c7f96700973782d6b26f571"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "27ce5c843075b222d6b8a72408c2e62f9768d05120310076bd1314a601dbc475"
+        }
+      },
+      "config_sha256": "7290c2846b4c8e751a070488cb33ba9c589d52c06c4b781ea9cbb48d022ee9ca",
+      "split_manifest_sha256": "10209f08f7de7904bea52ce7dbb2e53c77b1de101d3d74125be7835f959b02f0",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "52e693f5bc3f8b2dff04d0b4b46fa758a629334291c8ca693cc84971b4f59a8b",
+      "evaluation_aggregate": {
+        "episodes": 14,
+        "windows": 9196,
+        "mae_rad": 0.006689955787751137,
+        "rmse_rad": 0.014783626288380855,
+        "first_step_mae_rad": 0.004235218245787713,
+        "action_mae_rad": 0.006707115963633571,
+        "persistence_mae_rad": 0.006514349004386791,
+        "constant_velocity_mae_rad": 0.0038655275717206098,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/cvae_seed7",
+      "task": "button",
+      "model": "cvae",
+      "seed": "7",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "370a60185e43d745f403dd9e2b03daf107b3c5689f28491938a0837f27d31655"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "e8e38da484c0d5069d754042a9f6617cb8f9b4404aa1e7a83e01bf710ad17318"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "41ecd87d5f54f0044c599c83af328c1ead16669f7ca3b4c610bf4ea7a94e43c3"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "c194b9b5694f924be5d582c458eda3d0c5b3b13611d2ebe085d25a2616fabb9a"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "0c1c3dcb2778e01c5ffc55c2b0fc13bf14d6c5e0f0bfd773641d0fe5099305a3"
+        }
+      },
+      "config_sha256": "cc9bb406fc071f56c33898ab6d6524e58c6959969b7a0eb8282158219563ac59",
+      "split_manifest_sha256": "10209f08f7de7904bea52ce7dbb2e53c77b1de101d3d74125be7835f959b02f0",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "52e693f5bc3f8b2dff04d0b4b46fa758a629334291c8ca693cc84971b4f59a8b",
+      "evaluation_aggregate": {
+        "episodes": 14,
+        "windows": 9196,
+        "mae_rad": 0.006582934720264497,
+        "rmse_rad": 0.01468352197301285,
+        "first_step_mae_rad": 0.004147860748019841,
+        "action_mae_rad": 0.006591544303643916,
+        "persistence_mae_rad": 0.006514349004386791,
+        "constant_velocity_mae_rad": 0.0038655275717206098,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/deterministic_seed17",
+      "task": "button",
+      "model": "deterministic",
+      "seed": "17",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "3998f12508863b94aa6a8872ee2340853870589aed87e88791d487b869a9a27f"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "ada27e155c8a80c46b0313aefd5d7daabc15644941e0acc5e1f5380a1ee26e66"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "ea826826d96a09a9d23baa9463680f7c0b129b4a35d126782a03d6dd6d1b34a9"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "81571a333eddcca342610d73ba4cc1dfa958120f7ef38706ecdd51dd3193f923"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "21cf6eee6ca307e847f5c3036d747059e1e9b511fe87f4eca542d44c19e4b3c2"
+        }
+      },
+      "config_sha256": "c132bd2bce8423f4b65a5d3a288354547a3d1343c87b4376dbd253672e04a6cd",
+      "split_manifest_sha256": "10209f08f7de7904bea52ce7dbb2e53c77b1de101d3d74125be7835f959b02f0",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "52e693f5bc3f8b2dff04d0b4b46fa758a629334291c8ca693cc84971b4f59a8b",
+      "evaluation_aggregate": {
+        "episodes": 14,
+        "windows": 9196,
+        "mae_rad": 0.008043051551188793,
+        "rmse_rad": 0.01463300718386252,
+        "first_step_mae_rad": 0.005101201548049236,
+        "action_mae_rad": 0.007889820961281657,
+        "persistence_mae_rad": 0.006514349004386791,
+        "constant_velocity_mae_rad": 0.0038655275717206098,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/deterministic_seed27",
+      "task": "button",
+      "model": "deterministic",
+      "seed": "27",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "3c2dbddee40b6c8366ef0c5bd5fe708d0b7c31318a86c05d602f662ae5c91a1c"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "bc6972e04444c4e23a37f3de9bef6e314d9315b0410319a402782b338117c7ae"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "a485ffcc41f457d457414a12fef995ccae5ddea58c30004cc761636c7ffe84b2"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "0dc39d5e4b061e7829c8c30f9e8be1d7cc530ded678d829a899a5ad50cd273df"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "f96bf357801be45064a7a430e7c8e269c6bbc0282feeafb52a4c576999be1d22"
+        }
+      },
+      "config_sha256": "84f55f750216d8354e3ecbf19232e0063c030258f3f78bd899139e6d98e38d88",
+      "split_manifest_sha256": "10209f08f7de7904bea52ce7dbb2e53c77b1de101d3d74125be7835f959b02f0",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "52e693f5bc3f8b2dff04d0b4b46fa758a629334291c8ca693cc84971b4f59a8b",
+      "evaluation_aggregate": {
+        "episodes": 14,
+        "windows": 9196,
+        "mae_rad": 0.009014157757634351,
+        "rmse_rad": 0.015613469904585061,
+        "first_step_mae_rad": 0.00573485940444805,
+        "action_mae_rad": 0.008754501252302102,
+        "persistence_mae_rad": 0.006514349004386791,
+        "constant_velocity_mae_rad": 0.0038655275717206098,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/deterministic_seed7",
+      "task": "button",
+      "model": "deterministic",
+      "seed": "7",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "8b57952dca1d85f3ea8639c7edeb2214586f82bb1e9e277266e11a9045805dd4"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "df97a19f36d12056016bede6f94ea1edf57ede4fd864a38875a987762bd72c3f"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "d381113ba617a637e22e46c057ec7f4b1204e30d429b62c574b59158411039bd"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "af68918f4c302144d5ac8283a30f68bcad3cff1fbe60cbe9993b6a2ffe8107d9"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "a0045fe9572840382c3b64ff3f23f01e9af7847f50ec168059e5b0c547b4c172"
+        }
+      },
+      "config_sha256": "551955394a5061a92d613002bb9751846d56784f94445b6c9f8925df748e9dfb",
+      "split_manifest_sha256": "10209f08f7de7904bea52ce7dbb2e53c77b1de101d3d74125be7835f959b02f0",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "52e693f5bc3f8b2dff04d0b4b46fa758a629334291c8ca693cc84971b4f59a8b",
+      "evaluation_aggregate": {
+        "episodes": 14,
+        "windows": 9196,
+        "mae_rad": 0.008152860988625714,
+        "rmse_rad": 0.015258348971931133,
+        "first_step_mae_rad": 0.005072420693640904,
+        "action_mae_rad": 0.007866317007158483,
+        "persistence_mae_rad": 0.006514349004386791,
+        "constant_velocity_mae_rad": 0.0038655275717206098,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/cvae_seed17",
+      "task": "screwdriver",
+      "model": "cvae",
+      "seed": "17",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "ced59895385cc524940e2829c5105ee5243dc115f347677349b742073483d135"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "1b60eafed858ba777a66ddea84da8093fb8cede956e66ad702afe7b9ab816862"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "4c1415aa9638da12583189625831b21d676920a3048cba657d287baad2d0e61f"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "112c1633602c587eb74da8b7694205675da99d4838ca823bd08139c364489a16"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "2b994e8c5595817619f68897e9d83df8bf119b4cbdefb539bf99ee158d6d6c5e"
+        }
+      },
+      "config_sha256": "587c823f7d742448b8aae8273c681bc0e24cc98eaf9c62668f39c1ea4ab771d6",
+      "split_manifest_sha256": "d2b82101c41c2c86b6c649883daa534d3a06cb0f9f260964a2b0985015faf1be",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "4ca5fc24330fd687429750aaa10867d8c009bb94a432a1d09ae62f679efa5ef8",
+      "evaluation_aggregate": {
+        "episodes": 10,
+        "windows": 7168,
+        "mae_rad": 0.005348467096990469,
+        "rmse_rad": 0.012019055763014718,
+        "first_step_mae_rad": 0.0034706505509663602,
+        "action_mae_rad": 0.0056518155848607424,
+        "persistence_mae_rad": 0.005441724066622555,
+        "constant_velocity_mae_rad": 0.003355201108385033,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/cvae_seed27",
+      "task": "screwdriver",
+      "model": "cvae",
+      "seed": "27",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "c67e080a06002e695bd42de21f70539eac671359226ecc05162287f9c9ba2b42"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "031083269ab146fa86975bf5617ec555a5db9c6c7c9e2500ac4b44efe9876125"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "751dbf66ae97f1150b76be4b8aa3f799e032a11eef0f5e92ee63cdbe79f172e1"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "d6f98f3a699d0239a37178f587b9d6ac13437cb89b0ba4519209234a91c19cdf"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "ce839c38fcf06b08749086080300f9ae7e43f9281290f84d920e938bedcbb793"
+        }
+      },
+      "config_sha256": "b9ebfc9b3801f9565660dfe2326ca8b84e1f5b860af4a9fc63d1c2ad0d10f753",
+      "split_manifest_sha256": "d2b82101c41c2c86b6c649883daa534d3a06cb0f9f260964a2b0985015faf1be",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "4ca5fc24330fd687429750aaa10867d8c009bb94a432a1d09ae62f679efa5ef8",
+      "evaluation_aggregate": {
+        "episodes": 10,
+        "windows": 7168,
+        "mae_rad": 0.0054773860515988605,
+        "rmse_rad": 0.012157205323504469,
+        "first_step_mae_rad": 0.0035203513879404993,
+        "action_mae_rad": 0.005734072090126574,
+        "persistence_mae_rad": 0.005441724066622555,
+        "constant_velocity_mae_rad": 0.003355201108385033,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/cvae_seed7",
+      "task": "screwdriver",
+      "model": "cvae",
+      "seed": "7",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "3b31d773d747bb7a3f8369a4db1dd302a5d58c332b06bef298d48b6b5dde608c"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "def4fdf2d3116fd36b9ebcae7063380d8773d19e7e67cfa218883adbb9b1577d"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "67ad0748694517ea59a74b1ec4d3198f0378304b2cb995dee260a632daa2815d"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "9f6e4b1e4a6eb8b16097b0f1446344f398bbe1ae4f126045e03ba10edc7feb39"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "4dc146652f680b93bc80a85a3baf3712a2e76f4e217959830f77925d29eb0959"
+        }
+      },
+      "config_sha256": "ad4f0d81912025798d43353fd35c6e757d882c3c49a77bacda33912932a5e2ad",
+      "split_manifest_sha256": "d2b82101c41c2c86b6c649883daa534d3a06cb0f9f260964a2b0985015faf1be",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "4ca5fc24330fd687429750aaa10867d8c009bb94a432a1d09ae62f679efa5ef8",
+      "evaluation_aggregate": {
+        "episodes": 10,
+        "windows": 7168,
+        "mae_rad": 0.005418976483752533,
+        "rmse_rad": 0.012014710186016724,
+        "first_step_mae_rad": 0.003498773841301397,
+        "action_mae_rad": 0.00571348094381392,
+        "persistence_mae_rad": 0.005441724066622555,
+        "constant_velocity_mae_rad": 0.003355201108385033,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/deterministic_seed17",
+      "task": "screwdriver",
+      "model": "deterministic",
+      "seed": "17",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "bc4952eee7b24dd57b9c3e49ad9670fbf5d8dc90852426ed4db65d3f841862bb"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "419693a00315e0b2f9dba19e512bf5b2b69c1c523e3a8c1a475b4f2100287eb8"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "93d02443cebc5b9fc0d1727ff26a09e537e9d9bb5f8012d7046749e14af72f7e"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "e0fe5bd3395e664606ab89923359f62689534bb68de73277d881d67e2e285cfc"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "18c660c87ada54367dfc6c0f35ad05c44fd788cd8912b18084d5a62358bd7070"
+        }
+      },
+      "config_sha256": "67bdc6094dcf2bac6e5d72ba3ca43062026fc6d491c2b699bc5fda821aa57b46",
+      "split_manifest_sha256": "d2b82101c41c2c86b6c649883daa534d3a06cb0f9f260964a2b0985015faf1be",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "4ca5fc24330fd687429750aaa10867d8c009bb94a432a1d09ae62f679efa5ef8",
+      "evaluation_aggregate": {
+        "episodes": 10,
+        "windows": 7168,
+        "mae_rad": 0.005387646640289803,
+        "rmse_rad": 0.011455910140117771,
+        "first_step_mae_rad": 0.0034962251060167136,
+        "action_mae_rad": 0.005700709344819188,
+        "persistence_mae_rad": 0.005441724066622555,
+        "constant_velocity_mae_rad": 0.003355201108385033,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/deterministic_seed27",
+      "task": "screwdriver",
+      "model": "deterministic",
+      "seed": "27",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "823e31f32877742aac035b6b98219f0805114b1b59339d83381dee026314dd65"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "d46b9428682416164d0f645277e99ffb44dc37c43b28b62684fd365466f5bae0"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "e03cd4af2e3f639a1ce2d29a2257b837a1da0f2349eafce69835a09f6e197427"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "d6c4c1acd9fa040cd8b09165ab7b3a39b35f9335b8189c9883055e4b3b18fa1b"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "6ae68200ba660a6b477e1d79fbe55f430c4b32f56b603403bd84c6375624d64c"
+        }
+      },
+      "config_sha256": "4ccf5755629a325a7b4f1797a0d17b8bb631932b2b186b47e208c912e40b125d",
+      "split_manifest_sha256": "d2b82101c41c2c86b6c649883daa534d3a06cb0f9f260964a2b0985015faf1be",
+      "target_field": "joint_reference_action_rad",
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": "4ca5fc24330fd687429750aaa10867d8c009bb94a432a1d09ae62f679efa5ef8",
+      "evaluation_aggregate": {
+        "episodes": 10,
+        "windows": 7168,
+        "mae_rad": 0.005654873953638028,
+        "rmse_rad": 0.011936581632670685,
+        "first_step_mae_rad": 0.0036929716185039405,
+        "action_mae_rad": 0.006049458705820143,
+        "persistence_mae_rad": 0.005441724066622555,
+        "constant_velocity_mae_rad": 0.003355201108385033,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    },
+    {
+      "artifact_id": "formal_reference/deterministic_seed7",
+      "task": "screwdriver",
+      "model": "deterministic",
+      "seed": "7",
+      "files": {
+        "round_manifest.json": {
+          "present": true,
+          "sha256": "806f14a86f2178758fd12a6176e125c7f652c237b49e546421703c400c87b489"
+        },
+        "model/training_report.json": {
+          "present": true,
+          "sha256": "97fc9a8ce4bdd61516f70e7ae0373363c8e31ec2871377c6871f1fd1df5d8be9"
+        },
+        "model/best_prior_mae.pt": {
+          "present": true,
+          "sha256": "844d1e5b724aef82dd97b222d0c63f87e7669986c67ab361cde97ababfd7b8fb"
+        },
+        "evaluation/evaluation_report.json": {
+          "present": true,
+          "sha256": "9c02b21d4727ad6a1e5bf857549f46ee45c4c09f1ba4311645edfa0943f793a4"
+        },
+        "evaluation/predictions.jsonl": {
+          "present": true,
+          "sha256": "32030d03146cd01d19af576bb9f176229dec283d830c6f1a29f2a6ca053286f2"
+        }
+      },
+      "config_sha256": "64d5b8aff26e801ae068bc743cc03ba86c146306e3b362f965183bcdb8e6f571",
+      "split_manifest_sha256": "d2b82101c41c2c86b6c649883daa534d3a06cb0f9f260964a2b0985015faf1be",
+      "target_field": null,
+      "target_semantics": "delta_from_last_executed",
+      "target_representation": "delta_from_last_executed",
+      "joint_reference_config_sha256": null,
+      "evaluation_aggregate": {
+        "episodes": 10,
+        "windows": 7168,
+        "mae_rad": 0.006352400958386003,
+        "rmse_rad": 0.013222590452331272,
+        "first_step_mae_rad": 0.004054263490727361,
+        "action_mae_rad": 0.006907934974879027,
+        "persistence_mae_rad": 0.005441724066622555,
+        "constant_velocity_mae_rad": 0.003355201108385033,
+        "gain_correction_mean": null,
+        "gain_nominal_mean": null,
+        "gain_mean_absolute_variation": null,
+        "gain_auprc": null,
+        "gain_interval_iou": null,
+        "stochastic_sample1_mae_rad": null,
+        "stochastic_mean_mae_rad": null,
+        "stochastic_best_of_n_mae_rad": null,
+        "latent_samples": 1
+      },
+      "missing_evidence": [
+        "episode_paired_bootstrap",
+        "nominal_correction_boundary",
+        "one_euro_baseline",
+        "no_vision_cvae",
+        "runtime_latency",
+        "safety_clipping",
+        "run_evidence_retrospective_fields"
+      ]
+    }
+  ]
+}
