@@ -198,6 +198,13 @@ class ManagerConfig:
         return str(self._yaml_mapping(self.model_deployment_config).get("output_topic", "")).strip() or None
 
     @property
+    def filter_reset_topic(self) -> str:
+        if self.learned_filter_config is None or self.filter_arm is None:
+            return ""
+        mapping = self._yaml_mapping(self.learned_filter_config)
+        return str(mapping.get("reset_episode_topic", "")).strip()
+
+    @property
     def filter_extra_topics(self) -> list[str]:
         """Candidate/diagnostic topics published by the learned-filter ROS
         adapter. They are not part of the baseline capture topic list but are
@@ -207,6 +214,7 @@ class ManagerConfig:
         mapping = self._yaml_mapping(self.learned_filter_config)
         names = (
             "master_output_topic",
+            "candidate_output_topic",
             "diagnostics_topic",
             "raw_observation_topic",
             "filtered_observation_topic",
@@ -934,6 +942,7 @@ class CaptureSession:
                 "RUNEVIDENCE_ROOT": str(config.run_root),
                 "RUNEVIDENCE_BIN": config.runevidence_bin,
                 "TELEOP_CAP_FILTER_TOPICS": ",".join(config.filter_extra_topics),
+                "TELEOP_CAP_FILTER_RESET_TOPIC": config.filter_reset_topic,
             }
         )
         return env

@@ -1,5 +1,7 @@
 import os
+import tempfile
 import unittest
+from pathlib import Path
 
 from tools import capture_manager as manager
 
@@ -51,6 +53,23 @@ class CaptureManagerConfigTest(SetEnvMixin, unittest.TestCase):
             config.model_deployment_confirm,
             "I_UNDERSTAND_MODEL_DEPLOYMENT",
         )
+
+    def test_filter_reset_topic_is_exported_to_recorder(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            config_path = Path(temporary) / "filter.yaml"
+            config_path.write_text(
+                "enabled: true\narm: right\nreset_episode_topic: /teleop_filter/right/reset_episode\n",
+                encoding="utf-8",
+            )
+            os.environ["TELEOP_CAP_LEARNED_FILTER_CONFIG"] = str(config_path)
+            config = manager.ManagerConfig.from_env()
+            assert config is not None
+            session = manager.CaptureSession(config)
+            self.assertEqual(config.filter_reset_topic, "/teleop_filter/right/reset_episode")
+            self.assertEqual(
+                session.recorder_environment()["TELEOP_CAP_FILTER_RESET_TOPIC"],
+                "/teleop_filter/right/reset_episode",
+            )
 
     def test_manual_recorder_command_has_no_auto_start(self) -> None:
         config = manager.ManagerConfig.from_env()

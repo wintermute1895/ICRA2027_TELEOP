@@ -33,7 +33,7 @@
 
 - flywheel 配置:`config/flywheel/task1_precision_alignment_local.yaml`(derived_name `task1_precision_alignment_v1`,validation 3)
 - 采集 env:`config/capture_session.env`;filter 配置需在会话 env 中显式指定 promoted runtime YAML
-- ⚠ 注意:Task1 采集 env 默认无标注键位映射,补采时需确认 correction(4 键)标注可用,否则学不出修正能力
+- 标注:4 键 correction 标注硬编码在 `tools/audit_event_recorder.py`(先于映射表拦截),三个 task 开箱即用;env 的 `TELEOP_ANNOTATION_EVENT_MAP` 只影响其他数字键的语义标签(不配则回落默认表)。⚠ 待确认的是已采 60 个 episode 中 correction 事件的实际覆盖率(auditor 是否按过 4),需挂载数据盘后统计
 
 ### 迭代记录
 
@@ -84,7 +84,7 @@
 
 1. **(阻塞中)**等 `exp/continuous-filter-backbone-spike` 稳定 → merge 到本机 → 用新架构跑 Task1 round1(数据已就绪)
 2. Task2/Task3 执行 prepare(确认 `prepared_views` 数量后更新本文件)
-3. Task1 标注键位映射确认/补齐
+3. ~~Task1 标注键位映射确认/补齐~~(2026-09-10 已澄清:4 键硬编码于 recorder,无需补配置;待办改为"统计 Task1 已采数据的 correction 事件覆盖率")
 4. 8T 机械盘恢复后,路径整体迁回 `Seagate Hub`(sed 替换 `Cyan_data/ICRA2027_DATA/Task_Data` → `Seagate Hub/ICRA2027`,注意 task1/2 目录大小写)
 
 

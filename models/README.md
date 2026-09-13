@@ -96,3 +96,31 @@ bash scripts/start_imle_adapter.sh /tmp/imle-task2-promoted.yaml
 ```
 
 Full Linux steps: `docs/engineering/IMLE_DEPLOYMENT.md`.
+
+## filter/task3_screwdriver
+
+Local-only learned-gain filter checkpoint received 2026-09-13. It is stored
+outside Git because `/models/*` is intentionally ignored.
+
+Checkpoint:
+
+```text
+models/filter/task3_screwdriver/cvae_rate_limited_best_prior_mae_epoch50.pt
+```
+
+Provenance and contract:
+
+- source filename: `best_prior_mae.pt`
+- task: Task3 `screwdriver_alignment_v1`
+- model: `cvae_rate_limited`, 899,809 parameters
+- target: `joint_reference_action_rad`, `delta_from_last_executed`
+- selection: epoch 50, `validation.prior_mae_rad`
+- learned authority: `gain_enabled=true`, `gate_enabled=true`, `authority_mode=rate_limited`
+- joint-reference config SHA-256: `4ca5fc24330fd687429750aaa10867d8c009bb94a432a1d09ae62f679efa5ef8`
+- checkpoint SHA-256: `82e660227f8b20a7b8ef3b0a33cda6d0ae57743bf5fd076398f6f94c081b1399`
+
+This checkpoint is not interchangeable with the frozen action-only
+`screwdriver/cvae_seed*.pt` references: those have no gain or gate heads and
+can only run through explicit fixed gain. This checkpoint is the learned-alpha
+candidate and should be deployed with `authority.mode=checkpoint` when it is
+validated on hardware.

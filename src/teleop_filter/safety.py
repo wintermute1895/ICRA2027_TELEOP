@@ -58,6 +58,7 @@ class SafetyProjector:
         *,
         dt_s: float,
         model_age_ms: float,
+        measured_state_rad: np.ndarray | None = None,
         enabled: bool = True,
     ) -> ProjectionResult:
         baseline = np.asarray(baseline_command_rad, dtype=np.float32)
@@ -66,6 +67,9 @@ class SafetyProjector:
         joint_max = np.asarray(self.limits.joint_max_rad, dtype=np.float32)
         if baseline.shape != joint_min.shape or residual.shape != baseline.shape:
             raise ValueError("baseline, residual and joint-limit dimensions must match")
+        measured = None if measured_state_rad is None else np.asarray(measured_state_rad, dtype=np.float32)
+        if measured is not None and (measured.shape != baseline.shape or not np.isfinite(measured).all()):
+            raise ValueError("measured state must be a finite vector aligned with the command")
         reasons: list[str] = []
         fallback = False
         if not enabled:
@@ -115,7 +119,7 @@ class SafetyProjector:
             previous_command = (
                 self._previous_command
                 if self._previous_command is not None
-                else baseline
+                else (measured if measured is not None else baseline)
             )
             velocity_limited = np.clip(
                 command, previous_command - delta, previous_command + delta

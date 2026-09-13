@@ -251,6 +251,27 @@ def bag_record_command(bag_dir: Path, topic_list: list[str], *, compression_mode
     return command
 
 
+def filter_reset_command(args: argparse.Namespace) -> list[str] | None:
+    topic = str(getattr(args, "filter_reset_topic", "") or "").strip()
+    if not topic:
+        return None
+    return [
+        args.event_publisher_python,
+        str(Path(__file__).with_name("filter_episode_reset_publisher.py")),
+        "--topic",
+        topic,
+    ]
+
+
+def publish_filter_reset(args: argparse.Namespace, log) -> None:
+    command = filter_reset_command(args)
+    if command is None:
+        return
+    result = subprocess.run(command, stdout=log, stderr=subprocess.STDOUT, timeout=4.0)
+    if result.returncode != 0:
+        raise OSError(f"filter episode reset publisher exited with status {result.returncode}")
+
+
 def record_one(args: argparse.Namespace, run_dir: Path, topic_list: list[str]) -> tuple[bool, float]:
     bag_dir = run_dir / "artifacts" / "rosbag2"
     write_capture_manifest(run_dir, args, topic_list)
@@ -282,6 +303,7 @@ def record_one(args: argparse.Namespace, run_dir: Path, topic_list: list[str]) -
         time.sleep(0.15)
         if event_publisher.poll() is not None:
             raise OSError(f"audit event publisher exited with status {event_publisher.returncode}")
+        publish_filter_reset(args, log)
         process = subprocess.Popen(
             command,
             stdin=subprocess.DEVNULL,
@@ -462,6 +484,7 @@ def main() -> int:
     parser.add_argument("--auditor-id", default="auditor_01")
     parser.add_argument("--annotation-state", type=Path)
     parser.add_argument("--event-publisher-python", default="/usr/bin/python3")
+    parser.add_argument("--filter-reset-topic", default=os.environ.get("TELEOP_CAP_FILTER_RESET_TOPIC", ""))
     parser.add_argument("--task-id", default="unspecified")
     parser.add_argument("--task-revision", default=None)
     parser.add_argument("--task-bundle", default=None)

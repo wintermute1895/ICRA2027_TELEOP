@@ -1,29 +1,36 @@
 schema: robot_teleop.learned-filter-runtime/v1
-enabled: false
-
-# Promote a checkpoint only after held-out evaluation. Fill both fields, then
-# set enabled=true. Only checkpoints trained in LinkerTA master-joint space are
-# accepted by the online worker.
-checkpoint: ""
-checkpoint_sha256: ""
+enabled: true
+checkpoint: /home/fanshihao/Desktop/dev/ICRA2027_TELEOP/artifacts/filter_reference_20260910/checkpoints/screwdriver/deterministic_seed17.pt
+checkpoint_sha256: 93d02443cebc5b9fc0d1727ff26a09e537e9d9bb5f8012d7046749e14af72f7e
 device: cuda
 socket: /tmp/teleop_learned_filter.sock
-
-# Local SigLIP2 cache used by this host (task3 training machine).
 model_cache: /media/fanshihao/Seagate Hub/ICRA2027_DATA_TASK2/vlm_cache
 inference_hz: 50.0
 authority:
-  mode: zero
-  gain: 0.0
+  mode: fixed
+  gain: 0.1
 input_timeout_ms: 300.0
 safety:
-  joint_min_rad: [-1.05, -3.49, -2.79, -0.21, -2.79, -1.57, -1.57]
-  joint_max_rad: [2.97, 0.35, 2.79, 2.355, 2.79, 1.57, 1.57]
+  joint_min_rad:
+  - -1.05
+  - -3.49
+  - -2.79
+  - -0.21
+  - -2.79
+  - -1.57
+  - -1.57
+  joint_max_rad:
+  - 2.97
+  - 0.35
+  - 2.79
+  - 2.355
+  - 2.79
+  - 1.57
+  - 1.57
   max_residual_rad: 0.01
   max_residual_rate_rad_s: 0.05
   max_command_velocity_rad_s: 0.5
   max_model_age_ms: 300.0
-
 arm: right
 master_input_topic: /right_arm_joint_control
 master_output_topic: /teleop_filter/right_arm_joint_control
@@ -34,7 +41,8 @@ filtered_observation_topic: /teleop_filter/right/master_joint_filtered_rad
 diagnostics_topic: /teleop_filter/right/diagnostics
 reset_episode_topic: /teleop_filter/right/reset_episode
 cameras:
-  - id: main_rgb
-    topic: /camera/camera/color/image_raw
-  - id: auxiliary_rgb
-    topic: /camera2/camera/color/image_raw
+- id: main_rgb
+  topic: /camera/camera/color/image_raw
+- id: auxiliary_rgb
+  topic: /camera2/camera/color/image_raw
+model_type: deterministic_action

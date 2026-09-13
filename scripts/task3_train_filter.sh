@@ -13,9 +13,9 @@
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DATA_DIR="${TASK3_DATA_DIR:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/task3_Data}"
+DATA_DIR="${TASK3_DATA_DIR:-/media/fanshihao/Seagate Hub/ICRA2027_Data/Task_Data/task3_learned_filter_Data}"
 DERIVED_NAME="${TASK3_DERIVED_NAME:-task3_screwdriver_v1}"
-RUN_ROOT="${TASK3_RUN_ROOT:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/task3_Data/filter_runs}"
+RUN_ROOT="${TASK3_RUN_ROOT:-/media/fanshihao/Seagate Hub/ICRA2027_Data/Task_Data/task3_learned_filter_Data/filter_runs}"
 LOG_DIR="${TASK3_LOG_DIR:-$RUN_ROOT/logs}"
 MODEL_CONFIG="${TASK3_MODEL_CONFIG:-$ROOT_DIR/config/filters/trajectory_cvae_transformer_v0_2_vlm.yaml}"
 ROUND="${TASK3_ROUND:-round1}"

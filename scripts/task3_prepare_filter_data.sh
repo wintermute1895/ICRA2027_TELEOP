@@ -10,10 +10,10 @@
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DATA_DIR="${TASK3_DATA_DIR:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/task3_Data}"
+DATA_DIR="${TASK3_DATA_DIR:-/media/fanshihao/Seagate Hub/ICRA2027_Data/Task_Data/task3_learned_filter_Data}"
 CONFIG="${TASK3_FLYWHEEL_CONFIG:-$ROOT_DIR/config/flywheel/task3_screwdriver_local.yaml}"
 DERIVED_NAME="${TASK3_DERIVED_NAME:-task3_screwdriver_v1}"
-RUN_ROOT="${TASK3_RUN_ROOT:-/media/fanshihao/Cyan_data/ICRA2027_DATA/Task_Data/task3_Data/filter_runs}"
+RUN_ROOT="${TASK3_RUN_ROOT:-/media/fanshihao/Seagate Hub/ICRA2027_Data/Task_Data/task3_learned_filter_Data/filter_runs}"
 LOG_DIR="${TASK3_LOG_DIR:-$RUN_ROOT/logs}"
 
 export LEROBOT_ENV_NAME="${LEROBOT_ENV_NAME:-${CONDA_DEFAULT_ENV:-teleop}}"

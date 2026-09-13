@@ -9,7 +9,9 @@ import time
 import unittest
 from pathlib import Path
 
+from argparse import Namespace
 from tools.capture_episode import classify_input
+from tools.capture_episode import filter_reset_command
 from tools.capture_episode import write_terminal_audit
 from tools.capture_episode import topics
 
@@ -43,6 +45,16 @@ class CaptureKeyboardInputTest(unittest.TestCase):
             audit = json.loads((run_dir / "artifacts/terminal_audit.json").read_text())
             self.assertEqual(audit["termination_reason"], "audit_deferred")
             self.assertIsInstance(audit["timestamp_ns"], int)
+
+    def test_filter_reset_command_is_optional_and_explicit(self):
+        args = Namespace(event_publisher_python="/usr/bin/python3", filter_reset_topic="")
+        self.assertIsNone(filter_reset_command(args))
+        args.filter_reset_topic = "/teleop_filter/right/reset_episode"
+        command = filter_reset_command(args)
+        self.assertIsNotNone(command)
+        assert command is not None
+        self.assertIn("filter_episode_reset_publisher.py", command[1])
+        self.assertIn("/teleop_filter/right/reset_episode", command)
 
     def test_capture_manifest_does_not_hardcode_manual_mode(self):
         source = (Path(__file__).resolve().parents[2] / "tools/capture_episode.py").read_text(encoding="utf-8")

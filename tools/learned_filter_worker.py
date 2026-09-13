@@ -29,7 +29,11 @@ def load_config(path: Path) -> dict:
         raise ValueError("unsupported learned-filter runtime config")
     if value.get("enabled") is not True:
         raise ValueError("learned filter is disabled in runtime config")
-    return value
+    try:
+        from paths_env import expand_config_paths
+    except ImportError:
+        return value
+    return expand_config_paths(value)
 
 
 class Worker:
@@ -73,6 +77,8 @@ class Worker:
         self.open_loop_actions: deque[np.ndarray] = deque()
         self.last_latent_variance = 0.0
         self.last_desired_gain: float | None = None
+        self.last_visual_stamp: tuple[int, ...] | None = None
+        self.last_visual: np.ndarray | None = None
         self.alpha = 0.0
         self.previous_timestamp_ns: int | None = None
         authority = config.get("authority") or {}
@@ -90,6 +96,8 @@ class Worker:
         self.states.clear()
         self.visuals.clear()
         self.open_loop_actions.clear()
+        self.last_visual_stamp = None
+        self.last_visual = None
         self.alpha = 0.0
         self.previous_timestamp_ns = None
         self.safety.reset()
@@ -101,7 +109,16 @@ class Worker:
         baseline = np.asarray(request["master_joint_raw_rad"], dtype=np.float32)
         state = np.asarray(request["robot_joint_state_rad"], dtype=np.float32)
         encoded = request.get("camera_jpeg_base64") or {}
-        visual = self.encoder.encode_jpegs([base64.b64decode(encoded[name]) for name in self.camera_ids])
+        stamp_values = request.get("camera_stamp_ns") or {}
+        visual_stamp: tuple[int, ...] | None = None
+        if all(name in stamp_values for name in self.camera_ids):
+            visual_stamp = tuple(int(stamp_values[name]) for name in self.camera_ids)
+        if visual_stamp is not None and visual_stamp == self.last_visual_stamp and self.last_visual is not None:
+            visual = self.last_visual
+        else:
+            visual = self.encoder.encode_jpegs([base64.b64decode(encoded[name]) for name in self.camera_ids])
+            self.last_visual = visual
+            self.last_visual_stamp = visual_stamp
         self.states.append(state)
         self.visuals.append(visual)
         if len(self.commands) < self.runtime.config.history_length:
@@ -166,6 +183,8 @@ class Worker:
         return {
             "ready": True,
             "timestamp_ns": int(request["timestamp_ns"]),
+            "candidate_action_rad": np.asarray(predicted_action, dtype=np.float32).tolist(),
+            "visual_embedding": np.asarray(visual, dtype=np.float32).tolist(),
             "command_rad": projected.command_rad.tolist(),
             "residual_rad": projected.applied_residual_rad.tolist(),
             "latent_variance": self.last_latent_variance,

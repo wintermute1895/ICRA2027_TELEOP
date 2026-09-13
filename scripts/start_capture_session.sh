@@ -612,14 +612,19 @@ MASTER_LEFT_TOPIC=/left_arm_joint_control
 MASTER_RIGHT_TOPIC=/right_arm_joint_control
 MODEL_SOURCE=teleop
 MODEL_CANDIDATE_ARGS=""
+FILTER_RESET_TOPIC=""
 if [[ -n "$LEARNED_FILTER_CONFIG" ]]; then
   [[ -f "$LEARNED_FILTER_CONFIG" ]] || die "learned-filter config not found: $LEARNED_FILTER_CONFIG"
-  read -r FILTER_ARM FILTER_OUTPUT_TOPIC < <("$SYSTEM_PYTHON" - "$LEARNED_FILTER_CONFIG" <<'PY'
+  read -r FILTER_ARM FILTER_OUTPUT_TOPIC FILTER_RESET_TOPIC < <("$SYSTEM_PYTHON" - "$LEARNED_FILTER_CONFIG" <<'PY'
 import sys, yaml
 config = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
 if config.get("enabled") is not True:
     raise SystemExit("learned filter config is not enabled")
-print(config["arm"], config["master_output_topic"])
+print(
+    config["arm"],
+    config["master_output_topic"],
+    config.get("reset_episode_topic", ""),
+)
 PY
   )
   case "$FILTER_ARM" in
@@ -696,7 +701,7 @@ launch_cmd sync "\"$SYSTEM_PYTHON\" \"$ROOT_DIR/tools/diagnose_time_sync.py\" --
 # exported later in this launcher. Pass the resolved camera list explicitly so the
 # recorder always captures every camera that passed preflight.
 ANNOTATION_STATE="$RUN_ROOT/.annotation_state.json"
-RECORDER_ENV="export CAMERA_NAMESPACES=\"$CAMERA_NAMESPACES\"; export TELEOP_CAPTURE_DURATION_S=$DURATION_S; export TELEOP_CAPTURE_MODE=$CAPTURE_MODE; export TELEOP_CAPTURE_EPISODES=$EPISODES; export TELEOP_CAPTURE_ARMS=$ARMS; export TELEOP_TACTILE_ENABLED=$([[ \"$LEFT_TOUCH\" == true || \"$RIGHT_TOUCH\" == true ]] && echo true || echo false); export TELEOP_HARDWARE_COMMANDS_ENABLED=$([[ $REAL -eq 1 ]] && echo true || echo false); export TELEOP_EXPERIMENT_ID=$EXPERIMENT_ID; export TELEOP_CONDITION_ID=$CONDITION_ID; export TELEOP_OPERATOR_ID=$OPERATOR_ID; export TELEOP_AUDITOR_ID=$AUDITOR_ID; export TELEOP_TASK_ID=$TASK_ID; export TELEOP_TASK_REVISION=$TASK_REVISION; export TELEOP_TASK_BUNDLE=$TASK_PROFILE; export TELEOP_TASK_BUNDLE_SHA256=$TASK_BUNDLE_SHA256; export TELEOP_EXPERIMENT_PROFILE=$EXPERIMENT_PROFILE; export TELEOP_EXPERIMENT_MANIFEST=\"$EXPERIMENT_MANIFEST\"; export RUNEVIDENCE_BAG_COMPRESSION_MODE=file; export RUNEVIDENCE_BAG_COMPRESSION_FORMAT=zstd; export RUNEVIDENCE_ROOT=\"$RUN_ROOT\"; export RUNEVIDENCE_BIN=\"$RUNEVIDENCE_BIN\";"
+RECORDER_ENV="export CAMERA_NAMESPACES=\"$CAMERA_NAMESPACES\"; export TELEOP_CAP_FILTER_RESET_TOPIC=\"$FILTER_RESET_TOPIC\"; export TELEOP_CAPTURE_DURATION_S=$DURATION_S; export TELEOP_CAPTURE_MODE=$CAPTURE_MODE; export TELEOP_CAPTURE_EPISODES=$EPISODES; export TELEOP_CAPTURE_ARMS=$ARMS; export TELEOP_TACTILE_ENABLED=$([[ \"$LEFT_TOUCH\" == true || \"$RIGHT_TOUCH\" == true ]] && echo true || echo false); export TELEOP_HARDWARE_COMMANDS_ENABLED=$([[ $REAL -eq 1 ]] && echo true || echo false); export TELEOP_EXPERIMENT_ID=$EXPERIMENT_ID; export TELEOP_CONDITION_ID=$CONDITION_ID; export TELEOP_OPERATOR_ID=$OPERATOR_ID; export TELEOP_AUDITOR_ID=$AUDITOR_ID; export TELEOP_TASK_ID=$TASK_ID; export TELEOP_TASK_REVISION=$TASK_REVISION; export TELEOP_TASK_BUNDLE=$TASK_PROFILE; export TELEOP_TASK_BUNDLE_SHA256=$TASK_BUNDLE_SHA256; export TELEOP_EXPERIMENT_PROFILE=$EXPERIMENT_PROFILE; export TELEOP_EXPERIMENT_MANIFEST=\"$EXPERIMENT_MANIFEST\"; export RUNEVIDENCE_BAG_COMPRESSION_MODE=file; export RUNEVIDENCE_BAG_COMPRESSION_FORMAT=zstd; export RUNEVIDENCE_ROOT=\"$RUN_ROOT\"; export RUNEVIDENCE_BIN=\"$RUNEVIDENCE_BIN\";"
 RECORDER_ARGS="--runs-root \"$RUN_ROOT\" --episodes \"$EPISODES\" --arms \"$ARMS\" --cameras \"$CAMERA_NAMESPACES\" --experiment-id \"$EXPERIMENT_ID\" --condition-id \"$CONDITION_ID\" --operator-id \"$OPERATOR_ID\" --auditor-id \"$AUDITOR_ID\" --annotation-state \"$ANNOTATION_STATE\" --event-publisher-python \"$SYSTEM_PYTHON\" --task-id \"$TASK_ID\" --task-revision \"$TASK_REVISION\" --task-bundle \"$TASK_PROFILE\" --task-bundle-sha256 \"$TASK_BUNDLE_SHA256\" --camera-profile \"${WIDTH}x${HEIGHT}x${FPS}\""
 if [[ "$CAPTURE_MODE" == "timed" ]]; then
   RECORDER_ARGS+=" --auto-start --max-duration \"$DURATION_S\""

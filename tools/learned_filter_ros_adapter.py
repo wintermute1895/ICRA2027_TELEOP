@@ -16,7 +16,7 @@ import rclpy
 import yaml
 from rclpy.node import Node
 from sensor_msgs.msg import Image, JointState
-from std_msgs.msg import String
+from std_msgs.msg import Bool, String
 
 
 def jpeg(message: Image) -> bytes:
@@ -55,14 +55,24 @@ class Adapter(Node):
         self.pending_started: float | None = None
         self.master_message: JointState | None = None
         self.last_skip_diag = 0.0
+        self.last_infer_state: tuple[object, object] | None = None
+        self.last_ready_log = 0.0
+        self.ready_log_period_s = 60.0
+        self.reset_requested = False
+        self.last_image_stamps: dict[str, tuple[int, int]] = {}
+        self.last_camera_jpeg: dict[str, str] = {}
         self.thread_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="learned-filter")
 
         self.output_pub = self.create_publisher(JointState, config["master_output_topic"], 10)
+        self.candidate_pub = self.create_publisher(JointState, config["candidate_output_topic"], 10)
         self.raw_pub = self.create_publisher(JointState, config["raw_observation_topic"], 10)
         self.filtered_pub = self.create_publisher(JointState, config["filtered_observation_topic"], 10)
         self.diagnostics_pub = self.create_publisher(String, config["diagnostics_topic"], 10)
         self.create_subscription(JointState, config["master_input_topic"], self.on_master, 10)
         self.create_subscription(JointState, config["state_topic"], lambda msg: self.put("state", msg), 10)
+        reset_topic = str(config.get("reset_episode_topic") or "")
+        if reset_topic:
+            self.create_subscription(Bool, reset_topic, self.on_reset, 10)
         for camera in config["cameras"]:
             self.create_subscription(Image, camera["topic"], lambda msg, name=camera["id"]: self.put(name, msg), 2)
 
@@ -78,6 +88,10 @@ class Adapter(Node):
     def diagnose(self, **values: object) -> None:
         self.diagnostics_pub.publish(String(data=json.dumps(values, separators=(",", ":"))))
 
+    def on_reset(self, message: Bool) -> None:
+        if message.data:
+            self.reset_requested = True
+
     def on_master(self, message: JointState) -> None:
         now = time.monotonic()
         raw_rad = np.deg2rad(np.asarray(message.position, dtype=np.float32))
@@ -86,10 +100,31 @@ class Adapter(Node):
 
         self.raw_pub.publish(joint_state(message, raw_rad))
 
-    def exchange(self, request: dict, images: dict[str, Image]) -> dict:
-        request["camera_jpeg_base64"] = {
-            name: base64.b64encode(jpeg(images[name])).decode() for name in self.camera_ids
-        }
+    @staticmethod
+    def _image_stamp(message: Image) -> tuple[int, int]:
+        return int(message.header.stamp.sec), int(message.header.stamp.nanosec)
+
+    def exchange(self, request: dict, images: dict[str, Image] | None) -> dict:
+        if images is not None:
+            stamps = {
+                name: self._image_stamp(images[name]) for name in self.camera_ids
+            }
+            camera_changed = stamps != self.last_image_stamps
+            if camera_changed:
+                # Only send the large JPEG payload when at least one camera frame
+                # changed.  At 50 Hz action inference and 15 Hz cameras this cuts
+                # socket traffic by roughly 3x while the worker reuses the last
+                # embedding for unchanged frames.
+                self.last_camera_jpeg = {
+                    name: base64.b64encode(jpeg(images[name])).decode()
+                    for name in self.camera_ids
+                }
+            request["camera_stamp_ns"] = {
+                name: sec * 1_000_000_000 + nsec for name, (sec, nsec) in stamps.items()
+            }
+            if camera_changed:
+                request["camera_jpeg_base64"] = self.last_camera_jpeg
+            self.last_image_stamps = stamps
         self.stream.write((json.dumps(request) + "\n").encode())
         self.stream.flush()
         line = self.stream.readline()
@@ -111,17 +146,45 @@ class Adapter(Node):
                     if candidate.shape == np.asarray(self.master_message.position).shape and np.isfinite(candidate).all():
                         self.output_pub.publish(joint_state(self.master_message, np.rad2deg(candidate)))
                         self.filtered_pub.publish(joint_state(self.master_message, candidate))
-                self.get_logger().info(
-                    "[diag] infer response ready="
-                    + str(response.get("ready"))
-                    + " reason="
-                    + str(response.get("reason"))
-                )
+                        raw_candidate = np.asarray(response.get("candidate_action_rad"), dtype=np.float32)
+                        if raw_candidate.shape == candidate.shape and np.isfinite(raw_candidate).all():
+                            self.candidate_pub.publish(joint_state(self.master_message, raw_candidate))
+                state = (response.get("ready"), response.get("reason"))
+                now = time.monotonic()
+                if state != self.last_infer_state or (
+                    state == (True, None) and now - self.last_ready_log >= self.ready_log_period_s
+                ):
+                    self.get_logger().info(
+                        "[diag] infer response ready="
+                        + str(response.get("ready"))
+                        + " reason="
+                        + str(response.get("reason"))
+                    )
+                    if state == (True, None):
+                        self.last_ready_log = now
+                self.last_infer_state = state
+                response["header_stamp_ns"] = int(response.get("timestamp_ns", 0))
                 self.diagnose(**response)
             except (OSError, ValueError, json.JSONDecodeError) as error:
-                self.diagnose(ready=False, reason=f"worker_unavailable:{type(error).__name__}")
+                reason = f"worker_unavailable:{type(error).__name__}"
+                if (False, reason) != self.last_infer_state:
+                    self.get_logger().info(f"[diag] infer response ready=False reason={reason}")
+                self.last_infer_state = (False, reason)
+                self.diagnose(ready=False, reason=reason)
             self.pending = None
             self.pending_started = None
+
+        if self.reset_requested:
+            self.reset_requested = False
+            now = time.monotonic()
+            self.pending = self.thread_pool.submit(
+                self.exchange,
+                {"timestamp_ns": self.get_clock().now().nanoseconds, "reset_episode": True},
+                None,
+            )
+            self.pending_started = now
+            self.get_logger().info("[diag] episode reset submitted")
+            return
 
         names = ["master", "state", *self.camera_ids]
         now = time.monotonic()
@@ -141,9 +204,10 @@ class Adapter(Node):
         master = self.values["master"][1]
         state = self.values["state"][1]
         images = {name: self.values[name][1] for name in self.camera_ids}
-        self.get_logger().info("[diag] infer submit request")
+        if self.last_infer_state != (True, None):
+            self.get_logger().info("[diag] infer submit request")
         request = {
-            "timestamp_ns": self.get_clock().now().nanoseconds,
+            "timestamp_ns": int(self.master_message.header.stamp.sec) * 1_000_000_000 + int(self.master_message.header.stamp.nanosec),
             "submitted_monotonic_ns": time.monotonic_ns(),
             "master_joint_raw_rad": master.tolist(),
             "robot_joint_state_rad": list(state.position),
