@@ -42,12 +42,17 @@ class TrajectoryFilterRuntime:
         self.normalization = checkpoint["normalization"]
         self.visual_encoder = checkpoint.get("visual_encoder")
         self.target_semantics = checkpoint.get("target_semantics", "residual")
+        self.target_field = checkpoint.get("target_field", "expert_action_target_rad")
+        self.joint_reference_config_sha256 = checkpoint.get("joint_reference_config_sha256")
+        self.target_representation = checkpoint.get("target_representation", "absolute")
         self.command_semantics = checkpoint.get("command_semantics", "master_joint_raw")
         self.model_type = checkpoint.get("model_type", self.config.model_type)
         if self.model_type != self.config.model_type:
             raise ValueError("checkpoint model_type disagrees with model_config")
-        if self.target_semantics not in {"residual", "synthetic_smoke_residual", "recorded_expert_action"}:
+        if self.target_semantics not in {"residual", "synthetic_smoke_residual", "recorded_expert_action", "delta_from_last_executed", "residual_over_constant_velocity"}:
             raise ValueError(f"unsupported target semantics: {self.target_semantics}")
+        if self.target_field not in {"expert_action_target_rad", "joint_reference_action_rad"}:
+            raise ValueError(f"unsupported target field: {self.target_field}")
         if self.config.visual_dim:
             if not isinstance(self.visual_encoder, dict):
                 raise ValueError("visual checkpoint lacks frozen-encoder provenance")
@@ -99,8 +104,11 @@ class TrajectoryFilterRuntime:
             else self._normalized_current_command(np.asarray(current_command, dtype=np.float32))
         )
         target_stats = self.normalization["targets"]
+        discrepancy_physical = current_command_physical
+        if self.target_representation in {"delta_from_last_executed", "residual_over_constant_velocity"}:
+            discrepancy_physical = discrepancy_physical - self._action_reference(commands)[:, 0]
         discrepancy_command_tensor = torch.as_tensor(
-            (current_command_physical - np.asarray(target_stats["mean"]).reshape(-1))
+            (discrepancy_physical - np.asarray(target_stats["mean"]).reshape(-1))
             / np.asarray(target_stats["std"]).reshape(-1), dtype=torch.float32, device=self.device,
         )
         state_tensor = self._normalized("states", states)
@@ -133,7 +141,10 @@ class TrajectoryFilterRuntime:
                 target_stats["std"], dtype=torch.float32, device=self.device
             )
             predicted_actions = outputs["prediction"] * target_std + target_mean
-            if self.target_semantics == "recorded_expert_action":
+            if self.target_representation in {"delta_from_last_executed", "residual_over_constant_velocity"}:
+                reference = torch.as_tensor(self._action_reference(commands), dtype=torch.float32, device=self.device)
+                predicted_actions = predicted_actions + reference
+            if self.target_semantics in {"recorded_expert_action", "delta_from_last_executed", "residual_over_constant_velocity"}:
                 raw_current = torch.as_tensor(current_command_physical[:, None, :], dtype=torch.float32, device=self.device)
                 predicted_residuals = predicted_actions - raw_current
             else:
@@ -149,6 +160,15 @@ class TrajectoryFilterRuntime:
             uncertainty=None if outputs.get("uncertainty") is None else outputs["uncertainty"].cpu().numpy(),
             uncertainty_type=outputs.get("uncertainty_type"),
         )
+
+    def _action_reference(self, commands: np.ndarray) -> np.ndarray:
+        executed = np.asarray(commands[..., self.config.action_dim:2 * self.config.action_dim], dtype=np.float32)
+        anchor = executed[:, -1]
+        if self.target_representation == "residual_over_constant_velocity":
+            velocity = anchor - executed[:, -2]
+            steps = np.arange(1, self.config.horizon + 1, dtype=np.float32)[None, :, None]
+            return anchor[:, None, :] + steps * velocity[:, None, :]
+        return np.repeat(anchor[:, None, :], self.config.horizon, axis=1)
 
     def _normalized_current_command(self, current_command: np.ndarray) -> torch.Tensor:
         stats = self.normalization.get("raw_commands")

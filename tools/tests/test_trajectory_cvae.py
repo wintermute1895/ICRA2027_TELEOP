@@ -22,6 +22,15 @@ from teleop_filter import (  # noqa: E402
 
 
 class TrajectoryCVAEModelTest(unittest.TestCase):
+    def test_zero_initialized_action_head_starts_at_reference_residual(self):
+        config = TrajectoryFilterConfig(
+            action_dim=2, state_dim=2, command_dim=4, history_length=3, horizon=2,
+            latent_dim=2, model_dim=8, num_heads=2, num_layers=1, dropout=0.0,
+            model_type="deterministic_action", zero_initialize_action_head=True,
+        )
+        result = ConditionalTrajectoryVAE(config).predict(torch.randn(2, 3, 4), torch.randn(2, 3, 2))
+        self.assertTrue(torch.equal(result["prediction"], torch.zeros_like(result["prediction"])))
+
     def test_deterministic_model_has_no_uncertainty_or_kl(self):
         config = TrajectoryFilterConfig(
             action_dim=2, state_dim=2, command_dim=4, history_length=3, horizon=2,
@@ -173,6 +182,22 @@ class TrajectoryCVAEModelTest(unittest.TestCase):
             correction_mask=labels, gain_weight=1.0, alpha_max=1.0,
         )
         self.assertLess(good["gain"], wrong["gain"])
+
+    def test_balanced_bce_and_within_episode_ranking(self):
+        prediction = torch.zeros(4, 1, 2)
+        outputs = {
+            "prediction": prediction, "posterior_mean": torch.zeros(4, 1),
+            "posterior_log_variance": torch.zeros(4, 1), "prior_mean": torch.zeros(4, 1),
+            "prior_log_variance": torch.zeros(4, 1),
+            "gate_logits": torch.tensor([[-2.0], [2.0], [2.0], [-2.0]]), "alpha": None,
+        }
+        loss = trajectory_vae_loss(
+            outputs, prediction, correction_mask=torch.tensor([[0.0], [1.0], [0.0], [1.0]]),
+            gate_weight=1.0, correction_loss_type="bce_ranking", ranking_weight=1.0,
+            episode_start=torch.tensor([True, False, True, False]),
+        )
+        self.assertTrue(torch.isfinite(loss["gate"]))
+        self.assertGreater(float(loss["ranking"]), 0.0)
 
     def test_gain_unroll_resets_at_episode_boundaries(self):
         desired = torch.tensor([[0.8], [0.8], [0.0], [0.8]])

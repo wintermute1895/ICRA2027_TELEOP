@@ -28,7 +28,7 @@ class PromoteRuntimeModelTest(unittest.TestCase):
             finally:
                 sys.argv = old
             text = output.read_text(encoding="utf-8")
-            self.assertIn("enabled: true", text)
+            self.assertIn("enabled: false", text)
             self.assertIn(hashlib.sha256(b"checkpoint").hexdigest(), text)
 
     def test_directory_artifact_hash_is_stable(self):

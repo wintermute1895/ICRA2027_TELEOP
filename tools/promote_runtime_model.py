@@ -23,6 +23,11 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--template", type=Path)
     parser.add_argument("--dataset-stats", type=Path)
+    parser.add_argument(
+        "--enable",
+        action="store_true",
+        help="mark the generated config enabled (requires a separately completed deployment audit)",
+    )
     args = parser.parse_args()
 
     if args.kind == "act" and args.dataset_stats is None:
@@ -40,7 +45,8 @@ def main() -> int:
     expected_schema = "robot_teleop.act-runtime/v1" if args.kind == "act" else "robot_teleop.learned-filter-runtime/v1"
     if config.get("schema") != expected_schema:
         raise ValueError(f"template schema does not match {args.kind}: {template}")
-    config["enabled"] = True
+    # Promotion binds an immutable artifact; it does not authorize execution.
+    config["enabled"] = bool(args.enable)
     config["checkpoint"] = str(checkpoint)
     config["checkpoint_sha256"] = sha256_path(checkpoint)
     if args.kind == "filter":

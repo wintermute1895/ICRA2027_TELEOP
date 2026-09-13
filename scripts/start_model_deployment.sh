@@ -4,7 +4,7 @@ set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONFIG="$ROOT_DIR/config/runtime/model_deployment.yaml"
-MODE="shadow"
+MODE=""
 CONFIRM=""
 SOURCE=""
 FILTER_CONFIG=""
@@ -35,7 +35,14 @@ done
 [[ -z "$FILTER_CONFIG" || "$FILTER_CONFIG" == /* ]] || FILTER_CONFIG="$ROOT_DIR/$FILTER_CONFIG"
 [[ -z "$ACT_CONFIG" || "$ACT_CONFIG" == /* ]] || ACT_CONFIG="$ROOT_DIR/$ACT_CONFIG"
 [[ -f "$CONFIG" ]] || { echo "[FATAL] config not found: $CONFIG" >&2; exit 2; }
-if [[ "$MODE" == active && "$CONFIRM" != I_UNDERSTAND_MODEL_DEPLOYMENT ]]; then
+CONFIG_MODE="$(/usr/bin/python3 - "$CONFIG" <<'PY'
+import sys, yaml
+value = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+print(value.get("mode", "shadow"))
+PY
+)"
+EFFECTIVE_MODE="${MODE:-$CONFIG_MODE}"
+if [[ "$EFFECTIVE_MODE" == active && "$CONFIRM" != I_UNDERSTAND_MODEL_DEPLOYMENT ]]; then
   echo "[FATAL] active deployment requires --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT" >&2
   exit 3
 fi
@@ -54,7 +61,8 @@ fi
 
 CMD=(bash "$ROOT_DIR/skills/ros2-python-env/scripts/run_ros2_python.sh"
   /usr/bin/python3 "$ROOT_DIR/tools/model_deployment_supervisor.py"
-  --config "$CONFIG" --mode "$MODE")
+  --config "$CONFIG")
+[[ -n "$MODE" ]] && CMD+=(--mode "$MODE")
 [[ -n "$SOURCE" ]] && CMD+=(--source "$SOURCE")
 [[ -n "$CONFIRM" ]] && CMD+=(--confirm "$CONFIRM")
 "${CMD[@]}"

@@ -85,7 +85,6 @@ class Adapter(Node):
         self.master_message = message
 
         self.raw_pub.publish(joint_state(message, raw_rad))
-        self.filtered_pub.publish(joint_state(message, raw_rad))
 
     def exchange(self, request: dict, images: dict[str, Image]) -> dict:
         request["camera_jpeg_base64"] = {
@@ -111,6 +110,7 @@ class Adapter(Node):
                     candidate = np.asarray(response.get("command_rad"), dtype=np.float32)
                     if candidate.shape == np.asarray(self.master_message.position).shape and np.isfinite(candidate).all():
                         self.output_pub.publish(joint_state(self.master_message, np.rad2deg(candidate)))
+                        self.filtered_pub.publish(joint_state(self.master_message, candidate))
                 self.get_logger().info(
                     "[diag] infer response ready="
                     + str(response.get("ready"))

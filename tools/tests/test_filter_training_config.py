@@ -25,6 +25,21 @@ class FilterTrainingConfigTest(unittest.TestCase):
         self.assertTrue(model.gain_current_command)
         self.assertEqual(model.effective_command_dim, 14)
 
+    def test_cv_residual_action_only_configs_match_except_latent_model(self):
+        deterministic = FilterTrainingConfig.from_mapping(yaml.safe_load(
+            (ROOT / "config/filters/deterministic_cv_residual_action_only.yaml").read_text()
+        ))
+        cvae = FilterTrainingConfig.from_mapping(yaml.safe_load(
+            (ROOT / "config/filters/cvae_cv_residual_action_only.yaml").read_text()
+        ))
+        self.assertEqual(deterministic.data.target_representation, "residual_over_constant_velocity")
+        self.assertEqual(cvae.data.target_representation, "residual_over_constant_velocity")
+        self.assertEqual(deterministic.model["visual_dim"], cvae.model["visual_dim"])
+        self.assertEqual(deterministic.model["history_length"], cvae.model["history_length"])
+        self.assertEqual(deterministic.model["horizon"], cvae.model["horizon"])
+        self.assertFalse(deterministic.model["gain_enabled"])
+        self.assertFalse(cvae.model["gain_enabled"])
+
     def test_rejects_undeclared_target_semantics(self):
         payload = yaml.safe_load((ROOT / "config/filters/trajectory_cvae_transformer_v0_1.yaml").read_text())
         payload["semantics"]["target"] = "ambiguous"

@@ -75,6 +75,15 @@ class Worker:
         self.last_desired_gain: float | None = None
         self.alpha = 0.0
         self.previous_timestamp_ns: int | None = None
+        authority = config.get("authority") or {}
+        self.authority_mode = str(authority.get("mode", self.runtime.config.authority_mode))
+        if self.authority_mode not in {"zero", "fixed", "checkpoint"}:
+            raise ValueError("authority.mode must be zero, fixed, or checkpoint")
+        self.fixed_gain = float(authority.get("gain", 0.0))
+        if self.authority_mode == "fixed" and not 0.0 <= self.fixed_gain <= 1.0:
+            raise ValueError("authority.gain must be in [0, 1]")
+        if self.authority_mode == "checkpoint" and self.runtime.config.authority_mode == "zero":
+            raise ValueError("checkpoint authority is zero; use explicit fixed gain or a gain checkpoint")
 
     def reset_episode(self) -> None:
         self.commands.clear()
@@ -126,7 +135,20 @@ class Worker:
             self.last_desired_gain = None if prediction.desired_gain is None else float(prediction.desired_gain[0, 0])
             if self.execution_mode == "open_loop_chunk":
                 self.open_loop_actions.extend(prediction.predicted_actions[0, 1:])
-        authority = self.alpha if self.runtime.config.gain_enabled else gate
+        # Authority is part of the checkpoint contract.  Action-only/reference
+        # runs use ``authority_mode=zero`` and must remain a dry-run candidate
+        # path; absence of a gain head must never be interpreted as gain=1.
+        authority_mode = self.authority_mode
+        if authority_mode == "zero":
+            authority = 0.0
+        elif authority_mode == "fixed":
+            authority = self.fixed_gain
+        elif prediction is not None and prediction.alpha is not None:
+            authority = float(prediction.alpha[0, 0])
+        elif prediction is not None and prediction.correction_probability is not None:
+            authority = gate
+        else:
+            authority = 0.0
         proposed_residual = (predicted_action - baseline) * authority
         timestamp_ns = int(request["timestamp_ns"])
         dt_s = (
@@ -148,7 +170,8 @@ class Worker:
             "residual_rad": projected.applied_residual_rad.tolist(),
             "latent_variance": self.last_latent_variance,
             "correction_probability": gate,
-            "alpha": self.alpha,
+            "alpha": authority if authority_mode == "fixed" else (self.alpha if authority_mode != "zero" else 0.0),
+            "authority_mode": authority_mode,
             "desired_gain": self.last_desired_gain,
             "gain_delta": None if prediction is None or prediction.gain_delta is None else float(prediction.gain_delta[0, 0]),
             "execution_mode": self.execution_mode,

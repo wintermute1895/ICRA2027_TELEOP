@@ -63,6 +63,7 @@ class TrajectoryFilterConfig:
     risk_use_discrepancy: bool = True
     risk_use_dispersion: bool = True
     risk_use_correction_probability: bool = True
+    zero_initialize_action_head: bool = False
 
     def validate(self) -> None:
         integer_fields = (
@@ -146,6 +147,12 @@ class ConditionalTrajectoryVAE(nn.Module):
             nn.Linear(2 * config.model_dim, config.horizon * config.action_dim + int(config.shared_action_gain_head)),
         )
         nn.init.normal_(self.position, std=0.02)
+        if config.zero_initialize_action_head:
+            output_layer = self.decoder[-1]
+            action_width = config.horizon * config.action_dim
+            with torch.no_grad():
+                output_layer.weight[:action_width].zero_()
+                output_layer.bias[:action_width].zero_()
 
     def encode_history(
         self,
@@ -283,6 +290,10 @@ class ConditionalTrajectoryVAE(nn.Module):
             return desired, alpha, alpha - self._previous_gain(alpha, previous_alpha)
         if self.gain_head is None:
             return None, None, None
+        if correction_probability is not None and self.config.authority_mode in {"rate_limited", "framewise"}:
+            desired = correction_probability * self.config.alpha_max
+            alpha = self._apply_authority_dynamics(desired, previous_alpha)
+            return desired, alpha, alpha - self._previous_gain(alpha, previous_alpha)
         if not self.config.gain_current_command:
             gain_delta = torch.tanh(self.gain_head(history)) * self.config.alpha_rate
             previous = self._previous_gain(gain_delta, previous_alpha)
@@ -394,6 +405,12 @@ def trajectory_vae_loss(
     raw_commands: Tensor | None = None,
     target_mean: Tensor | None = None,
     target_std: Tensor | None = None,
+    action_anchor: Tensor | None = None,
+    correction_loss_type: str = "unbalanced_hinge",
+    focal_gamma: float = 2.0,
+    ranking_weight: float = 0.0,
+    ranking_margin: float = 0.1,
+    episode_start: Tensor | None = None,
 ) -> dict[str, Tensor]:
     if beta_kl < 0.0 or smoothness_weight < 0.0 or gate_weight < 0.0 or gain_weight < 0.0 or zero_weight < 0.0:
         raise ValueError("loss weights must be non-negative")
@@ -422,6 +439,7 @@ def trajectory_vae_loss(
     ).mean()
     smoothness = prediction_for_action.diff(dim=1).square().mean() if prediction.shape[1] > 1 else prediction.new_zeros(())
     gate = prediction.new_zeros(())
+    rank = prediction.new_zeros(())
     if gate_weight and outputs.get("gate_logits") is not None:
         if correction_mask is None:
             raise ValueError("correction_mask is required when gate_weight is non-zero")
@@ -429,7 +447,39 @@ def trajectory_vae_loss(
         logits = outputs["gate_logits"]
         if logits.shape != labels.shape:
             logits = logits.expand_as(labels)
-        gate = F.binary_cross_entropy_with_logits(logits, labels)
+        first_labels = labels[:, :1] if labels.ndim > 1 else labels.reshape(-1, 1)
+        first_logits = logits[:, :1] if logits.ndim > 1 else logits.reshape(-1, 1)
+        if correction_loss_type in {"balanced_bce", "bce_ranking"}:
+            positives = first_labels.sum()
+            negatives = first_labels.numel() - positives
+            pos_weight = (negatives / positives.clamp_min(1.0)).detach()
+            gate = F.binary_cross_entropy_with_logits(first_logits, first_labels, pos_weight=pos_weight)
+        elif correction_loss_type == "focal":
+            bce = F.binary_cross_entropy_with_logits(first_logits, first_labels, reduction="none")
+            probability = torch.sigmoid(first_logits)
+            pt = first_labels * probability + (1.0 - first_labels) * (1.0 - probability)
+            gate = ((1.0 - pt).pow(focal_gamma) * bce).mean()
+        elif correction_loss_type not in {"ranking", "unbalanced_hinge"}:
+            raise ValueError(f"unsupported correction loss: {correction_loss_type}")
+        elif correction_loss_type == "unbalanced_hinge":
+            gate = F.binary_cross_entropy_with_logits(first_logits, first_labels)
+        if correction_loss_type in {"ranking", "bce_ranking"}:
+            starts = torch.zeros(first_labels.shape[0], dtype=torch.bool, device=first_labels.device)
+            starts[0] = True
+            if episode_start is not None:
+                starts |= episode_start.reshape(-1).to(dtype=torch.bool, device=starts.device)
+            groups = starts.cumsum(0)
+            terms = []
+            scores = torch.sigmoid(first_logits).reshape(-1)
+            flat_labels = first_labels.reshape(-1)
+            for group in groups.unique():
+                selected = groups == group
+                positive_scores = scores[selected & (flat_labels > 0.5)]
+                negative_scores = scores[selected & (flat_labels <= 0.5)]
+                if positive_scores.numel() and negative_scores.numel():
+                    terms.append(F.relu(ranking_margin - positive_scores[:, None] + negative_scores[None, :]).mean())
+            if terms:
+                rank = torch.stack(terms).mean()
     gain = prediction.new_zeros(())
     if gain_weight and outputs.get("alpha") is not None:
         if correction_mask is None:
@@ -444,11 +494,16 @@ def trajectory_vae_loss(
         if correction_mask is None or raw_commands is None or target_mean is None or target_std is None:
             raise ValueError("raw_commands, target statistics and correction_mask are required for zero-residual loss")
         predicted_physical = prediction_for_action
+        if action_anchor is not None:
+            base = action_anchor.to(dtype=prediction.dtype)
+            if base.ndim == 2:
+                base = base[:, None, :]
+            predicted_physical = predicted_physical + base
         residual = predicted_physical - raw_commands.to(dtype=prediction.dtype)
         nominal = (1.0 - correction_mask.to(dtype=prediction.dtype)).unsqueeze(-1)
         zero = (residual.abs() * nominal).sum() / nominal.expand_as(residual).sum().clamp_min(1e-6)
-    total = reconstruction + beta_kl * kl + smoothness_weight * smoothness + gate_weight * gate + gain_weight * gain + zero_weight * zero
-    return {"total": total, "reconstruction": reconstruction, "kl": kl, "smoothness": smoothness, "gate": gate, "gain": gain, "zero_residual": zero}
+    total = reconstruction + beta_kl * kl + smoothness_weight * smoothness + gate_weight * gate + ranking_weight * rank + gain_weight * gain + zero_weight * zero
+    return {"total": total, "reconstruction": reconstruction, "kl": kl, "smoothness": smoothness, "gate": gate, "ranking": rank, "gain": gain, "zero_residual": zero}
 
 
 def bounded_residual_command(

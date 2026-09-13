@@ -85,6 +85,7 @@ RIGHT_TOUCH="false"
 ARMS="left,right"
 LEARNED_FILTER_CONFIG=""
 MODEL_DEPLOYMENT_CONFIG="$ROOT_DIR/config/runtime/model_deployment.yaml"
+MODEL_DEPLOYMENT_CONFIRM=""
 
 usage() {
   cat >&2 <<'EOF'
@@ -121,6 +122,8 @@ Options:
   --left-touch                   enable left tactile sensor SDK stream
   --right-touch                  enable right tactile sensor SDK stream
   --arms=left,right|right         active arm set for capture (default: left,right)
+  --model-confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
+                                 authorize active model deployment selected by its YAML
 EOF
 }
 
@@ -183,6 +186,7 @@ for ((arg_index = 0; arg_index < ${#ARGS[@]}; arg_index++)); do
     --config) ((arg_index += 1)) ;;
     --data-root=*) DATA_ROOT="${arg#*=}" ;;
     --real) REAL=1 ;;
+    --model-confirm=*) MODEL_DEPLOYMENT_CONFIRM="${arg#*=}" ;;
     --physical-estop-ready) ESTOP_READY=1 ;;
     --confirm=*) CONFIRM="${arg#*=}" ;;
     --duration-s=*) DURATION_S="${arg#*=}" ;;
@@ -595,13 +599,24 @@ PY
 fi
 if [[ "$MODEL_SOURCE" != teleop ]]; then
   [[ -f "$MODEL_DEPLOYMENT_CONFIG" ]] || die "model deployment config not found: $MODEL_DEPLOYMENT_CONFIG"
-  "$SYSTEM_PYTHON" - "$MODEL_DEPLOYMENT_CONFIG" <<'PY' || die "model deployment config must have enabled: true"
+  MODEL_DEPLOYMENT_MODE="$($SYSTEM_PYTHON - "$MODEL_DEPLOYMENT_CONFIG" <<'PY'
 import sys, yaml
 config = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
 if config.get("enabled") is not True:
     raise SystemExit(1)
+mode = str(config.get("mode", "shadow"))
+if mode not in {"shadow", "active"}:
+    raise SystemExit(f"invalid model deployment mode: {mode}")
+print(mode)
 PY
-  launch_cmd deployment "bash \"$ROOT_DIR/scripts/start_model_deployment.sh\" \"$MODEL_DEPLOYMENT_CONFIG\" --shadow --source=$MODEL_SOURCE $MODEL_CANDIDATE_ARGS"
+  )" || die "model deployment config must be enabled and use shadow or active mode"
+  MODEL_CONFIRM_ARG=""
+  if [[ "$MODEL_DEPLOYMENT_MODE" == active ]]; then
+    [[ "$MODEL_DEPLOYMENT_CONFIRM" == I_UNDERSTAND_MODEL_DEPLOYMENT ]] || \
+      die "active filter collection requires --model-confirm=I_UNDERSTAND_MODEL_DEPLOYMENT"
+    MODEL_CONFIRM_ARG="--confirm=I_UNDERSTAND_MODEL_DEPLOYMENT"
+  fi
+  launch_cmd deployment "bash \"$ROOT_DIR/scripts/start_model_deployment.sh\" \"$MODEL_DEPLOYMENT_CONFIG\" --source=$MODEL_SOURCE $MODEL_CONFIRM_ARG $MODEL_CANDIDATE_ARGS"
 fi
 MASTER_LEFT_TOPIC=/left_arm_joint_control
 if (( RIGHT_ENABLED )) && [[ "$MODEL_SOURCE" != teleop ]]; then MASTER_RIGHT_TOPIC=/model_deployment/right_arm_joint_control; fi

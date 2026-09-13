@@ -20,15 +20,25 @@ class LossConfig:
     zero_weight: float = 0.0
     alpha_low: float = 0.05
     alpha_high: float = 0.5
+    correction_loss_type: str = "unbalanced_hinge"
+    focal_gamma: float = 2.0
+    ranking_weight: float = 0.0
+    ranking_margin: float = 0.1
 
     def validate(self) -> None:
         if min(self.beta_kl, self.smoothness_weight, self.correction_weight, self.gate_weight, self.gain_weight, self.zero_weight) < 0.0:
             raise ValueError("loss weights must be non-negative")
+        if self.correction_loss_type not in {"unbalanced_hinge", "balanced_bce", "focal", "ranking", "bce_ranking"}:
+            raise ValueError("unsupported correction_loss_type")
+        if self.focal_gamma < 0.0 or self.ranking_weight < 0.0 or self.ranking_margin < 0.0:
+            raise ValueError("focal/ranking parameters must be non-negative")
 
 
 @dataclass(frozen=True)
 class DataConfig:
     allow_synthetic_smoke: bool = False
+    target_representation: str = "absolute"
+    target_field: str = "expert_action_target_rad"
 
 
 @dataclass(frozen=True)
@@ -66,8 +76,16 @@ class FilterTrainingConfig:
                 zero_weight=float(loss.get("zero_weight", 0.0)),
                 alpha_low=float(loss.get("alpha_low", 0.05)),
                 alpha_high=float(loss.get("alpha_high", 0.5)),
+                correction_loss_type=str(loss.get("correction_loss_type", "unbalanced_hinge")),
+                focal_gamma=float(loss.get("focal_gamma", 2.0)),
+                ranking_weight=float(loss.get("ranking_weight", 0.0)),
+                ranking_margin=float(loss.get("ranking_margin", 0.1)),
             ),
-            data=DataConfig(bool((payload.get("data") or {}).get("allow_synthetic_smoke", False))),
+            data=DataConfig(
+                bool((payload.get("data") or {}).get("allow_synthetic_smoke", False)),
+                str((payload.get("data") or {}).get("target_representation", "absolute")),
+                str((payload.get("data") or {}).get("target_field", "expert_action_target_rad")),
+            ),
             runtime=dict(runtime),
             semantics=dict(payload.get("semantics") or {}),
         )
@@ -76,6 +94,8 @@ class FilterTrainingConfig:
 
     def validate(self) -> None:
         self.loss.validate()
+        if self.data.target_representation not in {"absolute", "delta_from_last_executed", "residual_over_constant_velocity"}:
+            raise ValueError("unsupported data.target_representation")
         alpha_max = float(self.model.get("alpha_max", 1.0))
         if not 0.0 <= self.loss.alpha_low < self.loss.alpha_high <= alpha_max:
             raise ValueError("loss gain bands must satisfy 0 <= alpha_low < alpha_high <= alpha_max")
@@ -83,8 +103,10 @@ class FilterTrainingConfig:
             raise ValueError("model.horizon must be positive")
         if self.runtime.get("deployment") != "offline_and_simulation_only":
             raise ValueError("training config is not authorized for offline/simulation runtime")
-        if "expert_action_target_rad" not in str(self.semantics.get("target", "")):
-            raise ValueError("semantics.target must declare expert_action_target_rad")
+        if self.data.target_field not in {"expert_action_target_rad", "joint_reference_action_rad"}:
+            raise ValueError("data.target_field must be expert_action_target_rad or joint_reference_action_rad")
+        if self.data.target_field not in str(self.semantics.get("target", "")):
+            raise ValueError(f"semantics.target must declare {self.data.target_field}")
 
     @property
     def history_length(self) -> int:
@@ -128,4 +150,5 @@ class FilterTrainingConfig:
             risk_use_discrepancy=bool(self.model.get("risk_use_discrepancy", True)),
             risk_use_dispersion=bool(self.model.get("risk_use_dispersion", True)),
             risk_use_correction_probability=bool(self.model.get("risk_use_correction_probability", True)),
+            zero_initialize_action_head=bool(self.model.get("zero_initialize_action_head", False)),
         )
