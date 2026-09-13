@@ -21,16 +21,26 @@ class DeploymentLimits:
     max_step_rad: float = 0.05
 
 
+ABSOLUTE_POSE_SOURCES = frozenset({"act", "imle"})
+
+
 def limits_for_source(source: str, config: Mapping[str, Any] | None = None) -> DeploymentLimits:
-    """Use ACT-specific absolute-pose limits when present; keep residual limits otherwise."""
+    """Use absolute-pose limits for ACT/IMLE when present; keep residual limits otherwise."""
 
     values = config or {}
     max_delta = float(values.get("max_delta_rad", 0.05))
     max_step = float(values.get("max_step_rad", 0.05))
-    if str(source).lower() == "act":
-        if "act_max_delta_rad" in values:
+    key = str(source).lower()
+    if key in ABSOLUTE_POSE_SOURCES:
+        delta_name = f"{key}_max_delta_rad"
+        step_name = f"{key}_max_step_rad"
+        if delta_name in values:
+            max_delta = float(values[delta_name])
+        elif "act_max_delta_rad" in values:
             max_delta = float(values["act_max_delta_rad"])
-        if "act_max_step_rad" in values:
+        if step_name in values:
+            max_step = float(values[step_name])
+        elif "act_max_step_rad" in values:
             max_step = float(values["act_max_step_rad"])
     return DeploymentLimits(max_delta_rad=max_delta, max_step_rad=max_step)
 
@@ -116,12 +126,12 @@ class ActionSupervisor:
 
 
 class ActiveModelGate:
-    """ACT-only startup gate used when ``active_model_control=true``.
+    """Startup gate used when ``active_model_control=true``.
 
     Unlike the legacy fallback path, this gate never forwards teleoperation /
-    LinkerTA frames to the bridge.  Before the first accepted ACT candidate it
-    returns ``publish=False`` (WAITING_FOR_MODEL); after that it only publishes
-    bounded ACT candidates.  The measured robot state is the safety reference
+    LinkerTA frames to the bridge.  Before the first accepted ACT/IMLE candidate
+    it returns ``publish=False`` (WAITING_FOR_MODEL); after that it only publishes
+    bounded model candidates.  The measured robot state is the safety reference
     used by ActionSupervisor, so a command that starts far from the measured
     pose is not emitted.
 

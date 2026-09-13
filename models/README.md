@@ -66,3 +66,33 @@ bash scripts/start_act_adapter.sh config/runtime/act-button-A.yaml
 
 The adapter only publishes a candidate under `/act/right_arm_joint_control`;
 the model deployment supervisor is the intended bridge to the robot.
+
+## task2_imle
+
+Source checkpoint (SJ01):
+
+```text
+/media/dex/cx_Data/imle/task2_power_button_press/checkpoints/task2_power_button_press_20260911T153358Z/latest_deployment.pt
+```
+
+Runtime template:
+
+```text
+config/runtime/imle-task2.yaml
+```
+
+Model contract: 7D right-arm state/action in LinkerTA degrees, two RGB cameras
+(main_rgb, auxiliary_rgb), image size 480x640, 50 Hz, obs_horizon=2,
+pred_horizon=16, action_horizon=8, 20 overlap-selected candidates.
+
+## IMLE verification
+
+```bash
+bash scripts/promote_model_checkpoint.sh --kind imle \
+  --checkpoint /path/to/latest_deployment.pt \
+  --output /tmp/imle-task2-promoted.yaml
+bash scripts/validate_imle_deployment.sh /tmp/imle-task2-promoted.yaml
+bash scripts/start_imle_adapter.sh /tmp/imle-task2-promoted.yaml
+```
+
+Full Linux steps: `docs/engineering/IMLE_DEPLOYMENT.md`.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Stable real/sim rollout entry. ROS2 uses system Python; ACT/filter workers
-# are launched by their own environment-aware adapters.
+# Stable real/sim rollout entry. ROS2 uses system Python; ACT/IMLE/filter
+# workers are launched by their own environment-aware adapters.
 set -Eeuo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ROS_SETUP="${ROS_SETUP:-}"

@@ -1,0 +1,28 @@
+schema: robot_teleop.imle-runtime/v1
+enabled: false
+# SJ01 Task2 arm7 run. Promote this file (or a copy) after hashing latest_deployment.pt.
+checkpoint: /media/dex/cx_Data/imle/task2_power_button_press/checkpoints/task2_power_button_press_20260911T153358Z/latest_deployment.pt
+checkpoint_sha256: ""
+imle_root: /home/dex/桌面/ICRA2027_TELEOP_IMLE
+device: cuda
+socket: /tmp/teleop_imle.sock
+inference_hz: 50.0
+input_timeout_ms: 2000.0
+action_units: degrees
+action_contract: arm7
+state_dim: 7
+action_dim: 7
+obs_horizon: 2
+pred_horizon: 16
+action_horizon: 8
+candidate_count: 20
+image_shape:
+- 480
+- 640
+output_topic: /imle/right_arm_joint_control
+state_topic: /robot1/right_arm/joint_states
+diagnostics_topic: /imle/right/diagnostics
+state_key: observation.state
+camera_keys:
+  observation.images.main_rgb: /camera/camera/color/image_raw
+  observation.images.auxiliary_rgb: /camera2/camera/color/image_raw

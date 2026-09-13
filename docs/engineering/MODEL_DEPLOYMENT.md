@@ -1,14 +1,15 @@
 # Model deployment boundary
 
-ACT and the learned filter publish `JointState` candidates only. A single
-deployment supervisor selects or rejects candidates and republishes one topic
-for the bridge; no model process touches the SDK or vendor driver.
+ACT and the learned filter publish `JointState` candidates only. IMLE uses the
+same boundary. A single deployment supervisor selects or rejects candidates and
+republishes one topic for the bridge; no model process touches the SDK or vendor
+driver.
 
 ```text
 LinkerTA raw ───────────────┐
 ACT candidate ───────> model_deployment_supervisor ──> teleop_control_bridge ─> lbot_driver
-filter candidate ────┘          |                         (mapping, limits, armed gate)
-                                └─ diagnostics / fallback
+IMLE candidate ──────┤          |                         (mapping, limits, armed gate)
+filter candidate ────┘          └─ diagnostics / fallback
 ```
 
 Shadow mode always selects the raw fallback while recording decisions. Active
@@ -29,6 +30,8 @@ bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml \
   --source=filter --filter-config=config/runtime/learned_filter.yaml --shadow
 bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml \
   --source=act --act-config=config/runtime/act-button-A.yaml --shadow
+bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml \
+  --source=imle --imle-config=/tmp/imle-task2-promoted.yaml --shadow
 ```
 
 Active mode is an explicit promotion step after held-out evaluation and a
@@ -90,11 +93,15 @@ bash scripts/start_model_rollout.sh --source filter \
 ```
 
 This starts the configured D435i cameras, candidate worker/adapter, deployment
-supervisor, LinkerTA, lbot driver, and bridge. Add `--record-dir PATH` to save a
-rosbag containing raw input, model output, diagnostics, robot state, pose,
-vendor command, RGB and aligned depth streams. Stop with Ctrl-C; all process
-groups are stopped in reverse order and the rollout manifest is written next to
-the bag.
+supervisor, LinkerTA, lbot driver, and bridge. ACT, IMLE and the learned filter
+all publish candidates only; the supervisor is the single bridge input. Add
+`--record-dir PATH` to save a rosbag containing raw input, model output,
+diagnostics, robot state, pose, vendor command, RGB and aligned depth streams.
+Stop with Ctrl-C; all process groups are stopped in reverse order and the
+rollout manifest is written next to the bag.
+
+IMLE Linux promotion, validation and shadow/active steps are in
+`docs/engineering/IMLE_DEPLOYMENT.md`.
 
 Evaluate a completed recording with the same topic contract:
 

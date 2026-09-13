@@ -120,6 +120,10 @@ class Rollout:
             candidate = self.resolve_path(self.config["act_config"])
             self.require_enabled(candidate, "ACT")
             candidate_args += [f"--act-config={candidate}"]
+        elif source == "imle":
+            candidate = self.resolve_path(self.config["imle_config"])
+            self.require_enabled(candidate, "IMLE")
+            candidate_args += [f"--imle-config={candidate}"]
         elif source == "filter":
             candidate = self.resolve_path(self.config["filter_config"])
             self.require_enabled(candidate, "filter")
@@ -221,7 +225,7 @@ class Rollout:
             if self.config_path and self.config_path.is_file():
                 provenance["rollout_config"] = str(self.config_path.resolve())
                 provenance["rollout_config_sha256"] = hashlib.sha256(self.config_path.read_bytes()).hexdigest()
-            for key in ("act_config", "filter_config", "deployment_config"):
+            for key in ("act_config", "imle_config", "filter_config", "deployment_config"):
                 value = self.config.get(key)
                 if value:
                     path = self.resolve_path(value)
@@ -243,9 +247,10 @@ class Rollout:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=ROOT / "config/runtime/rollout.yaml")
-    parser.add_argument("--source", choices=["teleop", "filter", "act"], help="override rollout source")
+    parser.add_argument("--source", choices=["teleop", "filter", "act", "imle"], help="override rollout source")
     parser.add_argument("--filter-config", type=Path, help="override learned-filter runtime config")
     parser.add_argument("--act-config", type=Path, help="override ACT runtime config")
+    parser.add_argument("--imle-config", type=Path, help="override IMLE runtime config")
     parser.add_argument("--shadow", action="store_true")
     parser.add_argument("--active", action="store_true")
     parser.add_argument("--real", action="store_true")
@@ -262,6 +267,8 @@ def main() -> int:
         config["filter_config"] = str(args.filter_config)
     if args.act_config:
         config["act_config"] = str(args.act_config)
+    if args.imle_config:
+        config["imle_config"] = str(args.imle_config)
     if config.get("schema") != "robot_teleop.rollout/v1":
         raise SystemExit("unsupported rollout config schema")
     mode = "active" if args.active else "shadow"

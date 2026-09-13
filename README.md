@@ -181,9 +181,9 @@ python tools/build_correction_segment_view.py \
 训练和评估只接受明确准入的 filter-training JSONL。推理输出经过有界残差组合；真机部署
 必须经过 runtime 配置中的 checkpoint/hash 晋级，并且只能通过 supervisor -> bridge 边界发布。
 
-## ACT / filter deployment
+## ACT / filter / IMLE deployment
 
-ACT 和 learned filter 都只能发布 candidate。统一监督层
+ACT、IMLE 和 learned filter 都只能发布 candidate。统一监督层
 `tools/model_deployment_supervisor.py` 负责 shadow/active 选择、超时、维度、
 NaN、幅度和步长检查；bridge 只订阅 `/model_deployment/right_arm_joint_control`，
 继续负责单位映射、One-Euro、限位、首次 MoveJ 和 armed gate。默认配置是 shadow：
@@ -193,7 +193,8 @@ bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml --sh
 ```
 
 ACT 的 GPU worker 与 ROS2 adapter 分离，启动方式和 filter 相同，详见
-`docs/engineering/MODEL_DEPLOYMENT.md`。当前没有任何模型被声明为真机安全可用；
+`docs/engineering/MODEL_DEPLOYMENT.md`。IMLE 的 Linux 部署步骤见
+`docs/engineering/IMLE_DEPLOYMENT.md`。当前没有任何模型被声明为真机安全可用；
 active 之前必须完成 held-out 评估、shadow 运行和人工安全确认。
 
 完整 rollout（录制、部署、评测）使用统一入口：
@@ -213,8 +214,13 @@ bash scripts/evaluate_model_rollout.sh \
 ```bash
 bash scripts/promote_model_checkpoint.sh --kind act \
   --checkpoint /path/to/policy --output /media/ilex/Cyan_data/ICRA2027_TELEOP/config/act-promoted.yaml
+bash scripts/promote_model_checkpoint.sh --kind imle \
+  --checkpoint /path/to/latest_deployment.pt \
+  --output /media/ilex/Cyan_data/ICRA2027_TELEOP/config/imle-promoted.yaml
 bash scripts/start_model_rollout.sh --source act \
   --act-config /media/ilex/Cyan_data/ICRA2027_TELEOP/config/act-promoted.yaml --shadow
+bash scripts/start_model_rollout.sh --source imle \
+  --imle-config /media/ilex/Cyan_data/ICRA2027_TELEOP/config/imle-promoted.yaml --shadow
 ```
 
 ## Standalone USB-C insertion scene

@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# Start IMLE's GPU worker and ROS candidate adapter. No bridge is touched here.
+set -Eeuo pipefail
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CONFIG="${1:-$ROOT_DIR/config/runtime/imle-task2.yaml}"
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+  echo "usage: $0 [config/runtime/imle-task2.yaml]"
+  exit 0
+fi
+source "$ROOT_DIR/scripts/lib/training_env.sh"
+if [[ -n "${IMLE_ENV_PREFIX:-}" ]]; then
+  ENV_PREFIX="$IMLE_ENV_PREFIX"
+else
+  ENV_PREFIX="$(resolve_training_env_prefix)" || { echo "[FATAL] IMLE Python env is unavailable; set IMLE_ENV_PREFIX" >&2; exit 2; }
+fi
+[[ -x "$ENV_PREFIX/bin/python" ]] || { echo "[FATAL] IMLE Python is missing: $ENV_PREFIX/bin/python" >&2; exit 2; }
+# The worker must import numpy/torch from the resolved env.  A caller
+# PYTHONPATH may point at an older ROS/dev workspace numpy, so it is
+# intentionally cleared for model-side processes.
+unset PYTHONPATH
+SOCKET="$($ENV_PREFIX/bin/python - "$CONFIG" "$ROOT_DIR/tools" <<'PY'
+import sys, yaml
+sys.path.insert(0, sys.argv[2])
+from imle_arm7_contract import validate_runtime_config
+c=yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
+if c.get("enabled") is not True: raise SystemExit("[FATAL] IMLE runtime is disabled")
+try:
+  validate_runtime_config(c)
+except (TypeError, ValueError) as error:
+  raise SystemExit(f"[FATAL] invalid IMLE arm7 runtime config: {error}")
+print(c["socket"])
+PY
+)"
+# Remove a stale socket from a previous run before the worker starts; the
+# adapter readiness loop below only watches for the socket file, so a leftover
+# file would otherwise trigger an immediate (failed) adapter connection.
+rm -f -- "$SOCKET"
+"$ENV_PREFIX/bin/python" "$ROOT_DIR/tools/imle_worker.py" --config "$CONFIG" &
+WORKER_PID=$!
+cleanup() {
+  kill "$WORKER_PID" 2>/dev/null || true
+  wait "$WORKER_PID" 2>/dev/null || true
+  rm -f "$SOCKET"
+}
+trap cleanup EXIT INT TERM
+for _ in {1..600}; do
+  [[ -S "$SOCKET" ]] && break
+  kill -0 "$WORKER_PID" 2>/dev/null || { echo "[FATAL] IMLE worker exited" >&2; exit 2; }
+  sleep 0.2
+done
+[[ -S "$SOCKET" ]] || { echo "[FATAL] IMLE worker did not become ready" >&2; exit 2; }
+bash "$ROOT_DIR/skills/ros2-python-env/scripts/run_ros2_python.sh" \
+  /usr/bin/python3 "$ROOT_DIR/tools/imle_ros_adapter.py" --config "$CONFIG"

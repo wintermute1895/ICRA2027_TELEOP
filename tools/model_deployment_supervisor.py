@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Select one model candidate and publish the single bridge input topic.
 
-ACT and learned-filter nodes publish candidates only.  This node is the one
+ACT, IMLE and learned-filter nodes publish candidates only.  This node is the one
 place where a candidate may replace teleoperation input; the bridge remains
 the final unit conversion, limit, first-move and armed gate.
 """
@@ -48,7 +48,7 @@ class ModelDeploymentSupervisor(Node):
         if self.active_model_control:
             if self.mode is not DeploymentMode.ACTIVE:
                 raise SystemExit("active_model_control=true requires mode=active")
-            if self.source not in {"act", "hybrid", "auto"}:
+            if self.source not in {"act", "imle", "hybrid", "auto"}:
                 raise SystemExit(
                     f"active_model_control=true requires a model candidate source, got source={self.source}")
             if not config.get("state_topic"):
@@ -128,7 +128,7 @@ class ModelDeploymentSupervisor(Node):
         if selected is None:
             return None
         source, candidate_time, candidate_msg = selected
-        if source not in {"act", "filter"}:
+        if source not in {"act", "filter", "imle"}:
             # Active model control only forwards explicit model candidates.
             return None
         candidate_rad = self._positions_rad(candidate_msg)
@@ -178,7 +178,7 @@ class ModelDeploymentSupervisor(Node):
             )
             return
         if candidate_msg is None or candidate is None:
-            self.diagnose(state=outcome.state, source="act", accepted=False,
+            self.diagnose(state=outcome.state, source=candidate_source or "none", accepted=False,
                           reason="internal_candidate_missing", published=False)
             return
         command_rad = outcome.command_rad.copy()
@@ -196,14 +196,14 @@ class ModelDeploymentSupervisor(Node):
         self.output_pub.publish(output)
         if outcome.first_command:
             self.get_logger().info(
-                "first valid ACT command received "
+                "first valid model command received "
                 f"timestamp={candidate_msg.header.stamp.sec}.{candidate_msg.header.stamp.nanosec:09d} "
                 f"q_model_rad={np.round(command_rad, 6).tolist()} "
                 f"q_model_deg={np.round(np.rad2deg(command_rad), 4).tolist()} "
                 f"measured_rad={None if measured is None else np.round(measured, 6).tolist()}")
         self.diagnose(
             state=outcome.state,
-            source="act",
+            source=candidate_source or "act",
             accepted=True,
             reason=outcome.reason,
             published=True,
@@ -217,7 +217,7 @@ class ModelDeploymentSupervisor(Node):
     def _candidate(self, now: float) -> tuple[str, float, JointState] | None:
         if self.source in {"teleop", "fallback", "none"}:
             return None
-        if self.source in {"filter", "act"}:
+        if self.source in {"filter", "act", "imle"}:
             item = self.candidates.get(self.source)
             return (self.source, *item) if item else None
         # hybrid/auto selects the newest source; source names remain config-driven.
@@ -312,7 +312,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--mode", choices=["shadow", "active"])
-    parser.add_argument("--source", choices=["teleop", "fallback", "none", "filter", "act", "hybrid", "auto"])
+    parser.add_argument("--source", choices=["teleop", "fallback", "none", "filter", "act", "imle", "hybrid", "auto"])
     parser.add_argument("--confirm", default="")
     args = parser.parse_args()
     config = yaml.safe_load(args.config.read_text(encoding="utf-8")) or {}

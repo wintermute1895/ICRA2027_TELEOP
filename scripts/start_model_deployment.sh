@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start the single ACT/filter deployment boundary. Shadow is the default.
+# Start the single ACT/filter/IMLE deployment boundary. Shadow is the default.
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -9,6 +9,7 @@ CONFIRM=""
 SOURCE=""
 FILTER_CONFIG=""
 ACT_CONFIG=""
+IMLE_CONFIG=""
 POSITIONAL_SET=0
 while (($#)); do
   case "$1" in
@@ -22,9 +23,11 @@ while (($#)); do
     --filter-config) FILTER_CONFIG="${2:-}"; shift 2 ;;
     --act-config=*) ACT_CONFIG="${1#*=}"; shift ;;
     --act-config) ACT_CONFIG="${2:-}"; shift 2 ;;
+    --imle-config=*) IMLE_CONFIG="${1#*=}"; shift ;;
+    --imle-config) IMLE_CONFIG="${2:-}"; shift 2 ;;
     --confirm=*) CONFIRM="${1#*=}"; shift ;;
     --confirm) CONFIRM="${2:-}"; shift 2 ;;
-    --help|-h) echo "usage: $0 [CONFIG] [--source teleop|filter|act|hybrid] [--filter-config PATH] [--act-config PATH] [--shadow|--active --confirm I_UNDERSTAND_MODEL_DEPLOYMENT]"; exit 0 ;;
+    --help|-h) echo "usage: $0 [CONFIG] [--source teleop|filter|act|imle|hybrid] [--filter-config PATH] [--act-config PATH] [--imle-config PATH] [--shadow|--active --confirm I_UNDERSTAND_MODEL_DEPLOYMENT]"; exit 0 ;;
     /*|*.yaml)
       (( POSITIONAL_SET == 0 )) || { echo "only one config path is allowed" >&2; exit 2; }
       CONFIG="$1"; POSITIONAL_SET=1; shift ;;
@@ -34,6 +37,7 @@ done
 [[ "$CONFIG" == /* ]] || CONFIG="$ROOT_DIR/$CONFIG"
 [[ -z "$FILTER_CONFIG" || "$FILTER_CONFIG" == /* ]] || FILTER_CONFIG="$ROOT_DIR/$FILTER_CONFIG"
 [[ -z "$ACT_CONFIG" || "$ACT_CONFIG" == /* ]] || ACT_CONFIG="$ROOT_DIR/$ACT_CONFIG"
+[[ -z "$IMLE_CONFIG" || "$IMLE_CONFIG" == /* ]] || IMLE_CONFIG="$ROOT_DIR/$IMLE_CONFIG"
 [[ -f "$CONFIG" ]] || { echo "[FATAL] config not found: $CONFIG" >&2; exit 2; }
 if [[ "$MODE" == active && "$CONFIRM" != I_UNDERSTAND_MODEL_DEPLOYMENT ]]; then
   echo "[FATAL] active deployment requires --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT" >&2
@@ -50,6 +54,10 @@ fi
 if [[ -n "$ACT_CONFIG" ]]; then
   [[ "$SOURCE" == "act" || -z "$SOURCE" ]] && SOURCE=act
   bash "$ROOT_DIR/scripts/start_act_adapter.sh" "$ACT_CONFIG" & PIDS+=("$!")
+fi
+if [[ -n "$IMLE_CONFIG" ]]; then
+  [[ "$SOURCE" == "imle" || -z "$SOURCE" ]] && SOURCE=imle
+  bash "$ROOT_DIR/scripts/start_imle_adapter.sh" "$IMLE_CONFIG" & PIDS+=("$!")
 fi
 
 CMD=(bash "$ROOT_DIR/skills/ros2-python-env/scripts/run_ros2_python.sh"
