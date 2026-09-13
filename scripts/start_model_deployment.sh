@@ -1,43 +1,33 @@
 #!/usr/bin/env bash
-# Start the single active ACT/filter deployment boundary.
+# Start the single ACT/filter/IMLE deployment boundary. Shadow is the default.
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-# Keep ROS node logs on a mounted data disk; the default ~/.ros/log lives on
-# the small system disk and grows during long deployments. Fall back through
-# candidates so a missing/unwritable disk never blocks deployment.
-if [[ -z "${ROS_LOG_DIR:-}" ]]; then
-  for candidate in \
-    "/media/${USER:-$(id -un)}/Cyan_data/ICRA2027_DATA/ros_logs" \
-    "/media/${USER:-$(id -un)}/robot_data/ICRA2027_Data/ros_logs" \
-    "/tmp/teleop_ros_logs"; do
-    if mkdir -p "$candidate" 2>/dev/null; then
-      ROS_LOG_DIR="$candidate"
-      break
-    fi
-  done
-fi
-export ROS_LOG_DIR
-mkdir -p "$ROS_LOG_DIR"
 CONFIG="$ROOT_DIR/config/runtime/model_deployment.yaml"
+MODE="shadow"
 CONFIRM=""
 SOURCE=""
 FILTER_CONFIG=""
 ACT_CONFIG=""
+IMLE_CONFIG=""
 POSITIONAL_SET=0
 while (($#)); do
   case "$1" in
     --config=*) CONFIG="${1#*=}"; shift ;;
     --config) CONFIG="${2:-}"; shift 2 ;;
+    --active) MODE="active"; shift ;;
+    --shadow) MODE="shadow"; shift ;;
     --source=*) SOURCE="${1#*=}"; shift ;;
     --source) SOURCE="${2:-}"; shift 2 ;;
     --filter-config=*) FILTER_CONFIG="${1#*=}"; shift ;;
     --filter-config) FILTER_CONFIG="${2:-}"; shift 2 ;;
     --act-config=*) ACT_CONFIG="${1#*=}"; shift ;;
     --act-config) ACT_CONFIG="${2:-}"; shift 2 ;;
+    --imle-config=*) IMLE_CONFIG="${1#*=}"; shift ;;
+    --imle-config) IMLE_CONFIG="${2:-}"; shift 2 ;;
     --confirm=*) CONFIRM="${1#*=}"; shift ;;
     --confirm) CONFIRM="${2:-}"; shift 2 ;;
-    --help|-h) echo "usage: $0 [CONFIG] --confirm I_UNDERSTAND_MODEL_DEPLOYMENT [--source teleop|filter|act|hybrid] [--filter-config PATH] [--act-config PATH]"; exit 0 ;;
+    --help|-h) echo "usage: $0 [CONFIG] [--source teleop|filter|act|imle|hybrid] [--filter-config PATH] [--act-config PATH] [--imle-config PATH] [--shadow|--active --confirm I_UNDERSTAND_MODEL_DEPLOYMENT]"; exit 0 ;;
     /*|*.yaml)
       (( POSITIONAL_SET == 0 )) || { echo "only one config path is allowed" >&2; exit 2; }
       CONFIG="$1"; POSITIONAL_SET=1; shift ;;
@@ -47,9 +37,10 @@ done
 [[ "$CONFIG" == /* ]] || CONFIG="$ROOT_DIR/$CONFIG"
 [[ -z "$FILTER_CONFIG" || "$FILTER_CONFIG" == /* ]] || FILTER_CONFIG="$ROOT_DIR/$FILTER_CONFIG"
 [[ -z "$ACT_CONFIG" || "$ACT_CONFIG" == /* ]] || ACT_CONFIG="$ROOT_DIR/$ACT_CONFIG"
+[[ -z "$IMLE_CONFIG" || "$IMLE_CONFIG" == /* ]] || IMLE_CONFIG="$ROOT_DIR/$IMLE_CONFIG"
 [[ -f "$CONFIG" ]] || { echo "[FATAL] config not found: $CONFIG" >&2; exit 2; }
-if [[ "$CONFIRM" != I_UNDERSTAND_MODEL_DEPLOYMENT ]]; then
-  echo "[FATAL] active model deployment requires --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT" >&2
+if [[ "$MODE" == active && "$CONFIRM" != I_UNDERSTAND_MODEL_DEPLOYMENT ]]; then
+  echo "[FATAL] active deployment requires --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT" >&2
   exit 3
 fi
 
@@ -63,6 +54,10 @@ fi
 if [[ -n "$ACT_CONFIG" ]]; then
   [[ "$SOURCE" == "act" || -z "$SOURCE" ]] && SOURCE=act
   bash "$ROOT_DIR/scripts/start_act_adapter.sh" "$ACT_CONFIG" & PIDS+=("$!")
+fi
+if [[ -n "$IMLE_CONFIG" ]]; then
+  [[ "$SOURCE" == "imle" || -z "$SOURCE" ]] && SOURCE=imle
+  bash "$ROOT_DIR/scripts/start_imle_adapter.sh" "$IMLE_CONFIG" & PIDS+=("$!")
 fi
 
 CMD=(bash "$ROOT_DIR/skills/ros2-python-env/scripts/run_ros2_python.sh"

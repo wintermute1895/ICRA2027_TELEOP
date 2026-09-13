@@ -4,6 +4,7 @@ arm: right
 source: act
 deployment_config: config/runtime/model_deployment_active_test.yaml
 act_config: config/runtime/act-button-A.yaml
+imle_config: config/runtime/imle-task2.yaml
 filter_config: config/runtime/learned_filter.yaml
 hardware:
   launch_driver: true
@@ -34,6 +35,8 @@ recording:
     - /model_deployment/diagnostics
     - /act/right_arm_joint_control
     - /act/right/diagnostics
+    - /imle/right_arm_joint_control
+    - /imle/right/diagnostics
     - /teleop_filter/right_arm_joint_control
     - /teleop_filter/right/diagnostics
     - /teleop/right/master_joint_raw

@@ -1,27 +1,46 @@
 # Model deployment boundary
 
-ACT and the learned filter publish `JointState` candidates only. A single
-deployment supervisor selects or rejects candidates and republishes one topic
-for the bridge; no model process touches the SDK or vendor driver.
+ACT and the learned filter publish `JointState` candidates only. IMLE uses the
+same boundary. A single deployment supervisor selects or rejects candidates and
+republishes one topic for the bridge; no model process touches the SDK or vendor
+driver.
 
 ```text
 LinkerTA raw ───────────────┐
 ACT candidate ───────> model_deployment_supervisor ──> teleop_control_bridge ─> lbot_driver
-filter candidate ────┘          |                         (mapping, limits, armed gate)
-                                └─ diagnostics / fallback
+IMLE candidate ──────┤          |                         (mapping, limits, armed gate)
+filter candidate ────┘          └─ diagnostics / fallback
 ```
 
-Active mode accepts a candidate only when it is fresh, finite, dimensionally
-correct, within the configured offset, and within the per-frame step limit.
-Filter candidates fall back to LinkerTA immediately after any rejection;
-ACT-only active deployment suppresses fallback and waits for a valid candidate.
+Shadow mode always selects the raw fallback while recording decisions. Active
+mode accepts a candidate only when it is fresh, finite, dimensionally correct,
+within the configured offset, and within the per-frame step limit. Every
+rejection falls back immediately.
 
-Start a candidate producer with the active boundary:
+Start the boundary safely:
+
+```bash
+bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml --shadow
+```
+
+Start a candidate producer with the same boundary:
+
+```bash
+bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml \
+  --source=filter --filter-config=config/runtime/learned_filter.yaml --shadow
+bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml \
+  --source=act --act-config=config/runtime/act-button-A.yaml --shadow
+bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml \
+  --source=imle --imle-config=/tmp/imle-task2-promoted.yaml --shadow
+```
+
+Active mode is an explicit promotion step after held-out evaluation and a
+shadow run:
 
 ```bash
 bash scripts/start_model_deployment.sh config/runtime/model_deployment.yaml \
   --source=filter --filter-config=config/runtime/learned_filter.yaml \
-  --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
+  --active --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
 ```
 
 Active ACT uses the wider absolute-pose window in
@@ -31,7 +50,7 @@ residual `max_delta_rad: 0.05` defaults alone.
 ```bash
 bash scripts/start_model_deployment.sh config/runtime/model_deployment_active_test.yaml \
   --source=act --act-config=config/runtime/act-button-A.yaml \
-  --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
+  --active --confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
 ```
 
 This does not arm the robot. The bridge still owns `armed`, first MoveJ,
@@ -61,8 +80,7 @@ bash scripts/promote_model_checkpoint.sh --kind filter \
 ```
 
 ```bash
-bash scripts/start_model_rollout.sh --config config/runtime/rollout.yaml \
-  --model-confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
+bash scripts/start_model_rollout.sh --config config/runtime/rollout.yaml --shadow
 ```
 
 The promoted config can be supplied for one rollout without changing
@@ -71,15 +89,19 @@ The promoted config can be supplied for one rollout without changing
 ```bash
 bash scripts/start_model_rollout.sh --source filter \
   --filter-config /media/ilex/Cyan_data/ICRA2027_TELEOP/config/filter-promoted-<round>.yaml \
-  --model-confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
+  --shadow
 ```
 
 This starts the configured D435i cameras, candidate worker/adapter, deployment
-supervisor, LinkerTA, lbot driver, and bridge. Add `--record-dir PATH` to save a
-rosbag containing raw input, model output, diagnostics, robot state, pose,
-vendor command, RGB and aligned depth streams. Stop with Ctrl-C; all process
-groups are stopped in reverse order and the rollout manifest is written next to
-the bag.
+supervisor, LinkerTA, lbot driver, and bridge. ACT, IMLE and the learned filter
+all publish candidates only; the supervisor is the single bridge input. Add
+`--record-dir PATH` to save a rosbag containing raw input, model output,
+diagnostics, robot state, pose, vendor command, RGB and aligned depth streams.
+Stop with Ctrl-C; all process groups are stopped in reverse order and the
+rollout manifest is written next to the bag.
+
+IMLE Linux promotion, validation and shadow/active steps are in
+`docs/engineering/IMLE_DEPLOYMENT.md`.
 
 Evaluate a completed recording with the same topic contract:
 
@@ -95,12 +117,12 @@ For real active control, all confirmations are required:
 
 ```bash
 bash scripts/start_model_rollout.sh --config config/runtime/rollout.yaml \
-  --real --physical-estop-ready \
+  --active --real --physical-estop-ready \
   --confirm=I_UNDERSTAND_REAL_ROLLOUT \
   --model-confirm=I_UNDERSTAND_MODEL_DEPLOYMENT
 ```
 
-The command intentionally refuses a real armed rollout without both
-confirmations. It does not start hand CAN control; hand control
+The command intentionally refuses a real armed rollout in shadow mode or
+without both confirmations. It does not start hand CAN control; hand control
 remains an independent, explicitly armed operation with its own CAN ownership
 check.

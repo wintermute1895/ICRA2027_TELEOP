@@ -25,9 +25,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class Rollout:
-    def __init__(self, config: dict[str, Any], *, real: bool, record_dir: Path | None,
+    def __init__(self, config: dict[str, Any], *, mode: str, real: bool, record_dir: Path | None,
                  config_path: Path | None = None) -> None:
         self.config = config
+        self.mode = mode
         self.real = real
         self.record_dir = record_dir
         self.config_path = config_path
@@ -119,6 +120,10 @@ class Rollout:
             candidate = self.resolve_path(self.config["act_config"])
             self.require_enabled(candidate, "ACT")
             candidate_args += [f"--act-config={candidate}"]
+        elif source == "imle":
+            candidate = self.resolve_path(self.config["imle_config"])
+            self.require_enabled(candidate, "IMLE")
+            candidate_args += [f"--imle-config={candidate}"]
         elif source == "filter":
             candidate = self.resolve_path(self.config["filter_config"])
             self.require_enabled(candidate, "filter")
@@ -130,10 +135,9 @@ class Rollout:
             self.start_camera(camera)
         for camera in self.config.get("cameras", []):
             self.wait_topic(f"{str(camera['namespace']).rstrip('/')}/color/image_raw")
-        deployment_cmd = [
-            "bash", str(ROOT / "scripts/start_model_deployment.sh"), str(deployment),
-            f"--source={source}", "--confirm=I_UNDERSTAND_MODEL_DEPLOYMENT", *candidate_args,
-        ]
+        deployment_cmd = ["bash", str(ROOT / "scripts/start_model_deployment.sh"), str(deployment), f"--source={source}", f"--{self.mode}", *candidate_args]
+        if self.mode == "active":
+            deployment_cmd += ["--confirm=I_UNDERSTAND_MODEL_DEPLOYMENT"]
         self.command("model_deployment", deployment_cmd)
         bridge_cmd = [
             "ros2", "launch", "teleop_control_bridge", "hardware_teleop.launch.py",
@@ -221,7 +225,7 @@ class Rollout:
             if self.config_path and self.config_path.is_file():
                 provenance["rollout_config"] = str(self.config_path.resolve())
                 provenance["rollout_config_sha256"] = hashlib.sha256(self.config_path.read_bytes()).hexdigest()
-            for key in ("act_config", "filter_config", "deployment_config"):
+            for key in ("act_config", "imle_config", "filter_config", "deployment_config"):
                 value = self.config.get(key)
                 if value:
                     path = self.resolve_path(value)
@@ -231,7 +235,7 @@ class Rollout:
             manifest.write_text(json.dumps({
                 "schema": "robot_teleop.rollout/v1",
                 "source": self.config.get("source", "teleop"),
-                "mode": "active",
+                "mode": self.mode,
                 "real_hardware_armed": self.real,
                 "recording": str(self.record_dir),
                 "provenance": provenance,
@@ -243,9 +247,12 @@ class Rollout:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=ROOT / "config/runtime/rollout.yaml")
-    parser.add_argument("--source", choices=["teleop", "filter", "act"], help="override rollout source")
+    parser.add_argument("--source", choices=["teleop", "filter", "act", "imle"], help="override rollout source")
     parser.add_argument("--filter-config", type=Path, help="override learned-filter runtime config")
     parser.add_argument("--act-config", type=Path, help="override ACT runtime config")
+    parser.add_argument("--imle-config", type=Path, help="override IMLE runtime config")
+    parser.add_argument("--shadow", action="store_true")
+    parser.add_argument("--active", action="store_true")
     parser.add_argument("--real", action="store_true")
     parser.add_argument("--physical-estop-ready", action="store_true")
     parser.add_argument("--confirm", default="")
@@ -260,20 +267,23 @@ def main() -> int:
         config["filter_config"] = str(args.filter_config)
     if args.act_config:
         config["act_config"] = str(args.act_config)
+    if args.imle_config:
+        config["imle_config"] = str(args.imle_config)
     if config.get("schema") != "robot_teleop.rollout/v1":
         raise SystemExit("unsupported rollout config schema")
-    if args.real and (not args.physical_estop_ready or args.confirm != "I_UNDERSTAND_REAL_ROLLOUT"):
-        raise SystemExit("real rollout requires --real --physical-estop-ready --confirm=I_UNDERSTAND_REAL_ROLLOUT")
-    if args.model_confirm not in {"", "I_UNDERSTAND_MODEL_DEPLOYMENT"}:
+    mode = "active" if args.active else "shadow"
+    if args.real and (mode != "active" or not args.physical_estop_ready or args.confirm != "I_UNDERSTAND_REAL_ROLLOUT"):
+        raise SystemExit("real rollout requires --active --real --physical-estop-ready --confirm=I_UNDERSTAND_REAL_ROLLOUT")
+    if mode == "active" and args.model_confirm not in {"", "I_UNDERSTAND_MODEL_DEPLOYMENT"}:
         raise SystemExit("invalid --model-confirm")
-    if args.model_confirm != "I_UNDERSTAND_MODEL_DEPLOYMENT":
+    if mode == "active" and args.model_confirm != "I_UNDERSTAND_MODEL_DEPLOYMENT":
         raise SystemExit("active rollout requires --model-confirm=I_UNDERSTAND_MODEL_DEPLOYMENT")
     record_dir = args.record_dir
     if record_dir is None and (config.get("recording") or {}).get("enabled"):
         root = Rollout.resolve_path((config.get("recording") or {}).get("output_root", "rollouts"))
         record_dir = root / time.strftime("%Y%m%dT%H%M%SZ")
     record_dir = Rollout.resolve_path(record_dir) if record_dir is not None else None
-    runner = Rollout(config, real=args.real, record_dir=record_dir, config_path=config_path)
+    runner = Rollout(config, mode=mode, real=args.real, record_dir=record_dir, config_path=config_path)
     try:
         runner.start()
         while True:

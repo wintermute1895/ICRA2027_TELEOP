@@ -150,6 +150,28 @@ class LimitsForSourceTest(unittest.TestCase):
         self.assertEqual(limits.max_delta_rad, 0.6)
         self.assertEqual(limits.max_step_rad, 0.6)
 
+    def test_imle_uses_absolute_pose_window(self):
+        limits = limits_for_source("imle", {
+            "max_delta_rad": 0.05,
+            "max_step_rad": 0.05,
+            "act_max_delta_rad": 0.6,
+            "act_max_step_rad": 0.6,
+        })
+        self.assertEqual(limits.max_delta_rad, 0.6)
+        self.assertEqual(limits.max_step_rad, 0.6)
+
+    def test_imle_specific_limits_override_act_window(self):
+        limits = limits_for_source("imle", {
+            "max_delta_rad": 0.05,
+            "max_step_rad": 0.05,
+            "act_max_delta_rad": 0.6,
+            "act_max_step_rad": 0.6,
+            "imle_max_delta_rad": 0.4,
+            "imle_max_step_rad": 0.3,
+        })
+        self.assertEqual(limits.max_delta_rad, 0.4)
+        self.assertEqual(limits.max_step_rad, 0.3)
+
 
 if __name__ == "__main__":
     unittest.main()

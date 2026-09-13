@@ -12,6 +12,7 @@ output_topic: /model_deployment/right_arm_joint_control
 candidate_topics:
   filter: /teleop_filter/right_arm_joint_control
   act: /act/right_arm_joint_control
+  imle: /imle/right_arm_joint_control
 state_topic: /robot1/right_arm/joint_states
 diagnostics_topic: /model_deployment/diagnostics
 timeout_ms: 2000

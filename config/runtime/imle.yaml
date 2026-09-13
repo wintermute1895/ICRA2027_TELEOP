@@ -1,0 +1,28 @@
+schema: robot_teleop.imle-runtime/v1
+enabled: false
+checkpoint: ""
+checkpoint_sha256: ""
+# Optional. Falls back to $IMLE_ROOT or a sibling ICRA2027_TELEOP_IMLE checkout.
+imle_root: ""
+device: cuda
+socket: /tmp/teleop_imle.sock
+inference_hz: 50.0
+input_timeout_ms: 2000.0
+# Task2 IMLE was trained on LinkerTA-degree JointState, not radians.
+action_units: degrees
+action_contract: arm7
+state_dim: 7
+action_dim: 7
+obs_horizon: 2
+pred_horizon: 16
+action_horizon: 8
+candidate_count: 20
+image_shape: [480, 640]
+output_topic: /imle/right_arm_joint_control
+state_topic: /robot1/right_arm/joint_states
+diagnostics_topic: /imle/right/diagnostics
+state_key: observation.state
+# Keys must match the feature names used when the IMLE dataset was trained.
+camera_keys:
+  observation.images.main_rgb: /camera/camera/color/image_raw
+  observation.images.auxiliary_rgb: /camera2/camera/color/image_raw

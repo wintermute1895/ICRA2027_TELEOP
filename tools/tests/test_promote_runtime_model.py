@@ -31,6 +31,32 @@ class PromoteRuntimeModelTest(unittest.TestCase):
             self.assertIn("enabled: true", text)
             self.assertIn(hashlib.sha256(b"checkpoint").hexdigest(), text)
 
+    def test_imle_config_gets_checkpoint_and_hash(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            checkpoint = root / "latest_deployment.pt"
+            checkpoint.write_bytes(b"imle-checkpoint")
+            template = root / "template.yaml"
+            template.write_text(
+                "schema: robot_teleop.imle-runtime/v1\n"
+                "enabled: false\ncheckpoint: ''\ncheckpoint_sha256: ''\nimle_root: ''\n",
+                encoding="utf-8",
+            )
+            output = root / "runtime.yaml"
+            import sys
+            old = sys.argv
+            try:
+                sys.argv = [
+                    "promote", "--kind", "imle", "--checkpoint", str(checkpoint),
+                    "--template", str(template), "--output", str(output),
+                ]
+                self.assertEqual(main(), 0)
+            finally:
+                sys.argv = old
+            text = output.read_text(encoding="utf-8")
+            self.assertIn("enabled: true", text)
+            self.assertIn(hashlib.sha256(b"imle-checkpoint").hexdigest(), text)
+
     def test_directory_artifact_hash_is_stable(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
