@@ -166,6 +166,8 @@ class Worker:
         return {
             "ready": True,
             "timestamp_ns": int(request["timestamp_ns"]),
+            "candidate_action_rad": np.asarray(predicted_action, dtype=np.float32).tolist(),
+            "visual_embedding": np.asarray(visual, dtype=np.float32).tolist(),
             "command_rad": projected.command_rad.tolist(),
             "residual_rad": projected.applied_residual_rad.tolist(),
             "latent_variance": self.last_latent_variance,

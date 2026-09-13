@@ -58,6 +58,7 @@ class Adapter(Node):
         self.thread_pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="learned-filter")
 
         self.output_pub = self.create_publisher(JointState, config["master_output_topic"], 10)
+        self.candidate_pub = self.create_publisher(JointState, config["candidate_output_topic"], 10)
         self.raw_pub = self.create_publisher(JointState, config["raw_observation_topic"], 10)
         self.filtered_pub = self.create_publisher(JointState, config["filtered_observation_topic"], 10)
         self.diagnostics_pub = self.create_publisher(String, config["diagnostics_topic"], 10)
@@ -111,12 +112,16 @@ class Adapter(Node):
                     if candidate.shape == np.asarray(self.master_message.position).shape and np.isfinite(candidate).all():
                         self.output_pub.publish(joint_state(self.master_message, np.rad2deg(candidate)))
                         self.filtered_pub.publish(joint_state(self.master_message, candidate))
+                    raw_candidate = np.asarray(response.get("candidate_action_rad"), dtype=np.float32)
+                    if raw_candidate.shape == candidate.shape and np.isfinite(raw_candidate).all():
+                        self.candidate_pub.publish(joint_state(self.master_message, raw_candidate))
                 self.get_logger().info(
                     "[diag] infer response ready="
                     + str(response.get("ready"))
                     + " reason="
                     + str(response.get("reason"))
                 )
+                response["header_stamp_ns"] = int(response.get("timestamp_ns", 0))
                 self.diagnose(**response)
             except (OSError, ValueError, json.JSONDecodeError) as error:
                 self.diagnose(ready=False, reason=f"worker_unavailable:{type(error).__name__}")
@@ -143,7 +148,7 @@ class Adapter(Node):
         images = {name: self.values[name][1] for name in self.camera_ids}
         self.get_logger().info("[diag] infer submit request")
         request = {
-            "timestamp_ns": self.get_clock().now().nanoseconds,
+            "timestamp_ns": int(self.master_message.header.stamp.sec) * 1_000_000_000 + int(self.master_message.header.stamp.nanosec),
             "submitted_monotonic_ns": time.monotonic_ns(),
             "master_joint_raw_rad": master.tolist(),
             "robot_joint_state_rad": list(state.position),

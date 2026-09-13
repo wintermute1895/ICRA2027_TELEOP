@@ -59,6 +59,21 @@ def merge_audit_events(events: list[dict[str, Any]], sidecar: Path | None) -> li
     return sorted(unique.values(), key=lambda value: (int(value.get("timestamp_ns", 0)), int(value.get("sequence", 0))))
 
 
+def filter_stage_coverage(records: list[dict[str, Any]]) -> dict[str, Any]:
+    fields = ("raw_action_rad", "candidate_action_rad", "correction_probability",
+              "learned_gain", "composed_action_rad", "issued_action_rad")
+    counts = {field: sum(record.get(field) is not None for record in records) for field in fields}
+    ratios = {field: count / len(records) if records else 0.0 for field, count in counts.items()}
+    candidate_rows = [record for record in records if record.get("candidate_action_rad") is not None]
+    complete = sum(all(record.get(field) is not None for field in fields) for record in candidate_rows)
+    aligned = sum(record.get("filter_inference_stamps_aligned") is True for record in candidate_rows)
+    return {"counts": counts, "ratios": ratios, "candidate_rows": len(candidate_rows),
+            "complete_candidate_rows": complete,
+            "complete_candidate_ratio": 1.0 if not candidate_rows else complete / len(candidate_rows),
+            "timestamp_aligned_candidate_rows": aligned,
+            "timestamp_aligned_candidate_ratio": 1.0 if not candidate_rows else aligned / len(candidate_rows)}
+
+
 def args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bag", type=Path, required=True, help="rosbag2 directory")
@@ -76,6 +91,7 @@ def args() -> argparse.Namespace:
     )
     parser.add_argument("--max-camera-age-ms", type=float, default=100.0)
     parser.add_argument("--max-command-age-ms", type=float, default=100.0)
+    parser.add_argument("--min-filter-stage-coverage", type=float, default=0.9)
     parser.add_argument("--episode-id", default=None)
     return parser.parse_args()
 
@@ -121,6 +137,9 @@ def main() -> int:
     state_topic = f"{robot_ns}/{opt.arm}_arm/joint_states"
     filter_raw_topic = f"/teleop_filter/{opt.arm}/master_joint_raw_rad"
     filter_output_topic = f"/teleop_filter/{opt.arm}/master_joint_filtered_rad"
+    filter_candidate_topic = f"/teleop_filter/{opt.arm}/model_candidate_rad"
+    filter_diagnostics_topic = f"/teleop_filter/{opt.arm}/diagnostics"
+    deployment_output_topic = f"/model_deployment/{opt.arm}_arm_joint_control"
     historical_raw_topic = f"{teleop_ns}/{opt.arm}/master_joint_raw"
     historical_filtered_topic = f"{teleop_ns}/{opt.arm}/master_joint_filtered"
     command_topic = f"{teleop_ns}/{opt.arm}/mapped_joint_command"
@@ -145,6 +164,9 @@ def main() -> int:
         raise SystemExit(f"required state topic missing: {state_topic}")
     master_raw: list[tuple[int, Any]] = []
     master_filtered: list[tuple[int, Any]] = []
+    filter_candidates: list[tuple[int, Any]] = []
+    filter_diagnostics: list[tuple[int, dict[str, Any]]] = []
+    deployment_outputs: list[tuple[int, Any]] = []
     commands: list[tuple[int, Any]] = []
     vendor_commands: list[tuple[int, Any]] = []
     tcp_poses: list[tuple[int, Any]] = []
@@ -164,7 +186,7 @@ def main() -> int:
     while reader.has_next():
         topic, raw, bag_time_ns = reader.read_next()
         camera_topic_names = {value for _, _, value, _ in camera_topics} | {value for _, _, _, value in camera_topics}
-        if topic not in {state_topic, master_raw_topic, master_filtered_topic, command_topic, vendor_command_topic, tcp_pose_topic, tactile_force_topic, tactile_matrix_topic, tactile_mass_topic, task_context_topic, sim_context_topic, event_topic, gripper_state_topic} | camera_topic_names:
+        if topic not in {state_topic, master_raw_topic, master_filtered_topic, filter_candidate_topic, filter_diagnostics_topic, deployment_output_topic, command_topic, vendor_command_topic, tcp_pose_topic, tactile_force_topic, tactile_matrix_topic, tactile_mass_topic, task_context_topic, sim_context_topic, event_topic, gripper_state_topic} | camera_topic_names:
             continue
         if topic not in message_types:
             message_types[topic] = get_message(topic_types[topic])
@@ -190,6 +212,21 @@ def main() -> int:
             continue
         if topic == master_filtered_topic:
             master_filtered.append((message_stamp_ns, message))
+            continue
+        if topic == filter_candidate_topic:
+            filter_candidates.append((message_stamp_ns, message))
+            continue
+        if topic == filter_diagnostics_topic:
+            try:
+                payload = json.loads(getattr(message, "data", ""))
+            except (TypeError, json.JSONDecodeError):
+                payload = None
+            if isinstance(payload, dict):
+                diagnostic_stamp = int(payload.get("header_stamp_ns") or payload.get("timestamp_ns") or message_stamp_ns)
+                filter_diagnostics.append((diagnostic_stamp, payload))
+            continue
+        if topic == deployment_output_topic:
+            deployment_outputs.append((message_stamp_ns, message))
             continue
         if topic == command_topic:
             commands.append((message_stamp_ns, message))
@@ -275,13 +312,31 @@ def main() -> int:
 
         return lookup
 
+    def make_stamped_lookup(samples: list[tuple[int, Any]]):
+        samples.sort(key=lambda item: item[0])
+        stamps = [item[0] for item in samples]
+        def lookup(state_stamp_ns: int) -> tuple[int, Any] | None:
+            index = bisect.bisect_right(stamps, state_stamp_ns) - 1
+            if index < 0 or state_stamp_ns - stamps[index] > max_command_age_ns:
+                return None
+            return samples[index]
+        return lookup
+
     raw_for = make_command_lookup(master_raw)
     filtered_for = make_command_lookup(master_filtered)
+    candidate_for = make_command_lookup(filter_candidates)
+    diagnostic_for = make_command_lookup(filter_diagnostics)
+    deployment_for = make_command_lookup(deployment_outputs)
     command_for = make_command_lookup(commands)
     vendor_for = make_command_lookup(vendor_commands)
     pose_for = make_command_lookup(tcp_poses)
     context_for = make_command_lookup(task_context)
     gripper_for = make_command_lookup(gripper_states)
+    candidate_entry_for = make_stamped_lookup(filter_candidates)
+    composed_entry_for = make_stamped_lookup(master_filtered)
+    diagnostic_entry_for = make_stamped_lookup(filter_diagnostics)
+    deployment_entry_for = make_stamped_lookup(deployment_outputs)
+    issued_entry_for = make_stamped_lookup(commands)
 
     def context_value(message: Any) -> dict[str, Any] | None:
         if message is None:
@@ -304,10 +359,25 @@ def main() -> int:
         command = command_for(message_stamp_ns)
         raw = raw_for(message_stamp_ns)
         filtered = filtered_for(message_stamp_ns)
+        candidate = candidate_for(message_stamp_ns)
+        diagnostic = diagnostic_for(message_stamp_ns)
+        deployment = deployment_for(message_stamp_ns)
         vendor = vendor_for(message_stamp_ns)
         pose = pose_for(message_stamp_ns)
         context = context_for(message_stamp_ns)
         gripper = gripper_for(message_stamp_ns)
+        candidate_entry = candidate_entry_for(message_stamp_ns)
+        composed_entry = composed_entry_for(message_stamp_ns)
+        diagnostic_entry = diagnostic_entry_for(message_stamp_ns)
+        deployment_entry = deployment_entry_for(message_stamp_ns)
+        issued_entry = issued_entry_for(message_stamp_ns)
+        filter_stage_stamps = {
+            "candidate": None if candidate_entry is None else candidate_entry[0],
+            "composed": None if composed_entry is None else composed_entry[0],
+            "diagnostics": None if diagnostic_entry is None else diagnostic_entry[0],
+            "issued": None if issued_entry is None else issued_entry[0],
+        }
+        inference_stamps = [filter_stage_stamps[name] for name in ("candidate", "composed", "diagnostics") if filter_stage_stamps[name] is not None]
         tcp_pose = None
         tcp_frame = None
         if pose is not None:
@@ -336,6 +406,19 @@ def main() -> int:
             "joint_names": list(message.name),
             "master_joint_raw": None if raw is None else [float(value) for value in raw.position],
             "master_joint_filtered_rad": None if filtered is None else [float(value) for value in filtered.position],
+            "raw_action_rad": None if raw is None else [float(value) for value in raw.position],
+            "candidate_action_rad": None if candidate is None else [float(value) for value in candidate.position],
+            "correction_probability": None if diagnostic is None else diagnostic.get("correction_probability"),
+            "learned_gain": None if diagnostic is None else diagnostic.get("alpha"),
+            "composed_action_rad": None if filtered is None else [float(value) for value in filtered.position],
+            "issued_action_rad": None if command is None else [float(value) for value in command.position],
+            "issued_action_coordinate_space": "vendor_robot_joint",
+            "filter_inference_header_stamp_ns": None if diagnostic is None else int(diagnostic.get("header_stamp_ns") or diagnostic.get("timestamp_ns", 0)),
+            "filter_authority_mode": None if diagnostic is None else diagnostic.get("authority_mode"),
+            "filter_safety_reasons": None if diagnostic is None else diagnostic.get("safety_reasons"),
+            "filter_visual_embedding": None if diagnostic is None else diagnostic.get("visual_embedding"),
+            "filter_stage_header_stamps_ns": filter_stage_stamps,
+            "filter_inference_stamps_aligned": bool(inference_stamps) and len(set(inference_stamps)) == 1,
             "robot_joint_state_rad": [float(value) for value in message.position],
             "mapped_joint_command_rad": None if command is None else [float(value) for value in command.position],
             "controller_command_rad": controller_command,
@@ -374,6 +457,9 @@ def main() -> int:
             "state": state_topic,
             "master_raw": master_raw_topic,
             "master_filtered": master_filtered_topic,
+            "filter_candidate": filter_candidate_topic,
+            "filter_diagnostics": filter_diagnostics_topic,
+            "deployment_output": deployment_output_topic,
             "command": command_topic,
             "vendor_command": vendor_command_topic,
             "tcp_pose": tcp_pose_topic,
@@ -403,11 +489,20 @@ def main() -> int:
         },
         "hardware_accessed": False,
     }
+    filter_present = filter_candidate_topic in topic_types or filter_diagnostics_topic in topic_types
+    coverage = filter_stage_coverage(records)
+    coverage.update({"filter_topics_present": filter_present, "minimum_required": opt.min_filter_stage_coverage})
+    manifest["filter_stage_coverage"] = coverage
     manifest_path = opt.output.with_suffix(opt.output.suffix + ".manifest.json")
     events_path = opt.output.with_suffix(opt.output.suffix + ".events.jsonl")
     events_path.write_text("".join(json.dumps(event, sort_keys=True) + "\n" for event in audit_events), encoding="utf-8")
     manifest["audit_events_sidecar"] = str(events_path)
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    effective_coverage = min(coverage["complete_candidate_ratio"], coverage["timestamp_aligned_candidate_ratio"])
+    if filter_present and coverage["candidate_rows"] == 0:
+        effective_coverage = 0.0
+    if filter_present and effective_coverage < opt.min_filter_stage_coverage:
+        raise SystemExit(f"filter-stage field/timestamp coverage {effective_coverage:.3f} is below required {opt.min_filter_stage_coverage:.3f}; see {manifest_path}")
     if temporary is not None:
         temporary.cleanup()
     print(json.dumps({"output": str(opt.output), "manifest": str(manifest_path), "samples": len(records), "missing_topics": missing}))

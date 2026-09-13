@@ -77,6 +77,7 @@ for arm in "${ARM_LIST[@]}"; do
     "/model_deployment/diagnostics"
     "/teleop_filter/${arm}/master_joint_raw_rad"
     "/teleop_filter/${arm}/master_joint_filtered_rad"
+    "/teleop_filter/${arm}/model_candidate_rad"
     "/teleop_filter/${arm}/diagnostics"
     "${ROBOT_STATE_NAMESPACE}/${arm}_arm/joint_states"
     "${ROBOT_STATE_NAMESPACE}/${arm}_arm/vendor_command"
@@ -220,6 +221,8 @@ payload = {
         "model_deployment_diagnostics": "/model_deployment/diagnostics",
         "learned_filter_raw": "/teleop_filter/left/master_joint_raw_rad,/teleop_filter/right/master_joint_raw_rad",
         "learned_filter_output": "/teleop_filter/left/master_joint_filtered_rad,/teleop_filter/right/master_joint_filtered_rad",
+        "learned_filter_candidate": "/teleop_filter/left/model_candidate_rad,/teleop_filter/right/model_candidate_rad",
+        "learned_filter_diagnostics": "/teleop_filter/left/diagnostics,/teleop_filter/right/diagnostics",
         "robot_joint_state": f"{robot_state_namespace}/left_arm/joint_states,{robot_state_namespace}/right_arm/joint_states",
         "controller_command": f"{robot_state_namespace}/left_arm/vendor_command,{robot_state_namespace}/right_arm/vendor_command",
         "tcp_pose": f"{robot_state_namespace}/left_arm/pose_states,{robot_state_namespace}/right_arm/pose_states",

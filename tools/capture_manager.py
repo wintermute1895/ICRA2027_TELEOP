@@ -205,6 +205,7 @@ class ManagerConfig:
         mapping = self._yaml_mapping(self.learned_filter_config)
         names = (
             "master_output_topic",
+            "candidate_output_topic",
             "diagnostics_topic",
             "raw_observation_topic",
             "filtered_observation_topic",

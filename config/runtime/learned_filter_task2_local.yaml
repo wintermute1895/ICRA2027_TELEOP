@@ -25,6 +25,7 @@ safety:
 arm: right
 master_input_topic: /right_arm_joint_control
 master_output_topic: /teleop_filter/right_arm_joint_control
+candidate_output_topic: /teleop_filter/right/model_candidate_rad
 state_topic: /robot1/right_arm/joint_states
 raw_observation_topic: /teleop_filter/right/master_joint_raw_rad
 filtered_observation_topic: /teleop_filter/right/master_joint_filtered_rad
