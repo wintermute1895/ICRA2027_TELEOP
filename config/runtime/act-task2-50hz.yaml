@@ -11,7 +11,10 @@ inference_hz: 10.0
 runtime_n_action_steps: 2
 input_timeout_ms: 2000.0
 max_input_age_ms: 250.0
-max_observation_skew_ms: 50.0
+# The two RealSense cameras are not hardware-synchronized. This allows up to
+# one practical frame interval plus scheduling jitter while still rejecting
+# observations that clearly belong to different moments.
+max_observation_skew_ms: 100.0
 max_candidate_age_ms: 300.0
 reset_gap_ms: 2000.0
 action_units: radians

@@ -71,7 +71,7 @@ class ACTAdapter(Node):
         self._reset_next = False
         self._sequence_id = 0
         self.pending_context: dict | None = None
-        self.max_observation_skew_ms = float(config.get("max_observation_skew_ms", 50.0))
+        self.max_observation_skew_ms = float(config.get("max_observation_skew_ms", 100.0))
         self.max_input_age_ms = float(config.get("max_input_age_ms", 250.0))
         self.max_candidate_age_ms = float(config.get("max_candidate_age_ms", 300.0))
         self.inference_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="act-worker")
