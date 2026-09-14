@@ -58,15 +58,42 @@ def should_reset_action_chunk(
     timestamp_ns: int,
     inference_hz: float,
     requested: bool = False,
+    reset_gap_ms: float = 2000.0,
 ) -> bool:
-    """Reset the ACT action queue after an explicit request or a missed cycle."""
+    """Reset after an explicit request or a real input outage, not timer jitter."""
 
     if requested:
         return True
     if last_timestamp_ns is None or inference_hz <= 0:
         return False
-    period_ns = 1_000_000_000.0 / float(inference_hz)
-    return (timestamp_ns - last_timestamp_ns) > 1.5 * period_ns
+    del inference_hz  # Kept in the signature for runtime-contract compatibility.
+    return (timestamp_ns - last_timestamp_ns) > float(reset_gap_ms) * 1_000_000.0
+
+
+def validate_observation_timing(
+    stamps_ns: Mapping[str, int],
+    ages_ms: Mapping[str, float],
+    *,
+    max_skew_ms: float,
+    max_age_ms: float,
+) -> dict[str, float]:
+    """Validate that state and camera samples form one fresh observation."""
+
+    if not stamps_ns:
+        raise ValueError("observation has no timestamps")
+    if set(stamps_ns) != set(ages_ms):
+        raise ValueError("observation timestamp and age keys differ")
+    if any(int(value) <= 0 for value in stamps_ns.values()):
+        raise ValueError("observation contains an invalid header timestamp")
+    if any(not np.isfinite(value) or value < 0 for value in ages_ms.values()):
+        raise ValueError("observation contains an invalid receipt age")
+    skew_ms = (max(stamps_ns.values()) - min(stamps_ns.values())) / 1_000_000.0
+    oldest_age_ms = max(float(value) for value in ages_ms.values())
+    if skew_ms > float(max_skew_ms):
+        raise ValueError(f"observation_skew_ms={skew_ms:.3f} exceeds {max_skew_ms:.3f}")
+    if oldest_age_ms > float(max_age_ms):
+        raise ValueError(f"observation_age_ms={oldest_age_ms:.3f} exceeds {max_age_ms:.3f}")
+    return {"observation_skew_ms": skew_ms, "oldest_input_age_ms": oldest_age_ms}
 
 
 def validate_runtime_config(config: Mapping[str, Any]) -> None:
@@ -86,6 +113,8 @@ def validate_runtime_config(config: Mapping[str, Any]) -> None:
     image_shape = tuple(int(item) for item in config.get("image_shape", (IMAGE_HEIGHT, IMAGE_WIDTH)))
     if image_shape != (IMAGE_HEIGHT, IMAGE_WIDTH):
         raise ValueError(f"ACT runtime requires image_shape={[IMAGE_HEIGHT, IMAGE_WIDTH]!r}")
+    if int(config.get("runtime_n_action_steps", 1)) < 1:
+        raise ValueError("ACT runtime_n_action_steps must be positive")
 
 
 def validate_policy_config(policy_config: Any) -> None:

@@ -25,6 +25,7 @@ from act_arm7_contract import (
     validate_action,
     validate_runtime_config,
     validate_state,
+    validate_observation_timing,
 )
 
 
@@ -68,7 +69,11 @@ class ACTAdapter(Node):
         self.pending_started: float | None = None
         self.last_skip_diag = 0.0
         self._reset_next = False
-        self._skipped_while_pending = False
+        self._sequence_id = 0
+        self.pending_context: dict | None = None
+        self.max_observation_skew_ms = float(config.get("max_observation_skew_ms", 50.0))
+        self.max_input_age_ms = float(config.get("max_input_age_ms", 250.0))
+        self.max_candidate_age_ms = float(config.get("max_candidate_age_ms", 300.0))
         self.inference_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="act-worker")
         self.connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.connection.settimeout(self.timeout_s)
@@ -107,34 +112,46 @@ class ACTAdapter(Node):
     def infer(self) -> None:
         if self.pending is not None:
             if not self.pending.done():
-                self._skipped_while_pending = True
                 if time.monotonic() - self.last_skip_diag >= 1.0:
                     self.last_skip_diag = time.monotonic()
                     self.get_logger().info("[diag] infer in flight")
                 return
             try:
                 response = self.pending.result()
+                context = self.pending_context or {}
                 response_age = time.monotonic() - (self.pending_started or time.monotonic())
                 timed_out = response_age > self.timeout_s
                 if timed_out:
                     response = {"ready": False, "reason": "inference_timeout", "latency_s": response_age}
-                self.diagnose(**response)
-                state = self.values.get("state")
-                if response.get("ready") and state:
+                plan_receipt_ns = int(response.get("plan_origin_receipt_monotonic_ns") or
+                                      context.get("oldest_receipt_ns", time.monotonic_ns()))
+                total_age_ms = (time.monotonic_ns() - plan_receipt_ns) / 1e6
+                response["total_candidate_age_ms"] = total_age_ms
+                response.update(context.get("timing", {}))
+                sequence_matches = response.get("inference_sequence_id") == context.get("inference_sequence_id")
+                response["sequence_matches"] = sequence_matches
+                state = context.get("state")
+                if response.get("ready") and state is not None and sequence_matches and total_age_ms <= self.max_candidate_age_ms:
                     candidate = validate_action(response.get("command_rad"))
                     msg = JointState()
-                    msg.header = state[1].header
-                    msg.name = list(state[1].name)
+                    msg.header = state.header
+                    msg.name = list(state.name)
                     msg.position = ros_joint_positions(candidate, self.action_units)
                     self.output_pub.publish(msg)
-                if timed_out or self._skipped_while_pending or response.get("ready") is not True:
+                    response["published"] = True
+                else:
+                    response["published"] = False
+                    if response.get("ready") and total_age_ms > self.max_candidate_age_ms:
+                        response["reason"] = "candidate_stale"
+                self.diagnose(**response)
+                if timed_out or response.get("ready") is not True:
                     self._reset_next = True
             except (OSError, ValueError, json.JSONDecodeError) as error:
                 self._reset_next = True
                 self.diagnose(ready=False, reason=f"worker_unavailable:{type(error).__name__}")
             self.pending = None
             self.pending_started = None
-            self._skipped_while_pending = False
+            self.pending_context = None
         now = time.monotonic()
         required = ["state", *self.camera_keys]
         missing = [name for name in required if name not in self.values]
@@ -151,19 +168,42 @@ class ACTAdapter(Node):
                 )
                 self.diagnose(ready=False, reason="input_missing_or_stale", missing=missing, stale_ages_s=stale)
             return
-        state = self.values["state"][1]
+        snapshots = {name: self.values[name] for name in required}
+        state = snapshots["state"][1]
+        stamp_ns = {
+            name: int(item[1].header.stamp.sec) * 1_000_000_000 + int(item[1].header.stamp.nanosec)
+            for name, item in snapshots.items()
+        }
+        receipt_ns = {name: int(item[0] * 1_000_000_000) for name, item in snapshots.items()}
+        ages_ms = {name: (time.monotonic_ns() - value) / 1e6 for name, value in receipt_ns.items()}
+        try:
+            timing = validate_observation_timing(
+                stamp_ns, ages_ms, max_skew_ms=self.max_observation_skew_ms,
+                max_age_ms=self.max_input_age_ms)
+        except ValueError as error:
+            self.diagnose(ready=False, reason="observation_timing_invalid", detail=str(error),
+                          input_header_stamps_ns=stamp_ns, input_ages_ms=ages_ms)
+            return
+        self._sequence_id += 1
         request = {
-            "timestamp_ns": self.get_clock().now().nanoseconds,
+            "timestamp_ns": stamp_ns["state"],
+            "inference_sequence_id": self._sequence_id,
             "state": list(state.position),
             "reset": self._reset_next,
+            "oldest_receipt_monotonic_ns": min(receipt_ns.values()),
         }
         self._reset_next = False
         self.pending = self.inference_executor.submit(
             self.exchange,
             request,
-            {key: self.values[key][1] for key in self.camera_keys},
+            {key: snapshots[key][1] for key in self.camera_keys},
         )
         self.pending_started = now
+        self.pending_context = {
+            "state": state, "inference_sequence_id": self._sequence_id,
+            "oldest_receipt_ns": min(receipt_ns.values()),
+            "timing": {**timing, "input_header_stamps_ns": stamp_ns, "input_ages_ms": ages_ms},
+        }
 
     def destroy_node(self) -> None:
         self.inference_executor.shutdown(wait=False, cancel_futures=True)

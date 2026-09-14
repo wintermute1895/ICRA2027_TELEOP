@@ -9,6 +9,7 @@ from tools.act_arm7_contract import (
     normalize_action_units,
     ros_joint_positions,
     should_reset_action_chunk,
+    validate_observation_timing,
     validate_action,
     validate_image_chw,
     validate_policy_config,
@@ -72,7 +73,7 @@ class ActArm7ContractTest(unittest.TestCase):
             should_reset_action_chunk(
                 last_timestamp_ns=0, timestamp_ns=100_000_000, inference_hz=10.0)
         )
-        self.assertTrue(
+        self.assertFalse(
             should_reset_action_chunk(
                 last_timestamp_ns=0, timestamp_ns=200_000_000, inference_hz=10.0)
         )
@@ -80,6 +81,26 @@ class ActArm7ContractTest(unittest.TestCase):
             should_reset_action_chunk(
                 last_timestamp_ns=0, timestamp_ns=50_000_000, inference_hz=10.0, requested=True)
         )
+
+    def test_observation_timing_rejects_skew_and_stale_inputs(self):
+        timing = validate_observation_timing(
+            {"state": 1_000_000_000, "camera": 980_000_000},
+            {"state": 5.0, "camera": 25.0}, max_skew_ms=50.0, max_age_ms=100.0)
+        self.assertEqual(timing["observation_skew_ms"], 20.0)
+        with self.assertRaisesRegex(ValueError, "observation_skew_ms"):
+            validate_observation_timing(
+                {"state": 1_000_000_000, "camera": 900_000_000},
+                {"state": 5.0, "camera": 25.0}, max_skew_ms=50.0, max_age_ms=100.0)
+        with self.assertRaisesRegex(ValueError, "observation_age_ms"):
+            validate_observation_timing(
+                {"state": 1_000_000_000, "camera": 990_000_000},
+                {"state": 5.0, "camera": 125.0}, max_skew_ms=50.0, max_age_ms=100.0)
+
+    def test_runtime_action_steps_must_be_positive(self):
+        config = self.runtime_config()
+        config["runtime_n_action_steps"] = 0
+        with self.assertRaisesRegex(ValueError, "runtime_n_action_steps"):
+            validate_runtime_config(config)
 
 
 if __name__ == "__main__":

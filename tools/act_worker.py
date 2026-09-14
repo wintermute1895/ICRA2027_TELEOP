@@ -59,17 +59,32 @@ class Worker:
         # The checkpoint may have been saved with a CPU config.  The runtime
         # device is authoritative for both the model and its processor steps.
         self.policy.config.device = device
+        runtime_steps = int(config.get("runtime_n_action_steps", self.policy.config.n_action_steps))
+        if runtime_steps > int(self.policy.config.chunk_size):
+            raise ValueError("runtime_n_action_steps exceeds checkpoint chunk_size")
+        self.policy.config.n_action_steps = runtime_steps
+        self.policy.reset()
         self.policy = self.policy.to(device).eval()
         self.camera_keys = list((config.get("camera_keys") or {}).keys())
         self.state_key = str(config.get("state_key", "observation.state"))
         self.inference_hz = float(config.get("inference_hz", 10.0))
+        self.reset_gap_ms = float(config.get("reset_gap_ms", 2000.0))
         self._last_timestamp_ns: int | None = None
+        self._request_count = 0
+        self._reset_count = 0
+        self._plan_origin_timestamp_ns: int | None = None
+        self._plan_origin_receipt_ns: int | None = None
+        self._chunk_step = 0
 
     def reset_action_chunk(self) -> None:
         reset_fn = getattr(self.policy, "reset", None)
         if callable(reset_fn):
             reset_fn()
         self._last_timestamp_ns = None
+        self._plan_origin_timestamp_ns = None
+        self._plan_origin_receipt_ns = None
+        self._chunk_step = 0
+        self._reset_count += 1
 
     @staticmethod
     def image(data: bytes) -> torch.Tensor:
@@ -88,6 +103,7 @@ class Worker:
             timestamp_ns=timestamp_ns,
             inference_hz=self.inference_hz,
             requested=bool(request.get("reset")),
+            reset_gap_ms=self.reset_gap_ms,
         ):
             self.reset_action_chunk()
         self._last_timestamp_ns = timestamp_ns
@@ -98,11 +114,30 @@ class Worker:
             if key not in images:
                 raise ValueError(f"missing camera input: {key}")
             batch[key] = self.image(base64.b64decode(images[key])).unsqueeze(0).to(self.device)
+        started_ns = time.monotonic_ns()
+        queue = getattr(self.policy, "_action_queue", ())
+        starts_new_plan = len(queue) == 0
+        if starts_new_plan:
+            self._plan_origin_timestamp_ns = timestamp_ns
+            self._plan_origin_receipt_ns = int(request["oldest_receipt_monotonic_ns"])
+            self._chunk_step = 0
         with torch.inference_mode():
             action = self.policy.select_action(batch)
             action = action.detach().cpu().reshape(-1).numpy().astype(np.float32)
         action = validate_action(action)
-        return {"ready": True, "timestamp_ns": int(request["timestamp_ns"]), "command_rad": action.tolist()}
+        queue_remaining = len(getattr(self.policy, "_action_queue", ()))
+        chunk_step = self._chunk_step
+        self._chunk_step += 1
+        self._request_count += 1
+        return {"ready": True, "timestamp_ns": timestamp_ns,
+                "inference_sequence_id": int(request["inference_sequence_id"]),
+                "command_rad": action.tolist(),
+                "worker_latency_ms": (time.monotonic_ns() - started_ns) / 1_000_000.0,
+                "worker_request_count": self._request_count, "policy_reset_count": self._reset_count,
+                "starts_new_plan": starts_new_plan, "chunk_step": chunk_step,
+                "queue_remaining": queue_remaining,
+                "plan_origin_timestamp_ns": self._plan_origin_timestamp_ns,
+                "plan_origin_receipt_monotonic_ns": self._plan_origin_receipt_ns}
 
 
 def main() -> int:

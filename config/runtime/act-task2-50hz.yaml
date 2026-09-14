@@ -5,7 +5,15 @@ checkpoint_sha256: 8ed6d32a7300bd8d5696eec42047522a830bee3d8ee6c7ab76c4ac6ab46f6
 device: cuda
 socket: /tmp/teleop_act.sock
 inference_hz: 10.0
+# The checkpoint was trained with a 100-step queue at 50 Hz. At this 10 Hz
+# control rate, execute only two steps so a plan is never treated as fresh for
+# ten seconds; LeRobot still owns queue creation and dequeue semantics.
+runtime_n_action_steps: 2
 input_timeout_ms: 2000.0
+max_input_age_ms: 250.0
+max_observation_skew_ms: 50.0
+max_candidate_age_ms: 300.0
+reset_gap_ms: 2000.0
 action_units: radians
 action_contract: arm7
 state_dim: 7
